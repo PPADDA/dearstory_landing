@@ -389,13 +389,15 @@ app.post('/api/bookings', async (c) => {
   
   const totalPrice = basePrice + (additionalCost * (data.num_people - 1))
   
+  const messengerData = data.customer_messengers || '[]'
+
   const result = await env.DB.prepare(`
     INSERT INTO bookings (name, email, phone, country, preferred_language, package_type, num_people, booking_date, booking_time, total_price, notes)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.customer_name,
     data.customer_email,
-    data.customer_phone,
+    messengerData,
     data.customer_country,
     data.preferred_language,
     data.package_type,
@@ -416,13 +418,23 @@ app.post('/api/bookings', async (c) => {
       'premium': '⭐'
     }
     
+    const messengerLabels: Record<string, string> = {
+      whatsapp: 'WhatsApp', instagram: 'Instagram', kakaotalk: 'KakaoTalk',
+      wechat: 'WeChat', line: 'Line', email_only: 'Email Only'
+    }
+    let parsedMessengers: Array<{type: string, id: string}> = []
+    try { parsedMessengers = JSON.parse(messengerData) } catch {}
+    const messengerText = parsedMessengers.map((m: {type: string, id: string}) =>
+      m.type === 'email_only' ? '📧 Email Only' : `${messengerLabels[m.type] || m.type}: ${m.id}`
+    ).join('\n') || 'None specified'
+
     const embed = {
       title: `${packageEmoji[data.package_type] || '📝'} New Booking Received!`,
       color: 0x000000, // Black color
       fields: [
         {
           name: '👤 Customer',
-          value: `**${data.customer_name}**\n${data.customer_email}\n${data.customer_phone}`,
+          value: `**${data.customer_name}**\n${data.customer_email}`,
           inline: true
         },
         {
@@ -449,6 +461,11 @@ app.post('/api/bookings', async (c) => {
           name: '🆔 Booking ID',
           value: `#${result.meta.last_row_id}`,
           inline: true
+        },
+        {
+          name: '📱 Contact Methods',
+          value: messengerText,
+          inline: false
         }
       ],
       timestamp: new Date().toISOString(),

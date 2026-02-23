@@ -348,19 +348,36 @@ export const bookingPage = (packageParam?: string) => `
                  class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm">
         </div>
 
-        <div class="grid md:grid-cols-2 gap-8">
-          <div>
-            <label class="block text-sm uppercase tracking-wider mb-3">Email *</label>
-            <input type="email" id="customer_email" name="customer_email" required 
-                   placeholder="john@example.com"
-                   class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm">
+        <div>
+          <label class="block text-sm uppercase tracking-wider mb-3">Email *</label>
+          <input type="email" id="customer_email" name="customer_email" required
+                 placeholder="john@example.com"
+                 class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm">
+        </div>
+
+        <!-- Messenger Contact Methods -->
+        <div>
+          <label class="block text-sm uppercase tracking-wider mb-3">How Can We Contact You? *</label>
+          <div id="messenger-list" class="space-y-3">
+            <div class="messenger-entry flex items-center gap-3">
+              <select class="messenger-select p-4 border border-gray-300 focus:border-black focus:outline-none text-sm w-44 shrink-0">
+                <option value="">Select...</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="instagram">Instagram</option>
+                <option value="kakaotalk">KakaoTalk</option>
+                <option value="wechat">WeChat</option>
+                <option value="line">Line</option>
+                <option value="email_only">Email Only</option>
+              </select>
+              <input type="text" placeholder="Select a messenger first" class="messenger-id flex-1 p-4 border border-gray-300 focus:border-black focus:outline-none text-sm bg-gray-50" disabled>
+              <button type="button" class="messenger-remove hidden w-12 h-12 border border-gray-300 text-gray-400 hover:text-red-500 hover:border-red-300 transition flex items-center justify-center shrink-0">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm uppercase tracking-wider mb-3">Phone *</label>
-            <input type="tel" id="customer_phone" name="customer_phone" required 
-                   placeholder="+1 234 567 8900"
-                   class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm">
-          </div>
+          <button type="button" id="add-messenger-btn" class="mt-3 text-sm uppercase tracking-wider hover:opacity-70 transition">
+            + Add another contact method
+          </button>
         </div>
 
         <div class="grid md:grid-cols-2 gap-8">
@@ -434,10 +451,120 @@ export const bookingPage = (packageParam?: string) => `
     document.getElementById('package').addEventListener('change', updatePrice);
     document.getElementById('num_people').addEventListener('change', updatePrice);
 
+    // Messenger dropdown logic
+    const messengerPlaceholders = {
+      whatsapp: 'Phone number (e.g. +1 234 567 8900)',
+      instagram: '@username',
+      kakaotalk: 'KakaoTalk ID',
+      wechat: 'WeChat ID',
+      line: 'Line ID',
+      email_only: ''
+    };
+
+    const messengerLabels = {
+      whatsapp: 'WhatsApp', instagram: 'Instagram', kakaotalk: 'KakaoTalk',
+      wechat: 'WeChat', line: 'Line', email_only: 'Email Only'
+    };
+
+    function bindMessengerRow(entry) {
+      const select = entry.querySelector('.messenger-select');
+      const idInput = entry.querySelector('.messenger-id');
+      const removeBtn = entry.querySelector('.messenger-remove');
+
+      select.addEventListener('change', function() {
+        if (this.value === 'email_only') {
+          idInput.disabled = true;
+          idInput.value = '';
+          idInput.placeholder = 'Will use email above';
+          idInput.classList.add('bg-gray-50');
+        } else if (this.value) {
+          idInput.disabled = false;
+          idInput.placeholder = messengerPlaceholders[this.value] || 'Enter ID';
+          idInput.classList.remove('bg-gray-50');
+          idInput.focus();
+        } else {
+          idInput.disabled = true;
+          idInput.value = '';
+          idInput.placeholder = 'Select a messenger first';
+          idInput.classList.add('bg-gray-50');
+        }
+      });
+
+      if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+          entry.remove();
+          updateRemoveButtons();
+        });
+      }
+    }
+
+    function updateRemoveButtons() {
+      const entries = document.querySelectorAll('#messenger-list .messenger-entry');
+      entries.forEach(entry => {
+        const btn = entry.querySelector('.messenger-remove');
+        if (btn) {
+          btn.classList.toggle('hidden', entries.length <= 1);
+        }
+      });
+    }
+
+    // Bind first row
+    bindMessengerRow(document.querySelector('.messenger-entry'));
+
+    document.getElementById('add-messenger-btn').addEventListener('click', function() {
+      const entry = document.createElement('div');
+      entry.className = 'messenger-entry flex items-center gap-3';
+      entry.innerHTML = \`
+        <select class="messenger-select p-4 border border-gray-300 focus:border-black focus:outline-none text-sm w-44 shrink-0">
+          <option value="">Select...</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="instagram">Instagram</option>
+          <option value="kakaotalk">KakaoTalk</option>
+          <option value="wechat">WeChat</option>
+          <option value="line">Line</option>
+          <option value="email_only">Email Only</option>
+        </select>
+        <input type="text" placeholder="Select a messenger first" class="messenger-id flex-1 p-4 border border-gray-300 focus:border-black focus:outline-none text-sm bg-gray-50" disabled>
+        <button type="button" class="messenger-remove w-12 h-12 border border-gray-300 text-gray-400 hover:text-red-500 hover:border-red-300 transition flex items-center justify-center shrink-0">
+          <i class="fas fa-times"></i>
+        </button>
+      \`;
+      document.getElementById('messenger-list').appendChild(entry);
+      bindMessengerRow(entry);
+      updateRemoveButtons();
+    });
+
+    function getMessengerData() {
+      const messengers = [];
+      document.querySelectorAll('#messenger-list .messenger-entry').forEach(entry => {
+        const select = entry.querySelector('.messenger-select');
+        const idInput = entry.querySelector('.messenger-id');
+        if (select.value) {
+          messengers.push({
+            type: select.value,
+            id: idInput ? idInput.value.trim() : ''
+          });
+        }
+      });
+      return messengers;
+    }
+
     // Form submission
     document.getElementById('booking-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
+      const messengers = getMessengerData();
+      if (messengers.length === 0) {
+        alert('Please select at least one contact method.');
+        return;
+      }
+      for (const m of messengers) {
+        if (m.type !== 'email_only' && !m.id) {
+          alert('Please enter your ' + (messengerLabels[m.type] || m.type) + ' ID.');
+          return;
+        }
+      }
+
       const formData = {
         package_type: document.getElementById('package').value,
         num_people: parseInt(document.getElementById('num_people').value),
@@ -445,7 +572,7 @@ export const bookingPage = (packageParam?: string) => `
         booking_time: document.getElementById('booking_time').value,
         customer_name: document.getElementById('customer_name').value,
         customer_email: document.getElementById('customer_email').value,
-        customer_phone: document.getElementById('customer_phone').value,
+        customer_messengers: JSON.stringify(messengers),
         customer_country: document.getElementById('customer_country').value,
         preferred_language: document.getElementById('preferred_language').value,
         additional_notes: document.getElementById('additional_notes').value || ''
@@ -453,7 +580,7 @@ export const bookingPage = (packageParam?: string) => `
 
       try {
         const response = await axios.post('/api/bookings', formData);
-        
+
         if (response.data.success) {
           alert('Booking submitted successfully! We will contact you soon.');
           window.location.href = '/';
@@ -692,8 +819,15 @@ export const adminPage = () => `
             <div class="flex justify-between items-start mb-4">
               <div>
                 <h3 class="text-lg font-medium">\${booking.name}</h3>
-                <p class="text-sm text-gray-500">\${booking.email} | \${booking.phone}</p>
+                <p class="text-sm text-gray-500">\${booking.email}</p>
                 <p class="text-sm text-gray-500">\${booking.country} | \${booking.preferred_language}</p>
+                <p class="text-sm text-gray-500">\${(() => {
+                  try {
+                    const msgs = JSON.parse(booking.phone || '[]');
+                    if (Array.isArray(msgs)) return msgs.map(m => m.type === 'email_only' ? 'Email Only' : m.type + ': ' + m.id).join(', ');
+                  } catch {}
+                  return booking.phone || '';
+                })()}</p>
               </div>
               <span class="px-3 py-1 text-xs uppercase tracking-wider \${booking.status === 'confirmed' ? 'bg-black text-white' : 'bg-gray-200'}">
                 \${booking.status}

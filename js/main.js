@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initDateValidation();
     initContactForm();
     initScrollAnimations();
+    initMessengerSelection();
 });
 
 // Mobile Menu
@@ -98,6 +99,124 @@ function initPackageSelection() {
     });
 }
 
+// Messenger Selection (Dropdown + Add More)
+const messengerPlaceholders = {
+    whatsapp: 'Phone number (e.g. +1 234 567 8900)',
+    instagram: '@username',
+    kakaotalk: 'KakaoTalk ID',
+    wechat: 'WeChat ID',
+    line: 'Line ID',
+    email_only: ''
+};
+
+function initMessengerSelection() {
+    const list = document.getElementById('messenger-list');
+    const addBtn = document.getElementById('add-messenger-btn');
+    if (!list || !addBtn) return;
+
+    // Bind first row
+    bindMessengerRow(list.querySelector('.messenger-entry'));
+
+    addBtn.addEventListener('click', function() {
+        const entry = document.createElement('div');
+        entry.className = 'messenger-entry flex items-center gap-2';
+        entry.innerHTML = `
+            <select class="messenger-select px-3 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white text-sm w-40 shrink-0">
+                <option value="">Select...</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="instagram">Instagram</option>
+                <option value="kakaotalk">KakaoTalk</option>
+                <option value="wechat">WeChat</option>
+                <option value="line">Line</option>
+                <option value="email_only">Email Only</option>
+            </select>
+            <input type="text" placeholder="Select a messenger first" class="messenger-id flex-1 px-3 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all text-sm bg-gray-50" disabled>
+            <button type="button" class="messenger-remove w-10 h-10 rounded-xl border border-border-light text-brand-medium hover:text-red-500 hover:border-red-300 transition-all flex items-center justify-center shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        list.appendChild(entry);
+        bindMessengerRow(entry);
+        updateRemoveButtons();
+    });
+}
+
+function bindMessengerRow(entry) {
+    const select = entry.querySelector('.messenger-select');
+    const idInput = entry.querySelector('.messenger-id');
+    const removeBtn = entry.querySelector('.messenger-remove');
+
+    select.addEventListener('change', function() {
+        if (this.value === 'email_only') {
+            idInput.disabled = true;
+            idInput.value = '';
+            idInput.placeholder = 'Will use email above';
+            idInput.classList.add('bg-gray-50');
+            idInput.classList.remove('bg-white');
+        } else if (this.value) {
+            idInput.disabled = false;
+            idInput.placeholder = messengerPlaceholders[this.value] || 'Enter ID';
+            idInput.classList.remove('bg-gray-50');
+            idInput.classList.add('bg-white');
+            idInput.focus();
+        } else {
+            idInput.disabled = true;
+            idInput.value = '';
+            idInput.placeholder = 'Select a messenger first';
+            idInput.classList.add('bg-gray-50');
+            idInput.classList.remove('bg-white');
+        }
+    });
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            entry.remove();
+            updateRemoveButtons();
+        });
+    }
+}
+
+function updateRemoveButtons() {
+    const entries = document.querySelectorAll('#messenger-list .messenger-entry');
+    entries.forEach((entry, i) => {
+        const btn = entry.querySelector('.messenger-remove');
+        if (btn) {
+            if (entries.length <= 1) {
+                btn.classList.add('hidden');
+            } else {
+                btn.classList.remove('hidden');
+            }
+        }
+    });
+}
+
+function getMessengerData() {
+    const messengers = [];
+    document.querySelectorAll('#messenger-list .messenger-entry').forEach(entry => {
+        const select = entry.querySelector('.messenger-select');
+        const idInput = entry.querySelector('.messenger-id');
+        if (select.value) {
+            messengers.push({
+                type: select.value,
+                id: idInput ? idInput.value.trim() : ''
+            });
+        }
+    });
+    return messengers;
+}
+
+function formatMessengerLabels(type) {
+    const labels = {
+        whatsapp: 'WhatsApp',
+        instagram: 'Instagram',
+        kakaotalk: 'KakaoTalk',
+        wechat: 'WeChat',
+        line: 'Line',
+        email_only: 'Email Only'
+    };
+    return labels[type] || type;
+}
+
 // Date Validation
 function initDateValidation() {
     const dateInput = document.getElementById('booking-date');
@@ -158,8 +277,27 @@ function resetBookingForm() {
     document.getElementById('booking-people').value = '1';
     document.getElementById('booking-name').value = '';
     document.getElementById('booking-email').value = '';
-    document.getElementById('booking-phone').value = '';
     document.getElementById('booking-requests').value = '';
+
+    // Reset messenger selections — keep only one empty row
+    const messengerList = document.getElementById('messenger-list');
+    if (messengerList) {
+        const entries = messengerList.querySelectorAll('.messenger-entry');
+        entries.forEach((entry, i) => {
+            if (i === 0) {
+                entry.querySelector('.messenger-select').value = '';
+                const idInput = entry.querySelector('.messenger-id');
+                idInput.value = '';
+                idInput.disabled = true;
+                idInput.placeholder = 'Select a messenger first';
+                idInput.classList.add('bg-gray-50');
+                idInput.classList.remove('bg-white');
+            } else {
+                entry.remove();
+            }
+        });
+        updateRemoveButtons();
+    }
 }
 
 function goToStep(step) {
@@ -236,8 +374,8 @@ async function submitBooking() {
     // Validate form
     const name = document.getElementById('booking-name').value.trim();
     const email = document.getElementById('booking-email').value.trim();
-    const phone = document.getElementById('booking-phone').value.trim();
-    
+    const messengers = getMessengerData();
+
     if (!name) {
         showToast('Please enter your name', 'error');
         return;
@@ -246,11 +384,18 @@ async function submitBooking() {
         showToast('Please enter a valid email', 'error');
         return;
     }
-    if (!phone) {
-        showToast('Please enter your phone number', 'error');
+    if (messengers.length === 0) {
+        showToast('Please select at least one contact method', 'error');
         return;
     }
-    
+    // Validate that non-email messengers have IDs filled in
+    for (const m of messengers) {
+        if (m.type !== 'email_only' && !m.id) {
+            showToast(`Please enter your ${formatMessengerLabels(m.type)} ID`, 'error');
+            return;
+        }
+    }
+
     // Collect booking data
     const bookingData = {
         package: packageNames[selectedPackage],
@@ -260,7 +405,7 @@ async function submitBooking() {
         people: document.getElementById('booking-people').value,
         name: name,
         email: email,
-        phone: phone,
+        messengers: messengers,
         requests: document.getElementById('booking-requests').value.trim() || 'None',
         timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
     };
@@ -282,6 +427,11 @@ async function submitBooking() {
 }
 
 async function sendToDiscord(data) {
+    const messengerText = data.messengers.map(m => {
+        if (m.type === 'email_only') return '📧 Email Only';
+        return `${formatMessengerLabels(m.type)}: ${m.id}`;
+    }).join('\n');
+
     const message = {
         embeds: [{
             title: '🎤 New K-Pop Experience Booking!',
@@ -293,7 +443,7 @@ async function sendToDiscord(data) {
                 { name: '👥 People', value: `${data.people} person(s)`, inline: true },
                 { name: '👤 Name', value: data.name, inline: true },
                 { name: '📧 Email', value: data.email, inline: true },
-                { name: '📱 Phone', value: data.phone, inline: true },
+                { name: '📱 Contact Methods', value: messengerText, inline: false },
                 { name: '💬 Special Requests', value: data.requests, inline: false }
             ],
             footer: { text: 'Dear Story - K-Pop Experience Studio' },
@@ -310,6 +460,11 @@ async function sendToDiscord(data) {
 
 function showBookingSummary(data) {
     const summaryDiv = document.getElementById('booking-summary');
+    const contactHtml = data.messengers.map(m => {
+        if (m.type === 'email_only') return 'Email Only';
+        return `${formatMessengerLabels(m.type)}: ${m.id}`;
+    }).join('<br>');
+
     summaryDiv.innerHTML = `
         <div class="space-y-2 text-sm">
             <div class="flex justify-between">
@@ -339,6 +494,10 @@ function showBookingSummary(data) {
             <div class="flex justify-between">
                 <span class="text-brand-medium">Email:</span>
                 <span class="font-semibold text-brand-dark">${data.email}</span>
+            </div>
+            <div class="flex justify-between items-start">
+                <span class="text-brand-medium">Contact:</span>
+                <span class="font-semibold text-brand-dark text-right">${contactHtml}</span>
             </div>
         </div>
     `;
