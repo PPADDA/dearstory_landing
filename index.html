@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dear Story - K-Pop Star Experience in Seoul, Korea</title>
+    <meta name="description" content="Create your own K-Pop song in Korea! Professional studio experience in Hongdae, Seoul. Custom song composition, vocal coaching, and studio recording.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-bg': '#F1F0ED',
+                        'brand-primary': '#A53035',
+                        'brand-hover': '#8B2635',
+                        'brand-dark': '#2D1B1E',
+                        'brand-medium': '#5D4E52',
+                        'border-light': '#DDD2CF',
+                        'border-medium': '#C7B5B1',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'noto': ['Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-brand-bg">
+    <!-- Navigation Bar -->
+    <nav class="fixed w-full z-50 bg-[rgba(254,252,251,0.9)] backdrop-blur-md border-b border-border-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-2">
+                    <i class="fas fa-music text-pink-400 text-2xl"></i>
+                    <span class="text-brand-primary font-bold text-xl">Dear Story</span>
+                </a>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-brand-medium hover:text-brand-primary transition-colors">Home</a>
+                    <a href="#how-it-works" class="text-brand-medium hover:text-brand-primary transition-colors">How It Works</a>
+                    <a href="#pricing" class="text-brand-medium hover:text-brand-primary transition-colors">Book Experience</a>
+                    <a href="#contact" class="text-brand-medium hover:text-brand-primary transition-colors">Contact</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-brand-primary text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="fixed inset-0 bg-brand-bg z-50 hidden flex-col items-center justify-center">
+            <button id="mobile-menu-close" class="absolute top-5 right-5 text-brand-primary text-3xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="flex flex-col items-center space-y-8 text-2xl">
+                <a href="#home" class="text-brand-dark hover:text-brand-primary transition-colors mobile-nav-link">Home</a>
+                <a href="#how-it-works" class="text-brand-dark hover:text-brand-primary transition-colors mobile-nav-link">How It Works</a>
+                <a href="#pricing" class="text-brand-dark hover:text-brand-primary transition-colors mobile-nav-link">Book Experience</a>
+                <a href="#contact" class="text-brand-dark hover:text-brand-primary transition-colors mobile-nav-link">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden pt-16">
+        <!-- Floating Music Notes -->
+        <div class="absolute inset-0 pointer-events-none">
+            <span class="music-note absolute text-brand-primary opacity-40 text-4xl" style="top: 20%; left: 10%;">♪</span>
+            <span class="music-note absolute text-brand-primary opacity-40 text-3xl" style="top: 30%; right: 15%; animation-delay: 1s;">♫</span>
+            <span class="music-note absolute text-brand-primary opacity-40 text-5xl" style="top: 60%; left: 20%; animation-delay: 2s;">♪</span>
+            <span class="music-note absolute text-brand-primary opacity-40 text-4xl" style="top: 70%; right: 25%; animation-delay: 0.5s;">♫</span>
+            <span class="music-note absolute text-brand-primary opacity-40 text-3xl" style="top: 45%; left: 80%; animation-delay: 1.5s;">♪</span>
+            <span class="music-note absolute text-brand-primary opacity-40 text-4xl" style="top: 85%; left: 50%; animation-delay: 2.5s;">♫</span>
+        </div>
+        
+        <div class="text-center px-4 max-w-4xl mx-auto relative z-10">
+            <h1 class="text-brand-primary text-5xl md:text-7xl font-extrabold mb-4 fade-in">K-Pop Star Experience</h1>
+            <h2 class="text-brand-dark text-2xl md:text-4xl font-bold mb-6 fade-in" style="animation-delay: 0.2s;">Create Your Own K-Pop Song in Korea! 🎤</h2>
+            <p class="text-brand-medium text-lg md:text-xl mb-10 max-w-2xl mx-auto fade-in" style="animation-delay: 0.4s;">
+                🇰🇷 Professional studio experience where you compose, record, and take home your personalized K-Pop song - just like a real K-Pop star!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in" style="animation-delay: 0.6s;">
+                <a href="#pricing" class="bg-brand-primary hover:bg-brand-hover text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-lg">
+                    Book Experience
+                </a>
+                <a href="#how-it-works" class="border-2 border-border-medium text-brand-dark hover:border-brand-primary hover:text-brand-primary px-8 py-4 rounded-full font-semibold text-lg transition-all">
+                    How It Works
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-brand-dark mb-4 fade-in">How It Works</h2>
+            <p class="text-brand-medium text-center text-lg mb-16 fade-in">Your journey to becoming a K-Pop star in 3 simple steps</p>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="bg-brand-bg border border-border-light rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all fade-in step-card" style="animation-delay: 0.1s;">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-16 h-16 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-edit text-brand-primary text-2xl"></i>
+                        </div>
+                        <span class="bg-brand-primary text-white text-sm font-semibold px-4 py-1 rounded-full">Step 1</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-brand-dark mb-4">Custom Song Creation</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Custom lyrics & melody composition</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Choose your preferred style & mood</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Multiple language options available</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="bg-brand-bg border border-border-light rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all fade-in step-card" style="animation-delay: 0.3s;">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-16 h-16 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-headphones text-brand-primary text-2xl"></i>
+                        </div>
+                        <span class="bg-brand-primary text-white text-sm font-semibold px-4 py-1 rounded-full">Step 2</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-brand-dark mb-4">Demo Review & Vocal Coaching</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">30min demo review & fine-tuning</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">60min professional vocal coaching</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">K-Pop style techniques & expression</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="bg-brand-bg border border-border-light rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all fade-in step-card" style="animation-delay: 0.5s;">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-16 h-16 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-microphone text-brand-primary text-2xl"></i>
+                        </div>
+                        <span class="bg-brand-primary text-white text-sm font-semibold px-4 py-1 rounded-full">Step 3</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-brand-dark mb-4">Professional Studio Recording</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Professional studio recording session</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">High-quality audio production</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Take home your unique K-Pop song</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Dear Story Section -->
+    <section class="py-20 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-brand-dark mb-16 fade-in">Why Choose Dear Story</h2>
+            
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="bg-brand-bg border-2 border-brand-primary rounded-3xl p-6 text-center hover:shadow-lg transition-all fade-in" style="animation-delay: 0.1s;">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-star text-brand-primary text-4xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-brand-dark mb-2">Professional Quality</h3>
+                    <p class="text-brand-medium text-sm">Industry-standard equipment and experienced producers</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="bg-brand-bg border-2 border-brand-primary rounded-3xl p-6 text-center hover:shadow-lg transition-all fade-in" style="animation-delay: 0.2s;">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-globe text-brand-primary text-4xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-brand-dark mb-2">International Friendly</h3>
+                    <p class="text-brand-medium text-sm">English-speaking staff and multilingual song options</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="bg-brand-bg border-2 border-brand-primary rounded-3xl p-6 text-center hover:shadow-lg transition-all fade-in" style="animation-delay: 0.3s;">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-heart text-brand-primary text-4xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-brand-dark mb-2">Personal Experience</h3>
+                    <p class="text-brand-medium text-sm">One-on-one attention for your unique journey</p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="bg-brand-bg border-2 border-brand-primary rounded-3xl p-6 text-center hover:shadow-lg transition-all fade-in" style="animation-delay: 0.4s;">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-gift text-brand-primary text-4xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-brand-dark mb-2">Perfect Souvenir</h3>
+                    <p class="text-brand-medium text-sm">Take home a unique song that's truly yours</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Dear Story Section -->
+    <section class="py-20 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-start">
+                <!-- Left Column - Text Content -->
+                <div class="fade-in">
+                    <h2 class="text-4xl font-bold text-brand-primary mb-6">About Dear Story</h2>
+                    <p class="text-brand-medium text-lg leading-relaxed mb-8">
+                        Dear Story is a professional music studio that helps non-musicians create and record their own songs like real artists. With the global popularity of K-Pop, we provide international visitors to Korea with the opportunity to experience the K-Pop production process firsthand and dive deeper into Korean culture. We offer customized K-Pop song creation and recording services, allowing our guests to create special memories during their Korean journey and leave with a one-of-a-kind song that belongs only to them.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-map-marker-alt text-brand-primary text-xl mr-4 mt-1"></i>
+                            <div>
+                                <span class="font-semibold text-brand-dark">Location</span>
+                                <p class="text-brand-medium">Professional Studio in Hongdae, Seoul, Korea</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-users text-brand-primary text-xl mr-4 mt-1"></i>
+                            <div>
+                                <span class="font-semibold text-brand-dark">Target</span>
+                                <p class="text-brand-medium">International visitors & K-Pop enthusiasts</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-clock text-brand-primary text-xl mr-4 mt-1"></i>
+                            <div>
+                                <span class="font-semibold text-brand-dark">Duration</span>
+                                <p class="text-brand-medium">Complete experience takes 2-3 hours</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column - Social Box -->
+                <div class="bg-brand-bg border-2 border-brand-primary rounded-3xl p-8 text-center fade-in" style="animation-delay: 0.3s;">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-music text-brand-primary text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-brand-dark mb-2">@dearstory_studio</h3>
+                    <p class="text-brand-medium mb-6">Follow us on Instagram for updates and behind-the-scenes content!</p>
+                    <a href="https://www.instagram.com/dearstory_studio?igsh=eXB2d3E5N3Q5Yzlu" target="_blank" class="inline-flex items-center bg-brand-primary hover:bg-brand-hover text-white px-6 py-3 rounded-full font-semibold transition-all">
+                        <i class="fab fa-instagram mr-2"></i>
+                        Follow Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sample Songs Section -->
+    <section class="py-20 bg-brand-bg">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-brand-dark mb-4 fade-in">Sample Songs</h2>
+            <p class="text-brand-medium text-center text-lg mb-12 fade-in">Hear what amazing songs our guests have created during their K-Pop experience</p>
+            
+            <div class="bg-[rgba(241,240,237,0.9)] border-2 border-brand-primary rounded-3xl p-6 md:p-8 fade-in" style="animation-delay: 0.2s;">
+                <h3 class="text-xl font-bold text-brand-primary text-center mb-6">Customer K-pop Creation - Dear Story Experience</h3>
+                <div class="aspect-video w-full rounded-2xl overflow-hidden shadow-lg">
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src="https://www.youtube.com/embed/aFWpK1nnekU" 
+                        title="Customer K-pop Creation - Dear Story Experience" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen
+                        class="w-full h-full">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Testimonial Section -->
+    <section class="py-20 bg-brand-bg">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-[rgba(241,240,237,0.9)] border-2 border-brand-primary rounded-3xl p-8 md:p-12 text-center fade-in">
+                <i class="fas fa-quote-left text-brand-primary text-4xl mb-6"></i>
+                <p class="text-xl md:text-2xl text-brand-dark leading-relaxed mb-6">
+                    "This was the highlight of my Korea trip! I never thought I could create my own K-Pop song. The staff was amazing and now I have the perfect souvenir!"
+                </p>
+                <div class="flex justify-center mb-4">
+                    <span class="text-yellow-400 text-2xl">★★★★★</span>
+                </div>
+                <p class="text-brand-medium font-semibold">- Sarah M., Tourist from USA</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing & Booking Section -->
+    <section id="pricing" class="py-20 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-brand-primary mb-16 fade-in">Book Your K-Pop Experience</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
+                <!-- Basic Package -->
+                <div class="bg-brand-bg border border-border-light rounded-3xl p-8 shadow-lg opacity-95 hover:shadow-xl transition-all fade-in pricing-card" style="animation-delay: 0.1s;">
+                    <span class="inline-block bg-brand-primary text-white text-sm font-semibold px-4 py-1 rounded-full mb-4">Basic Package</span>
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="w-16 h-16 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-microphone text-brand-primary text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-bold text-brand-dark">₩400,000</span>
+                        <p class="text-brand-medium">(~$300 USD)</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Cover an existing K-pop song</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Professional vocal training</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Korean pronunciation coaching</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Professional studio recording</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">High-quality digital files</span>
+                        </li>
+                    </ul>
+                    <button onclick="openModal('basic')" class="w-full bg-brand-primary hover:bg-brand-hover text-white py-4 rounded-full font-semibold text-lg transition-all">
+                        Book Basic Package
+                    </button>
+                </div>
+                
+                <!-- Signature Package (Emphasized) -->
+                <div class="relative bg-brand-bg border-2 border-brand-primary rounded-3xl p-8 shadow-xl transform md:scale-105 hover:shadow-2xl transition-all fade-in pricing-card" style="animation-delay: 0.2s;">
+                    <!-- Most Popular Badge -->
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-brand-primary text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg">MOST POPULAR</span>
+                    </div>
+                    
+                    <span class="inline-block bg-brand-primary text-white text-sm font-semibold px-4 py-1 rounded-full mb-4 mt-4">Signature Package</span>
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="w-16 h-16 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-music text-brand-primary text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-bold text-brand-dark">₩700,000</span>
+                        <p class="text-brand-medium">(~$530 USD)</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Record your own original song</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Professional vocal training</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Korean pronunciation coaching</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Custom song composition</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium">Professional mixing & mastering</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-brand-primary mr-3 mt-1"></i>
+                            <span class="text-brand-medium text-brand-medium/70">Music distribution available with extra charge</span>
+                        </li>
+                    </ul>
+                    <button onclick="openModal('signature')" class="w-full bg-brand-primary hover:bg-brand-hover text-white py-4 rounded-full font-semibold text-lg transition-all">
+                        Book Signature Package
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ready to Become a K-Pop Star CTA -->
+    <section class="py-20 bg-brand-bg">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-[rgba(241,240,237,0.9)] border-2 border-brand-primary rounded-3xl p-8 md:p-12 text-center fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-brand-dark mb-4">Ready to Become a K-Pop Star?</h2>
+                <p class="text-brand-medium text-lg mb-8">Book your experience now and create unforgettable memories in Korea!</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="openModal('signature')" class="bg-brand-primary hover:bg-brand-hover text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105">
+                        Book Now
+                    </button>
+                    <a href="#contact" class="border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white px-8 py-4 rounded-full font-semibold text-lg transition-all">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-brand-dark mb-16 fade-in">Connect With Us</h2>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Left - Contact Information -->
+                <div class="fade-in">
+                    <div class="space-y-6">
+                        <a href="https://www.instagram.com/dearstory_studio?igsh=eXB2d3E5N3Q5Yzlu" target="_blank" class="flex items-center p-4 bg-brand-bg border border-border-light rounded-2xl hover:border-brand-primary transition-all group">
+                            <div class="w-12 h-12 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center mr-4 group-hover:bg-brand-primary transition-all">
+                                <i class="fab fa-instagram text-brand-primary text-xl group-hover:text-white transition-all"></i>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-brand-dark">Instagram</span>
+                                <p class="text-brand-primary">@dearstory_studio</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://youtube.com/@dearstudio_music?si=hLJ_U7x11cR_jUoD" target="_blank" class="flex items-center p-4 bg-brand-bg border border-border-light rounded-2xl hover:border-brand-primary transition-all group">
+                            <div class="w-12 h-12 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center mr-4 group-hover:bg-brand-primary transition-all">
+                                <i class="fab fa-youtube text-brand-primary text-xl group-hover:text-white transition-all"></i>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-brand-dark">YouTube</span>
+                                <p class="text-brand-primary">@dearstudio_music</p>
+                            </div>
+                        </a>
+                        
+                        <a href="mailto:dearmusicstudio@gmail.com" class="flex items-center p-4 bg-brand-bg border border-border-light rounded-2xl hover:border-brand-primary transition-all group">
+                            <div class="w-12 h-12 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center mr-4 group-hover:bg-brand-primary transition-all">
+                                <i class="fas fa-envelope text-brand-primary text-xl group-hover:text-white transition-all"></i>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-brand-dark">Email</span>
+                                <p class="text-brand-primary">dearmusicstudio@gmail.com</p>
+                            </div>
+                        </a>
+                        
+                        <a href="tel:010-2281-3775" class="flex items-center p-4 bg-brand-bg border border-border-light rounded-2xl hover:border-brand-primary transition-all group">
+                            <div class="w-12 h-12 bg-brand-bg border-2 border-brand-primary rounded-full flex items-center justify-center mr-4 group-hover:bg-brand-primary transition-all">
+                                <i class="fas fa-phone text-brand-primary text-xl group-hover:text-white transition-all"></i>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-brand-dark">Phone</span>
+                                <p class="text-brand-primary">010-2281-3775</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Social Media Icons -->
+                    <div class="flex gap-4 mt-8">
+                        <a href="https://www.instagram.com/dearstory_studio?igsh=eXB2d3E5N3Q5Yzlu" target="_blank" class="w-12 h-12 bg-brand-primary hover:bg-brand-hover text-white rounded-full flex items-center justify-center transition-all">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="https://youtube.com/@dearstudio_music?si=hLJ_U7x11cR_jUoD" target="_blank" class="w-12 h-12 bg-brand-primary hover:bg-brand-hover text-white rounded-full flex items-center justify-center transition-all">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                        <a href="mailto:dearmusicstudio@gmail.com" class="w-12 h-12 bg-brand-primary hover:bg-brand-hover text-white rounded-full flex items-center justify-center transition-all">
+                            <i class="fas fa-envelope text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Right - Contact Form -->
+                <div class="bg-[rgba(241,240,237,0.9)] border-2 border-brand-primary rounded-3xl p-8 fade-in" style="animation-delay: 0.2s;">
+                    <h3 class="text-2xl font-bold text-brand-dark mb-6">Send us a message</h3>
+                    <form id="contact-form" class="space-y-4">
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Name</label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Email</label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Message</label>
+                            <textarea name="message" rows="4" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all resize-none bg-white"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-brand-primary hover:bg-brand-hover text-white py-4 rounded-full font-semibold text-lg transition-all">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-brand-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <i class="fas fa-music text-pink-400 text-2xl"></i>
+                    <span class="font-bold text-xl">Dear Story</span>
+                </div>
+                <p class="text-gray-400 text-sm">© 2024 Dear Story. All rights reserved. | Hongdae, Seoul, Korea</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Reservation Modal -->
+    <div id="reservation-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="bg-brand-bg rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <!-- Modal Header -->
+            <div class="bg-brand-primary text-white p-6 rounded-t-3xl">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-2xl font-bold">Book Your K-Pop Experience</h3>
+                        <p class="text-white/80 mt-1">Choose your package and preferred date & time</p>
+                    </div>
+                    <button onclick="closeModal()" class="text-white/80 hover:text-white text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Progress Steps -->
+                <div class="flex justify-center mt-6 space-x-4">
+                    <div class="step-indicator active" data-step="1">
+                        <span class="w-8 h-8 rounded-full bg-white text-brand-primary font-bold flex items-center justify-center">1</span>
+                        <span class="text-xs mt-1">Package</span>
+                    </div>
+                    <div class="w-8 h-0.5 bg-white/30 self-center"></div>
+                    <div class="step-indicator" data-step="2">
+                        <span class="w-8 h-8 rounded-full bg-white/30 text-white font-bold flex items-center justify-center">2</span>
+                        <span class="text-xs mt-1">Schedule</span>
+                    </div>
+                    <div class="w-8 h-0.5 bg-white/30 self-center"></div>
+                    <div class="step-indicator" data-step="3">
+                        <span class="w-8 h-8 rounded-full bg-white/30 text-white font-bold flex items-center justify-center">3</span>
+                        <span class="text-xs mt-1">Details</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6">
+                <!-- Step 1: Package Selection -->
+                <div id="step-1" class="step-content">
+                    <h4 class="text-xl font-bold text-brand-dark mb-6">Select Your Package</h4>
+                    <div class="space-y-4">
+                        <label class="block p-4 border-2 border-border-light rounded-2xl cursor-pointer hover:border-brand-primary transition-all package-option" data-package="basic">
+                            <div class="flex items-center">
+                                <input type="radio" name="package" value="basic" class="sr-only">
+                                <div class="w-6 h-6 rounded-full border-2 border-brand-primary mr-4 flex items-center justify-center radio-indicator">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary hidden"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="font-semibold text-brand-dark">Basic Package</span>
+                                    <p class="text-brand-medium text-sm">Cover an existing K-pop song</p>
+                                </div>
+                                <span class="font-bold text-brand-primary">₩400,000</span>
+                            </div>
+                        </label>
+                        
+                        <label class="block p-4 border-2 border-border-light rounded-2xl cursor-pointer hover:border-brand-primary transition-all package-option" data-package="signature">
+                            <div class="flex items-center">
+                                <input type="radio" name="package" value="signature" class="sr-only">
+                                <div class="w-6 h-6 rounded-full border-2 border-brand-primary mr-4 flex items-center justify-center radio-indicator">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary hidden"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="font-semibold text-brand-dark">Signature Package</span>
+                                    <p class="text-brand-medium text-sm">Record your own original song</p>
+                                </div>
+                                <span class="font-bold text-brand-primary">₩700,000</span>
+                            </div>
+                        </label>
+                    </div>
+                    <button onclick="nextStep()" class="w-full mt-6 bg-brand-primary hover:bg-brand-hover text-white py-4 rounded-full font-semibold transition-all">
+                        Continue
+                    </button>
+                </div>
+                
+                <!-- Step 2: Date & Time Selection -->
+                <div id="step-2" class="step-content hidden">
+                    <h4 class="text-xl font-bold text-brand-dark mb-6">Select Date & Time</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Preferred Date</label>
+                            <input type="date" id="booking-date" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Preferred Time</label>
+                            <select id="booking-time" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                                <option value="">Select time</option>
+                                <option value="09:00">9:00 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:00">5:00 PM</option>
+                                <option value="18:00">6:00 PM</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Number of People</label>
+                            <select id="booking-people" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                                <option value="1">1 person</option>
+                                <option value="2">2 people</option>
+                                <option value="3">3 people</option>
+                                <option value="4">4 people</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 mt-6">
+                        <button onclick="prevStep()" class="flex-1 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white py-4 rounded-full font-semibold transition-all">
+                            Back
+                        </button>
+                        <button onclick="nextStep()" class="flex-1 bg-brand-primary hover:bg-brand-hover text-white py-4 rounded-full font-semibold transition-all">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Contact Information -->
+                <div id="step-3" class="step-content hidden">
+                    <h4 class="text-xl font-bold text-brand-dark mb-6">Your Information</h4>
+                    <form id="booking-form" class="space-y-4">
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Name</label>
+                            <input type="text" id="booking-name" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Email</label>
+                            <input type="email" id="booking-email" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Phone Number</label>
+                            <input type="tel" id="booking-phone" required class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-brand-dark font-medium mb-2">Special Requests (Optional)</label>
+                            <textarea id="booking-requests" rows="3" class="w-full px-4 py-3 rounded-xl border border-border-light focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all resize-none bg-white" placeholder="Any special requests or preferences..."></textarea>
+                        </div>
+                    </form>
+                    <div class="flex gap-4 mt-6">
+                        <button onclick="prevStep()" class="flex-1 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white py-4 rounded-full font-semibold transition-all">
+                            Back
+                        </button>
+                        <button onclick="submitBooking()" class="flex-1 bg-brand-primary hover:bg-brand-hover text-white py-4 rounded-full font-semibold transition-all">
+                            Complete Booking
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Success Screen -->
+                <div id="step-success" class="step-content hidden text-center py-8">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-green-500 text-4xl"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold text-brand-dark mb-4">Booking Confirmed!</h4>
+                    <p class="text-brand-medium mb-6">Thank you for booking with Dear Story. We'll contact you shortly to confirm your reservation.</p>
+                    
+                    <div id="booking-summary" class="bg-brand-bg border border-border-light rounded-2xl p-4 text-left mb-6">
+                        <!-- Booking summary will be inserted here -->
+                    </div>
+                    
+                    <button onclick="closeModal()" class="bg-brand-primary hover:bg-brand-hover text-white px-8 py-4 rounded-full font-semibold transition-all">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</body>
+</html>
+

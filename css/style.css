@@ -1,0 +1,391 @@
+/* Dear Story - Custom Styles */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Fade-in animations */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease forwards;
+}
+
+/* Floating music notes animation */
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+    }
+    25% { 
+        transform: translateY(-15px) rotate(5deg); 
+    }
+    50% { 
+        transform: translateY(-20px) rotate(0deg); 
+    }
+    75% { 
+        transform: translateY(-15px) rotate(-5deg); 
+    }
+}
+
+.music-note {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Pricing card hover effects */
+.pricing-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 40px rgba(165, 48, 53, 0.15);
+}
+
+/* Step card hover effects */
+.step-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(165, 48, 53, 0.1);
+}
+
+/* Modal step indicators */
+.step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.step-indicator.active span:first-child {
+    background-color: white;
+    color: #A53035;
+}
+
+.step-indicator.completed span:first-child {
+    background-color: #10B981;
+    color: white;
+}
+
+/* Package option styling */
+.package-option {
+    transition: all 0.3s ease;
+}
+
+.package-option.selected {
+    border-color: #A53035 !important;
+    background-color: rgba(165, 48, 53, 0.05);
+}
+
+.package-option.selected .radio-indicator div {
+    display: block !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F1F0ED;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #C7B5B1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #A53035;
+}
+
+/* Button press effect */
+button:active {
+    transform: scale(0.98);
+}
+
+/* Mobile menu animation */
+#mobile-menu {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#mobile-menu.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Focus styles for accessibility */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(165, 48, 53, 0.2);
+}
+
+/* Link hover underline animation */
+nav a {
+    position: relative;
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #A53035;
+    transition: width 0.3s ease;
+}
+
+nav a:hover::after {
+    width: 100%;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background-color: #10B981;
+}
+
+.toast.error {
+    background-color: #EF4444;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .fade-in {
+        animation-duration: 0.4s;
+    }
+    
+    .music-note {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Ensure touch targets are at least 44px */
+    button, 
+    a,
+    input[type="radio"],
+    input[type="checkbox"] {
+        min-height: 44px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .music-note,
+    nav,
+    button,
+    #reservation-modal {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .border-border-light {
+        border-color: #A53035 !important;
+    }
+    
+    .text-brand-medium {
+        color: #2D1B1E !important;
+    }
+}
+
+/* Dark mode support (optional future enhancement) */
+@media (prefers-color-scheme: dark) {
+    /* Currently maintaining light theme only as per brand guidelines */
+}
+
+/* Form validation styles */
+input:invalid:not(:placeholder-shown),
+select:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown) {
+    border-color: #EF4444;
+}
+
+input:valid:not(:placeholder-shown),
+select:valid:not(:placeholder-shown),
+textarea:valid:not(:placeholder-shown) {
+    border-color: #10B981;
+}
+
+/* YouTube video responsive container */
+.aspect-video {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.aspect-video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Hero section gradient overlay */
+.hero-gradient {
+    background: linear-gradient(135deg, rgba(241, 240, 237, 0.95) 0%, rgba(241, 240, 237, 0.8) 100%);
+}
+
+/* Card shadow hover effect */
+.card-hover {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card-hover:hover {
+    box-shadow: 0 25px 50px -12px rgba(165, 48, 53, 0.15);
+    transform: translateY(-5px);
+}
+
+/* Gradient text effect */
+.gradient-text {
+    background: linear-gradient(135deg, #A53035 0%, #8B2635 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ripple effect for buttons */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.ripple:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Stagger animation for list items */
+.stagger-item {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.stagger-item.visible {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.1s; }
+.stagger-item:nth-child(2) { animation-delay: 0.2s; }
+.stagger-item:nth-child(3) { animation-delay: 0.3s; }
+.stagger-item:nth-child(4) { animation-delay: 0.4s; }
+.stagger-item:nth-child(5) { animation-delay: 0.5s; }
+.stagger-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* Border pulse effect */
+@keyframes borderPulse {
+    0%, 100% {
+        border-color: #A53035;
+    }
+    50% {
+        border-color: #DDD2CF;
+    }
+}
+
+.border-pulse {
+    animation: borderPulse 2s ease-in-out infinite;
+}
+
+/* Image placeholder skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #DDD2CF 25%, #F1F0ED 50%, #DDD2CF 75%);
+    background-size: 200% 100%;
+    animation: skeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
