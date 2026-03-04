@@ -302,13 +302,9 @@ const layout = (title: string, content: string) => `
   <footer class="bg-black text-white py-16">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
       <div class="grid md:grid-cols-4 gap-12 mb-12">
-        <div>
-          <!-- White Wave Logo SVG -->
-          <svg class="h-16 w-auto mb-4 opacity-80" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M30 50 Q50 30, 70 50 T110 50 T150 50 T190 50" stroke="white" stroke-width="1.5" fill="none" opacity="0.6"/>
-            <path d="M30 40 Q50 20, 70 40 T110 40 T150 40 T190 40" stroke="white" stroke-width="1.5" fill="none" opacity="0.8"/>
-            <path d="M30 30 Q50 10, 70 30 T110 30 T150 30 T190 30" stroke="white" stroke-width="1.5" fill="none"/>
-          </svg>
+        <div class="flex flex-col items-center text-center md:items-start md:text-left">
+          <!-- White Logo Image -->
+          <img src="/logo-white.png" alt="Dear Story Logo" class="h-32 md:h-36 w-auto mb-4 opacity-90 transition hover:opacity-100" />
           <p class="text-gray-400 text-sm leading-relaxed italic">Your Letter, Our Melody</p>
         </div>
         <div>
@@ -371,29 +367,59 @@ app.get('/api/bookings', async (c) => {
 app.post('/api/bookings', async (c) => {
   const { env } = c
   const data = await c.req.json()
-  
+
   // Calculate price based on package and number of people
-  let basePrice = 0
-  let additionalCost = 0
-  
-  if (data.package_type === 'basic') {
-    basePrice = 400000
-    additionalCost = 100000
-  } else if (data.package_type === 'signature') {
-    basePrice = 600000
-    additionalCost = 150000
-  } else if (data.package_type === 'premium') {
-    basePrice = 700000
-    additionalCost = 150000
+  const pricesKRW: Record<string, { base: number, additional: number }> = {
+    basic: { base: 400000, additional: 100000 },
+    signature: { base: 600000, additional: 150000 },
+    premium: { base: 700000, additional: 150000 }
   }
-  
-  const totalPrice = basePrice + (additionalCost * (data.num_people - 1))
-  
+  const pricesUSD: Record<string, { base: number, additional: number }> = {
+    basic: { base: 310, additional: 80 },
+    signature: { base: 470, additional: 120 },
+    premium: { base: 540, additional: 120 }
+  }
+
+  const krw = pricesKRW[data.package_type]
+  const usd = pricesUSD[data.package_type]
+  if (!krw || !usd) {
+    return c.json({ error: 'Invalid package type' }, 400)
+  }
+
+  const totalPrice = krw.base + (krw.additional * (data.num_people - 1))
+  const totalPriceUSD = usd.base + (usd.additional * (data.num_people - 1))
+
+  // Check if booking date is at least 3 days from now
+  const now = new Date()
+  const minDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3)
+  const bookingDate = new Date(data.booking_date + 'T00:00:00')
+  if (bookingDate < minDate) {
+    return c.json({ error: 'Bookings must be made at least 3 days in advance' }, 400)
+  }
+
+  // Check if time slot is blocked
+  const blockedCheck = await env.DB.prepare(`
+    SELECT id FROM blocked_times WHERE blocked_date = ? AND blocked_time = ?
+  `).bind(data.booking_date, data.booking_time).first()
+
+  if (blockedCheck) {
+    return c.json({ error: 'This time slot is not available' }, 400)
+  }
+
+  // Check if time slot already has a booking
+  const bookingCheck = await env.DB.prepare(`
+    SELECT id FROM bookings WHERE booking_date = ? AND booking_time = ? AND status != 'cancelled'
+  `).bind(data.booking_date, data.booking_time).first()
+
+  if (bookingCheck) {
+    return c.json({ error: 'This time slot is already booked' }, 400)
+  }
+
   const messengerData = data.customer_messengers || '[]'
 
   const result = await env.DB.prepare(`
-    INSERT INTO bookings (name, email, phone, country, preferred_language, package_type, num_people, booking_date, booking_time, total_price, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO bookings (name, email, phone, country, preferred_language, package_type, num_people, booking_date, booking_time, total_price, price_usd, payment_status, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
   `).bind(
     data.customer_name,
     data.customer_email,
@@ -405,88 +431,77 @@ app.post('/api/bookings', async (c) => {
     data.booking_date,
     data.booking_time,
     totalPrice,
+    totalPriceUSD,
     data.additional_notes || null
   ).run()
-  
-  // Send Discord notification
+
+  return c.json({ success: true, id: result.meta.last_row_id, totalPrice, totalPriceUSD })
+})
+
+// Complete payment for a booking
+app.patch('/api/bookings/:id/payment', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const { payment_id } = await c.req.json()
+
+  if (!payment_id) {
+    return c.json({ error: 'Payment ID is required' }, 400)
+  }
+
+  // Get booking details
+  const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
+  if (!booking) {
+    return c.json({ error: 'Booking not found' }, 404)
+  }
+  if (booking.payment_status === 'paid') {
+    return c.json({ error: 'Booking is already paid' }, 400)
+  }
+
+  // Update payment status
+  await env.DB.prepare(`
+    UPDATE bookings SET payment_status = 'paid', payment_id = ?, status = 'confirmed' WHERE id = ?
+  `).bind(payment_id, id).run()
+
+  // Send Discord notification after successful payment
   try {
     const discordWebhook = 'https://discord.com/api/webhooks/1467482422902784063/iEh1AY8yoIvrv_Vy0Z51yQ8O34s4UboBYOCG6lYI1UI0Gyn0WAaNvt8lQX5NZW0Bapu4'
-    
-    const packageEmoji = {
-      'basic': '🎤',
-      'signature': '🎵',
-      'premium': '⭐'
-    }
-    
+
+    const packageEmoji: Record<string, string> = { basic: '🎤', signature: '🎵', premium: '⭐' }
+
     const messengerLabels: Record<string, string> = {
       whatsapp: 'WhatsApp', instagram: 'Instagram', kakaotalk: 'KakaoTalk',
       wechat: 'WeChat', line: 'Line', email_only: 'Email Only'
     }
-    let parsedMessengers: Array<{type: string, id: string}> = []
-    try { parsedMessengers = JSON.parse(messengerData) } catch {}
-    const messengerText = parsedMessengers.map((m: {type: string, id: string}) =>
+    let parsedMessengers: Array<{ type: string, id: string }> = []
+    try { parsedMessengers = JSON.parse(booking.phone || '[]') } catch { }
+    const messengerText = parsedMessengers.map((m: { type: string, id: string }) =>
       m.type === 'email_only' ? '📧 Email Only' : `${messengerLabels[m.type] || m.type}: ${m.id}`
     ).join('\n') || 'None specified'
 
     const embed = {
-      title: `${packageEmoji[data.package_type] || '📝'} New Booking Received!`,
-      color: 0x000000, // Black color
+      title: `${packageEmoji[booking.package_type] || '📝'} New Paid Booking!`,
+      color: 0x00AA00,
       fields: [
-        {
-          name: '👤 Customer',
-          value: `**${data.customer_name}**\n${data.customer_email}`,
-          inline: true
-        },
-        {
-          name: '🌍 Location',
-          value: `${data.customer_country}\nLanguage: ${data.preferred_language}`,
-          inline: true
-        },
-        {
-          name: '📦 Package',
-          value: `**${data.package_type.toUpperCase()}**\nPeople: ${data.num_people}`,
-          inline: true
-        },
-        {
-          name: '📅 Date & Time',
-          value: `${data.booking_date}\n${data.booking_time}`,
-          inline: true
-        },
-        {
-          name: '💰 Total Price',
-          value: `₩${totalPrice.toLocaleString()}`,
-          inline: true
-        },
-        {
-          name: '🆔 Booking ID',
-          value: `#${result.meta.last_row_id}`,
-          inline: true
-        },
-        {
-          name: '📱 Contact Methods',
-          value: messengerText,
-          inline: false
-        }
+        { name: '👤 Customer', value: `**${booking.name}**\n${booking.email}`, inline: true },
+        { name: '🌍 Location', value: `${booking.country}\nLanguage: ${booking.preferred_language}`, inline: true },
+        { name: '📦 Package', value: `**${booking.package_type.toUpperCase()}**\nPeople: ${booking.num_people}`, inline: true },
+        { name: '📅 Date & Time', value: `${booking.booking_date}\n${booking.booking_time}`, inline: true },
+        { name: '💰 Price', value: `$${booking.price_usd} USD\n(₩${Number(booking.total_price).toLocaleString()})`, inline: true },
+        { name: '🆔 Booking ID', value: `#${booking.id}`, inline: true },
+        { name: '💳 PayPal ID', value: payment_id, inline: false },
+        { name: '📱 Contact Methods', value: messengerText, inline: false }
       ],
       timestamp: new Date().toISOString(),
-      footer: {
-        text: 'Dear Story Booking System'
-      }
+      footer: { text: 'Dear Story Booking System' }
     }
-    
-    if (data.additional_notes) {
-      embed.fields.push({
-        name: '📝 Additional Notes',
-        value: data.additional_notes,
-        inline: false
-      })
+
+    if (booking.notes) {
+      embed.fields.push({ name: '📝 Additional Notes', value: booking.notes, inline: false })
     }
-    
+
     await fetch(discordWebhook, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: 'Dear Story Bookings',
         avatar_url: 'https://3000-i18qtppwaskwsh5k8uc7i-18e660f9.sandbox.novita.ai/logo.png',
@@ -495,10 +510,35 @@ app.post('/api/bookings', async (c) => {
     })
   } catch (error) {
     console.error('Discord notification error:', error)
-    // Don't fail the booking if Discord notification fails
   }
-  
-  return c.json({ success: true, id: result.meta.last_row_id, totalPrice })
+
+  return c.json({ success: true })
+})
+
+// Get booking details for payment page
+app.get('/api/bookings/:id', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first()
+  if (!booking) {
+    return c.json({ error: 'Booking not found' }, 404)
+  }
+  return c.json(booking)
+})
+
+// Update booking progress status
+app.patch('/api/bookings/:id/status', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const { progress_status } = await c.req.json()
+
+  const validStatuses = ['예약확인중', '체험전', '체험완료', '후보정파일전송']
+  if (!validStatuses.includes(progress_status)) {
+    return c.json({ success: false, error: 'Invalid progress status' }, 400)
+  }
+
+  await env.DB.prepare(`UPDATE bookings SET progress_status = ? WHERE id = ?`).bind(progress_status, id).run()
+  return c.json({ success: true })
 })
 
 // Get gallery items
@@ -546,49 +586,78 @@ app.post('/api/gallery', async (c) => {
 app.delete('/api/gallery/:id', async (c) => {
   const { env } = c
   const id = c.req.param('id')
-  
+
   await env.DB.prepare(`DELETE FROM gallery_items WHERE id = ?`).bind(id).run()
   return c.json({ success: true })
 })
 
-// Get reviews
-app.get('/api/reviews', async (c) => {
-  const { env } = c
-  const result = await env.DB.prepare(`
-    SELECT * FROM reviews ORDER BY is_featured DESC, display_order ASC, created_at DESC
+// ========== BLOCKED TIMES API ==========
+
+// Get all blocked times
+app.get('/api/blocked-times', async (c) => {
+  const db = c.env.DB
+  const result = await db.prepare(`
+    SELECT * FROM blocked_times ORDER BY blocked_date DESC, blocked_time ASC
   `).all()
   return c.json(result.results)
 })
 
-// Add review (admin)
-app.post('/api/reviews', async (c) => {
-  const { env } = c
-  const data = await c.req.json()
-  
-  const result = await env.DB.prepare(`
-    INSERT INTO reviews (customer_name, country, package_type, rating, review_text, photo_url, display_order, is_featured)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    data.customer_name,
-    data.country,
-    data.package_type,
-    data.rating,
-    data.review_text,
-    data.photo_url || null,
-    data.display_order || 0,
-    data.is_featured || 0
-  ).run()
-  
+// Create blocked time
+app.post('/api/blocked-times', async (c) => {
+  const db = c.env.DB
+  const { date, time, reason } = await c.req.json()
+
+  // Check for duplicate
+  const existing = await db.prepare(`
+    SELECT id FROM blocked_times WHERE blocked_date = ? AND blocked_time = ?
+  `).bind(date, time).first()
+
+  if (existing) {
+    return c.json({ error: 'This time slot is already blocked' }, 400)
+  }
+
+  const result = await db.prepare(`
+    INSERT INTO blocked_times (blocked_date, blocked_time, reason) VALUES (?, ?, ?)
+  `).bind(date, time, reason || null).run()
+
   return c.json({ success: true, id: result.meta.last_row_id })
 })
 
-// Delete review (admin)
-app.delete('/api/reviews/:id', async (c) => {
-  const { env } = c
+// Delete blocked time
+app.delete('/api/blocked-times/:id', async (c) => {
+  const db = c.env.DB
   const id = c.req.param('id')
-  
-  await env.DB.prepare(`DELETE FROM reviews WHERE id = ?`).bind(id).run()
+  await db.prepare(`DELETE FROM blocked_times WHERE id = ?`).bind(id).run()
   return c.json({ success: true })
+})
+
+// Get available times for a specific date
+app.get('/api/available-times', async (c) => {
+  const db = c.env.DB
+  const date = c.req.query('date')
+
+  if (!date) {
+    return c.json({ error: 'date parameter is required' }, 400)
+  }
+
+  const allTimes = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00']
+
+  // Get booked times (non-cancelled)
+  const bookedResult = await db.prepare(`
+    SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
+  `).bind(date).all()
+  const booked = bookedResult.results.map((r: any) => r.booking_time)
+
+  // Get blocked times
+  const blockedResult = await db.prepare(`
+    SELECT blocked_time FROM blocked_times WHERE blocked_date = ?
+  `).bind(date).all()
+  const blocked = blockedResult.results.map((r: any) => r.blocked_time)
+
+  const unavailable = new Set([...booked, ...blocked])
+  const available = allTimes.filter(t => !unavailable.has(t))
+
+  return c.json({ available, booked, blocked })
 })
 
 // ========== FRONTEND ROUTES ==========
@@ -729,12 +798,12 @@ app.get('/', (c) => {
       </div>
     </section>
   `
-  
+
   return c.html(layout('Dear Story - Your Letter, Our Melody', content))
 })
 
 // Import page content
-import { experiencesPage, galleryPage, bookingPage, adminPage, basicDetailPage, signatureDetailPage, premiumDetailPage } from './pages'
+import { experiencesPage, galleryPage, bookingPage, paymentPage, adminPage, basicDetailPage, signatureDetailPage, premiumDetailPage } from './pages'
 
 // Experiences page
 app.get('/experiences', (c) => {
@@ -763,6 +832,12 @@ app.get('/gallery', (c) => {
 app.get('/booking', (c) => {
   const packageParam = c.req.query('package') || 'basic'
   return c.html(layout('Book Now - Dear Story', bookingPage(packageParam)))
+})
+
+// Payment page
+app.get('/payment/:id', (c) => {
+  const id = c.req.param('id')
+  return c.html(layout('Payment - Dear Story', paymentPage(id)))
 })
 
 // Admin page
@@ -823,23 +898,23 @@ app.get('/admin/login', (c) => {
       });
     </script>
   `;
-  
+
   return c.html(layout('Admin Login - Dear Story', content));
 });
 
 // Admin login API
 app.post('/api/admin/login', async (c) => {
   const { password } = await c.req.json();
-  
+
   // Simple password check (in production, use proper authentication)
   const ADMIN_PASSWORD = 'dkdldb0!!!'; // Change this to your secure password
-  
+
   if (password === ADMIN_PASSWORD) {
     // Generate simple token (in production, use JWT or proper session)
     const token = Buffer.from(password + ':' + Date.now()).toString('base64');
     return c.json({ success: true, token });
   }
-  
+
   return c.json({ success: false }, 401);
 });
 
@@ -856,7 +931,7 @@ app.get('/admin', (c) => {
     </script>
     ${adminContent}
   `;
-  
+
   return c.html(layout('Admin Dashboard - Dear Story', content));
 });
 
