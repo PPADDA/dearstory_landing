@@ -1582,15 +1582,15 @@ export const adminPage = () => `
       if (!booking || booking.status === 'cancelled') return;
 
       const paidWarning = booking.payment_status === 'paid'
-        ? '\n\nIMPORTANT: This booking is PAID. This action does NOT refund the payment.'
+        ? '\\n\\nIMPORTANT: This booking is PAID. This action does NOT refund the payment.'
         : '';
 
-      if (!confirm('Cancel Booking #' + booking.id + '?' + paidWarning + '\n\nThe reserved time will become available again.')) return;
+      if (!confirm('Cancel Booking #' + booking.id + '?' + paidWarning + '\\n\\nThe reserved time will become available again.')) return;
 
       try {
         const response = await axios.patch('/api/bookings/' + booking.id + '/cancel');
         if (response.data.paymentStillPaid) {
-          alert('Booking cancelled and time released.\n\nPayment is still marked PAID. Refund must be processed separately.');
+          alert('Booking cancelled and time released.\\n\\nPayment is still marked PAID. Refund must be processed separately.');
         } else {
           alert('Booking cancelled. The time is available again.');
         }
