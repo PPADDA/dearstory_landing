@@ -614,10 +614,20 @@ export const paymentPage = (bookingId: string) => `
           <h3 class="text-lg uppercase tracking-wider mb-2">Choose Payment Method</h3>
           <p class="text-sm text-gray-500 mb-6">Choose the option that matches your card or payment method.</p>
 
-          <button id="toss-pay-button" class="w-full border border-black px-6 py-4 mb-3 hover:bg-black hover:text-white transition text-left">
+          <button id="toss-toggle" class="w-full border border-black px-6 py-4 mb-3 hover:bg-black hover:text-white transition text-left">
             <span class="block font-medium">Korean Payment</span>
             <span class="block text-xs opacity-60 mt-1">Korean cards & local payment methods · KRW</span>
           </button>
+
+          <div id="toss-section" class="hidden mb-6 border border-gray-200 p-4">
+            <div id="toss-payment-methods"></div>
+            <div id="toss-agreement"></div>
+            <button id="toss-pay-button" class="w-full btn-modern py-4 mt-4" disabled>
+              PAY WITH TOSS PAYMENTS
+            </button>
+            <p id="toss-loading-message" class="text-xs text-gray-400 text-center mt-3">Loading Toss Payments...</p>
+            <p class="text-xs text-gray-400 text-center mt-2">Test mode — no real charge will be made.</p>
+          </div>
 
           <button id="paypal-toggle" class="w-full border border-gray-300 px-6 py-4 hover:border-black transition text-left">
             <span class="block font-medium">International Payment</span>
@@ -628,7 +638,6 @@ export const paymentPage = (bookingId: string) => `
             <div id="paypal-button-container"></div>
             <p class="text-xs text-gray-400 text-center mt-4">Secure payment powered by PayPal</p>
           </div>
-          <p class="text-xs text-gray-400 text-center mt-5">Toss Payments is currently connected in test mode.</p>
         </div>
 
         <div class="text-center mt-6"><a href="/booking" class="text-sm text-gray-500 hover:text-black transition">← Cancel and return to booking</a></div>
@@ -660,6 +669,8 @@ export const paymentPage = (bookingId: string) => `
     const tossClientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
     let bookingData = null;
     let paypalRendered = false;
+    let tossWidgets = null;
+    let tossRendered = false;
 
     function showSuccess(detail) {
       document.getElementById('loading-state').classList.add('hidden');
@@ -732,17 +743,66 @@ export const paymentPage = (bookingId: string) => `
       }
     }
 
-    document.getElementById('toss-pay-button').addEventListener('click', async function() {
-      if (!bookingData) return;
+    async function renderTossPayments() {
+      if (tossRendered || !bookingData) return;
+
+      const loadingMessage = document.getElementById('toss-loading-message');
+      const payButton = document.getElementById('toss-pay-button');
+
       try {
         const tossPayments = TossPayments(tossClientKey);
-        const payment = tossPayments.payment({ customerKey: TossPayments.ANONYMOUS });
+        tossWidgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
+
+        await tossWidgets.setAmount({
+          currency: 'KRW',
+          value: Number(bookingData.total_price)
+        });
+
+        await Promise.all([
+          tossWidgets.renderPaymentMethods({
+            selector: '#toss-payment-methods',
+            variantKey: 'DEFAULT'
+          }),
+          tossWidgets.renderAgreement({
+            selector: '#toss-agreement',
+            variantKey: 'AGREEMENT'
+          })
+        ]);
+
+        tossRendered = true;
+        payButton.disabled = false;
+        loadingMessage.classList.add('hidden');
+      } catch (error) {
+        console.error('Toss widget render error:', error);
+        loadingMessage.textContent = error?.message || 'Could not load Toss Payments.';
+        payButton.disabled = true;
+      }
+    }
+
+    document.getElementById('toss-toggle').addEventListener('click', async function() {
+      const section = document.getElementById('toss-section');
+      const opening = section.classList.contains('hidden');
+      section.classList.toggle('hidden');
+
+      if (opening) {
+        document.getElementById('paypal-section').classList.add('hidden');
+        await renderTossPayments();
+      }
+    });
+
+    document.getElementById('toss-pay-button').addEventListener('click', async function() {
+      if (!bookingData || !tossWidgets || !tossRendered) return;
+
+      const button = this;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'OPENING PAYMENT...';
+
+      try {
         const orderId = 'dearstory-' + bookingId + '-' + Date.now();
         const baseUrl = window.location.origin + '/payment/' + bookingId;
 
-        await payment.requestPayment({
-          method: 'CARD',
-          amount: { currency: 'KRW', value: Number(bookingData.total_price) },
+        await tossWidgets.requestPayment({
           orderId: orderId,
           orderName: 'Dear Story ' + bookingData.package_type.toUpperCase() + ' Package',
           customerEmail: bookingData.email,
@@ -752,13 +812,23 @@ export const paymentPage = (bookingId: string) => `
         });
       } catch (error) {
         console.error('Toss payment error:', error);
-        if (error?.code !== 'USER_CANCEL') alert(error?.message || 'Could not open Toss Payments. Please try again.');
+        if (error?.code !== 'USER_CANCEL') {
+          alert(error?.message || 'Could not open Toss Payments. Please try again.');
+        }
+        button.disabled = false;
+        button.textContent = originalText;
       }
     });
 
     document.getElementById('paypal-toggle').addEventListener('click', function() {
       const section = document.getElementById('paypal-section');
+      const opening = section.classList.contains('hidden');
       section.classList.toggle('hidden');
+
+      if (opening) {
+        document.getElementById('toss-section').classList.add('hidden');
+      }
+
       if (!paypalRendered) {
         renderPayPalButton();
         paypalRendered = true;
