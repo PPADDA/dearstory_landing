@@ -404,14 +404,6 @@ app.post('/api/bookings', async (c) => {
     return c.json({ error: 'Invalid booking time' }, 400)
   }
 
-  // Only time slots explicitly opened in Admin can be booked
-  const openSlot = await env.DB.prepare(`
-    SELECT id FROM availability_slots WHERE available_date = ? AND available_time = ?
-  `).bind(data.booking_date, data.booking_time).first()
-
-  if (!openSlot) {
-    return c.json({ error: 'This time slot is not available' }, 400)
-  }
 
   // Every booking / external block occupies a 3-hour window.
   // Reject any requested session whose 3-hour window overlaps an existing one.
@@ -691,6 +683,8 @@ app.delete('/api/gallery/:id', async (c) => {
 
 // ========== AVAILABILITY & BLOCKED TIMES API ==========
 
+// DearStory is open by default every day from 10:00 AM to 9:00 PM.
+// Every DearStory booking and every external/manual block occupies 3 hours.
 const BOOKING_START_TIMES = Array.from({ length: 12 }, (_, i) => `${String(i + 10).padStart(2, '0')}:00`)
 const SESSION_MINUTES = 180
 
@@ -705,40 +699,6 @@ const overlapsThreeHourWindow = (candidate: string, occupied: string) => {
   return candidateStart < occupiedStart + SESSION_MINUTES && candidateStart + SESSION_MINUTES > occupiedStart
 }
 
-// Get availability slots opened by Admin
-app.get('/api/availability-slots', async (c) => {
-  const db = c.env.DB
-  const date = c.req.query('date')
-  const result = date
-    ? await db.prepare(`SELECT * FROM availability_slots WHERE available_date = ? ORDER BY available_time ASC`).bind(date).all()
-    : await db.prepare(`SELECT * FROM availability_slots ORDER BY available_date ASC, available_time ASC`).all()
-  return c.json(result.results)
-})
-
-// Open a start time for customer booking
-app.post('/api/availability-slots', async (c) => {
-  const db = c.env.DB
-  const { date, time } = await c.req.json()
-  if (!date || !BOOKING_START_TIMES.includes(time)) {
-    return c.json({ error: 'Please select a valid date and time (10:00-21:00)' }, 400)
-  }
-
-  const existing = await db.prepare(`
-    SELECT id FROM availability_slots WHERE available_date = ? AND available_time = ?
-  `).bind(date, time).first()
-  if (existing) return c.json({ error: 'This time is already open' }, 400)
-
-  const result = await db.prepare(`
-    INSERT INTO availability_slots (available_date, available_time) VALUES (?, ?)
-  `).bind(date, time).run()
-  return c.json({ success: true, id: result.meta.last_row_id })
-})
-
-app.delete('/api/availability-slots/:id', async (c) => {
-  await c.env.DB.prepare(`DELETE FROM availability_slots WHERE id = ?`).bind(c.req.param('id')).run()
-  return c.json({ success: true })
-})
-
 // Get all manually/external blocked starts
 app.get('/api/blocked-times', async (c) => {
   const db = c.env.DB
@@ -752,26 +712,36 @@ app.get('/api/blocked-times', async (c) => {
 app.post('/api/blocked-times', async (c) => {
   const db = c.env.DB
   const { date, time, reason } = await c.req.json()
+
   if (!date || !BOOKING_START_TIMES.includes(time)) {
     return c.json({ error: 'Please select a valid date and time (10:00-21:00)' }, 400)
   }
 
-  const existing = await db.prepare(`
-    SELECT id FROM blocked_times WHERE blocked_date = ? AND blocked_time = ?
-  `).bind(date, time).first()
-  if (existing) return c.json({ error: 'This start time is already blocked' }, 400)
-
   const bookingRows = await db.prepare(`
     SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
   `).bind(date).all()
-  const conflictsWithBooking = bookingRows.results.some((r: any) => overlapsThreeHourWindow(time, r.booking_time))
-  if (conflictsWithBooking) {
-    return c.json({ error: 'This 3-hour block overlaps an existing DearStory booking' }, 400)
+
+  const blockedRows = await db.prepare(`
+    SELECT blocked_time FROM blocked_times WHERE blocked_date = ?
+  `).bind(date).all()
+
+  const occupiedStarts = [
+    ...bookingRows.results.map((r: any) => r.booking_time),
+    ...blockedRows.results.map((r: any) => r.blocked_time)
+  ]
+
+  const hasConflict = occupiedStarts.some((occupied: string) =>
+    overlapsThreeHourWindow(time, occupied)
+  )
+
+  if (hasConflict) {
+    return c.json({ error: 'This 3-hour block overlaps an existing booking or blocked session' }, 400)
   }
 
   const result = await db.prepare(`
     INSERT INTO blocked_times (blocked_date, blocked_time, reason) VALUES (?, ?, ?)
   `).bind(date, time, reason || 'Manual block').run()
+
   return c.json({ success: true, id: result.meta.last_row_id })
 })
 
@@ -780,16 +750,13 @@ app.delete('/api/blocked-times/:id', async (c) => {
   return c.json({ success: true })
 })
 
-// Public booking availability: only Admin-opened starts, excluding any 3-hour overlap.
+// Public booking availability:
+// all 10:00-21:00 start times are open by default,
+// except starts whose 3-hour session overlaps a DearStory booking or manual/external block.
 app.get('/api/available-times', async (c) => {
   const db = c.env.DB
   const date = c.req.query('date')
   if (!date) return c.json({ error: 'date parameter is required' }, 400)
-
-  const openResult = await db.prepare(`
-    SELECT available_time FROM availability_slots WHERE available_date = ? ORDER BY available_time ASC
-  `).bind(date).all()
-  const opened = openResult.results.map((r: any) => r.available_time).filter((t: string) => BOOKING_START_TIMES.includes(t))
 
   const bookedResult = await db.prepare(`
     SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
@@ -802,12 +769,18 @@ app.get('/api/available-times', async (c) => {
   const blockedStarts = blockedResult.results.map((r: any) => r.blocked_time)
 
   const occupiedStarts = [...bookedStarts, ...blockedStarts]
-  const unavailable = opened.filter((candidate: string) =>
+
+  const unavailable = BOOKING_START_TIMES.filter((candidate: string) =>
     occupiedStarts.some((occupied: string) => overlapsThreeHourWindow(candidate, occupied))
   )
-  const available = opened.filter((t: string) => !unavailable.includes(t))
+  const available = BOOKING_START_TIMES.filter((time: string) => !unavailable.includes(time))
 
-  return c.json({ available, opened, unavailable, booked: bookedStarts, blocked: blockedStarts })
+  return c.json({
+    available,
+    unavailable,
+    booked: bookedStarts,
+    blocked: blockedStarts
+  })
 })
 
 // ========== FRONTEND ROUTES ==========

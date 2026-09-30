@@ -921,30 +921,11 @@ export const adminPage = () => `
       <!-- Calendar / Availability Tab -->
       <div id="content-calendar" class="tab-content hidden">
         <div class="bg-white p-8 border border-gray-200 mb-8">
-          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-            <div>
-              <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Availability</p>
-              <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Open Booking Times</h2>
-              <p class="text-sm text-gray-500 mt-2">Customers can start a session from 10:00 AM to 9:00 PM. Each booking occupies 3 hours.</p>
-            </div>
-          </div>
-          <div class="grid md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label class="block text-sm uppercase tracking-wider mb-2">Date</label>
-              <input type="date" id="availability-date" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-sm uppercase tracking-wider mb-2">Start Time</label>
-              <select id="availability-time" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
-                ${Array.from({length:12}, (_,i) => { const h=i+10; const label=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM'; return `<option value="${String(h).padStart(2,'0')}:00">${label}</option>` }).join('')}
-              </select>
-            </div>
-            <div class="flex items-end">
-              <button onclick="addAvailabilitySlot()" class="w-full px-4 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800">Open Time</button>
-            </div>
-          </div>
-          <button onclick="openWholeDay()" class="mb-6 px-5 py-3 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white">Open All 10:00 AM – 9:00 PM</button>
-          <div id="availability-slots-container" class="space-y-2"></div>
+          <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Default Availability</p>
+          <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Open Every Day · 10:00 AM – 9:00 PM</h2>
+          <p class="text-sm text-gray-500 mt-3">
+            All dates are automatically open for booking. Each reservation occupies 3 hours, and overlapping start times are automatically unavailable.
+          </p>
         </div>
 
         <div class="bg-white p-8 border border-gray-200">
@@ -1327,64 +1308,6 @@ export const adminPage = () => `
       }
     }
 
-    // Availability management
-    document.getElementById('availability-date').min = new Date().toISOString().split('T')[0];
-
-    async function addAvailabilitySlot() {
-      const date = document.getElementById('availability-date').value;
-      const time = document.getElementById('availability-time').value;
-      if (!date) { alert('Please select a date'); return; }
-      try {
-        await axios.post('/api/availability-slots', { date, time });
-        loadAvailabilitySlots();
-      } catch (error) {
-        alert(error.response?.data?.error || 'Error opening time');
-      }
-    }
-
-    async function openWholeDay() {
-      const date = document.getElementById('availability-date').value;
-      if (!date) { alert('Please select a date'); return; }
-      const times = Array.from({ length: 12 }, (_, i) => String(i + 10).padStart(2, '0') + ':00');
-      try {
-        await Promise.all(times.map(time => axios.post('/api/availability-slots', { date, time }).catch(err => {
-          if (err.response?.status !== 400) throw err;
-        })));
-        loadAvailabilitySlots();
-      } catch (error) { alert('Error opening the day'); }
-    }
-
-    async function removeAvailabilitySlot(id) {
-      if (!confirm('Close this booking start time?')) return;
-      try {
-        await axios.delete('/api/availability-slots/' + id);
-        loadAvailabilitySlots();
-      } catch (error) { alert('Error closing time'); }
-    }
-
-    async function loadAvailabilitySlots() {
-      try {
-        const response = await axios.get('/api/availability-slots');
-        const container = document.getElementById('availability-slots-container');
-        const today = new Date().toISOString().split('T')[0];
-        const items = response.data.filter(item => item.available_date >= today);
-        if (items.length === 0) {
-          container.innerHTML = '<p class="text-gray-400 text-sm">No upcoming booking times opened yet</p>';
-          return;
-        }
-        container.innerHTML = items.map(item => \`
-          <div class="flex justify-between items-center border border-gray-200 p-4">
-            <div class="flex items-center gap-6">
-              <span class="text-sm font-medium">\${item.available_date}</span>
-              <span class="text-sm">\${item.available_time}</span>
-              <span class="text-xs uppercase tracking-wider text-green-700">Open</span>
-            </div>
-            <button onclick="removeAvailabilitySlot(\${item.id})" class="px-4 py-2 border border-gray-300 text-xs uppercase tracking-wider hover:bg-gray-50">Close</button>
-          </div>
-        \`).join('');
-      } catch (error) { console.error('Error:', error); }
-    }
-
     // Blocked times management
     document.getElementById('block-date').min = new Date().toISOString().split('T')[0];
 
@@ -1581,7 +1504,6 @@ export const adminPage = () => `
 
     loadBookings();
     loadAdminGallery();
-    loadAvailabilitySlots();
     loadBlockedTimes();
   </script>
 `;
