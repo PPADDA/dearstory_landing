@@ -1065,6 +1065,37 @@ export const adminPage = () => `
           </div>
         </div>
 
+        <!-- Payment Info -->
+        <div class="border border-gray-200 p-6">
+          <h3 class="text-sm uppercase tracking-wider text-gray-500 mb-4">Payment</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Payment Status</p><p id="modal-payment-status" class="text-sm font-medium"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Provider</p><p id="modal-payment-provider" class="text-sm"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Method</p><p id="modal-payment-method" class="text-sm"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Card</p><p id="modal-card" class="text-sm"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Card Type / Installment</p><p id="modal-card-type" class="text-sm"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Approval No.</p><p id="modal-approval-number" class="text-sm"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Paid At</p><p id="modal-paid-at" class="text-sm"></p></div>
+            <div><p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Payment ID</p><p id="modal-payment-id" class="text-xs break-all"></p></div>
+          </div>
+          <a id="modal-receipt-link" href="#" target="_blank" rel="noopener noreferrer"
+             class="hidden inline-block mt-5 px-4 py-2 border border-gray-300 text-xs uppercase tracking-wider hover:bg-gray-50">
+            View Receipt
+          </a>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="border border-red-200 p-6">
+          <h3 class="text-sm uppercase tracking-wider text-red-600 mb-2">Admin Actions</h3>
+          <p id="modal-cancel-help" class="text-xs text-gray-500 mb-4">
+            Cancelling here releases the reserved time. It does not refund a completed payment.
+          </p>
+          <button id="modal-cancel-button" onclick="cancelBookingFromModal()"
+                  class="px-5 py-3 border border-red-500 text-red-600 text-xs uppercase tracking-wider hover:bg-red-600 hover:text-white">
+            Cancel Booking
+          </button>
+        </div>
+
         <!-- Notes -->
         <div id="modal-notes-section" class="border border-gray-200 p-6 hidden">
           <h3 class="text-sm uppercase tracking-wider text-gray-500 mb-4">Notes / Special Requests</h3>
@@ -1213,6 +1244,7 @@ export const adminPage = () => `
               <div><strong>Date:</strong> \${booking.booking_date}</div>
               <div><strong>Time:</strong> \${booking.booking_time}</div>
               <div><strong>Price:</strong> ₩\${booking.total_price.toLocaleString()}</div>
+              <div><strong>Payment:</strong> \${(booking.payment_status || 'pending').toUpperCase()} · \${booking.payment_provider || (booking.payment_id && String(booking.payment_id).startsWith('TOSS:') ? 'Toss Payments' : (booking.payment_status === 'paid' ? 'PayPal' : '-'))}</div>
               <div><strong>Booked:</strong> \${new Date(booking.created_at).toLocaleDateString()}</div>
             </div>
             \${booking.notes ? \`<p class="mt-4 text-sm text-gray-600"><strong>Notes:</strong> \${booking.notes}</p>\` : ''}
@@ -1396,7 +1428,9 @@ export const adminPage = () => `
       statusBadge.textContent = booking.status || 'pending';
       statusBadge.style.cssText = booking.status === 'confirmed'
         ? 'background-color: #1a1a1a; color: white;'
-        : 'background-color: #e5e7eb; color: #374151;';
+        : booking.status === 'cancelled'
+          ? 'background-color: #fee2e2; color: #991b1b;'
+          : 'background-color: #e5e7eb; color: #374151;';
 
       // Progress dropdown
       const progressSelect = document.getElementById('modal-progress-select');
@@ -1452,6 +1486,56 @@ export const adminPage = () => `
       document.getElementById('modal-price').textContent = '₩' + (booking.total_price || 0).toLocaleString();
       document.getElementById('modal-created').textContent = booking.created_at ? new Date(booking.created_at).toLocaleString() : '';
 
+      // Payment info
+      const inferredProvider = booking.payment_provider ||
+        (booking.payment_id && String(booking.payment_id).startsWith('TOSS:') ? 'Toss Payments' :
+          (booking.payment_status === 'paid' ? 'PayPal' : '-'));
+      document.getElementById('modal-payment-status').textContent = (booking.payment_status || 'pending').toUpperCase();
+      document.getElementById('modal-payment-provider').textContent = inferredProvider;
+      document.getElementById('modal-payment-method').textContent = booking.payment_method || inferredProvider || '-';
+
+      const cardParts = [];
+      if (booking.card_issuer) cardParts.push('Issuer ' + booking.card_issuer);
+      if (booking.card_number) cardParts.push(booking.card_number);
+      document.getElementById('modal-card').textContent = cardParts.length ? cardParts.join(' · ') : '-';
+
+      const typeParts = [];
+      if (booking.card_type) typeParts.push(booking.card_type);
+      if (booking.installment_months !== null && booking.installment_months !== undefined) {
+        typeParts.push(Number(booking.installment_months) === 0 ? 'One-time' : booking.installment_months + ' months');
+      }
+      document.getElementById('modal-card-type').textContent = typeParts.length ? typeParts.join(' · ') : '-';
+      document.getElementById('modal-approval-number').textContent = booking.approval_number || '-';
+      document.getElementById('modal-paid-at').textContent = booking.paid_at ? new Date(booking.paid_at).toLocaleString() : '-';
+      document.getElementById('modal-payment-id').textContent = booking.payment_id || '-';
+
+      const receiptLink = document.getElementById('modal-receipt-link');
+      if (booking.receipt_url) {
+        receiptLink.href = booking.receipt_url;
+        receiptLink.classList.remove('hidden');
+      } else {
+        receiptLink.classList.add('hidden');
+        receiptLink.removeAttribute('href');
+      }
+
+      const cancelButton = document.getElementById('modal-cancel-button');
+      const cancelHelp = document.getElementById('modal-cancel-help');
+      if (booking.status === 'cancelled') {
+        cancelButton.disabled = true;
+        cancelButton.textContent = 'Booking Cancelled';
+        cancelButton.classList.add('opacity-40', 'cursor-not-allowed');
+        cancelHelp.textContent = booking.payment_status === 'paid'
+          ? 'This booking is cancelled. Payment is still marked as paid unless you refund it separately.'
+          : 'This booking is cancelled and its time has been released.';
+      } else {
+        cancelButton.disabled = false;
+        cancelButton.textContent = 'Cancel Booking';
+        cancelButton.classList.remove('opacity-40', 'cursor-not-allowed');
+        cancelHelp.textContent = booking.payment_status === 'paid'
+          ? 'This booking is paid. Cancelling here releases the time but does NOT refund the payment.'
+          : 'Cancelling here releases the reserved time.';
+      }
+
       // Notes
       const notesSection = document.getElementById('modal-notes-section');
       if (booking.notes) {
@@ -1488,6 +1572,33 @@ export const adminPage = () => `
         loadBookings();
       } catch (error) {
         alert('Error updating progress status');
+        console.error(error);
+      }
+    }
+
+    async function cancelBookingFromModal() {
+      if (!currentModalBookingId) return;
+      const booking = allBookings.find(b => b.id === currentModalBookingId);
+      if (!booking || booking.status === 'cancelled') return;
+
+      const paidWarning = booking.payment_status === 'paid'
+        ? '\n\nIMPORTANT: This booking is PAID. This action does NOT refund the payment.'
+        : '';
+
+      if (!confirm('Cancel Booking #' + booking.id + '?' + paidWarning + '\n\nThe reserved time will become available again.')) return;
+
+      try {
+        const response = await axios.patch('/api/bookings/' + booking.id + '/cancel');
+        if (response.data.paymentStillPaid) {
+          alert('Booking cancelled and time released.\n\nPayment is still marked PAID. Refund must be processed separately.');
+        } else {
+          alert('Booking cancelled. The time is available again.');
+        }
+        closeBookingModal();
+        await loadBookings();
+        renderCalendar();
+      } catch (error) {
+        alert(error.response?.data?.error || 'Error cancelling booking');
         console.error(error);
       }
     }

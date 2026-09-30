@@ -480,7 +480,9 @@ app.patch('/api/bookings/:id/payment', async (c) => {
 
   // Update payment status
   await env.DB.prepare(`
-    UPDATE bookings SET payment_status = 'paid', payment_id = ?, status = 'confirmed' WHERE id = ?
+    UPDATE bookings
+    SET payment_status = 'paid', payment_id = ?, payment_provider = 'PayPal', payment_method = 'PayPal', status = 'confirmed'
+    WHERE id = ?
   `).bind(payment_id, id).run()
 
   // Send Discord notification after successful payment
@@ -596,11 +598,36 @@ app.post('/api/bookings/:id/toss/confirm', async (c) => {
     return c.json({ error: 'Payment verification failed' }, 400)
   }
 
+  const card = tossResult.card || null
+  const receiptUrl = tossResult.receipt?.url || null
+
   await env.DB.prepare(`
     UPDATE bookings
-    SET payment_status = 'paid', payment_id = ?, status = 'confirmed'
+    SET payment_status = 'paid',
+        payment_id = ?,
+        payment_provider = 'Toss Payments',
+        payment_method = ?,
+        card_number = ?,
+        card_issuer = ?,
+        card_type = ?,
+        installment_months = ?,
+        approval_number = ?,
+        receipt_url = ?,
+        paid_at = ?,
+        status = 'confirmed'
     WHERE id = ? AND payment_status != 'paid'
-  `).bind(`TOSS:${paymentKey}`, id).run()
+  `).bind(
+    `TOSS:${paymentKey}`,
+    tossResult.method || 'Toss Payments',
+    card?.number || null,
+    card?.issuerCode || null,
+    card?.cardType || null,
+    card?.installmentPlanMonths ?? null,
+    card?.approveNo || null,
+    receiptUrl,
+    tossResult.approvedAt || new Date().toISOString(),
+    id
+  ).run()
 
   return c.json({ success: true, paymentKey, orderId })
 })
@@ -614,6 +641,28 @@ app.get('/api/bookings/:id', async (c) => {
     return c.json({ error: 'Booking not found' }, 404)
   }
   return c.json(booking)
+})
+
+// Cancel a booking without refunding the payment.
+// Availability automatically re-opens because cancelled bookings are excluded from conflict checks.
+app.patch('/api/bookings/:id/cancel', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+
+  const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
+  if (!booking) return c.json({ error: 'Booking not found' }, 404)
+  if (booking.status === 'cancelled') return c.json({ success: true, alreadyCancelled: true })
+
+  await env.DB.prepare(`
+    UPDATE bookings
+    SET status = 'cancelled'
+    WHERE id = ?
+  `).bind(id).run()
+
+  return c.json({
+    success: true,
+    paymentStillPaid: booking.payment_status === 'paid'
+  })
 })
 
 // Update booking progress status
