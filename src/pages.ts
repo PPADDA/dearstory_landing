@@ -1251,7 +1251,7 @@ export const adminPage = () => `
               <div><strong>Date:</strong> \${booking.booking_date}</div>
               <div><strong>Time:</strong> \${booking.booking_time}</div>
               <div><strong>Price:</strong> ₩\${booking.total_price.toLocaleString()}</div>
-              <div><strong>Payment:</strong> \${(booking.payment_status || 'pending').toUpperCase()} · \${booking.payment_provider || (booking.payment_id && String(booking.payment_id).startsWith('TOSS:') ? 'Toss Payments' : (booking.payment_status === 'paid' ? 'PayPal' : '-'))}</div>
+              <div><strong>Payment:</strong> \${(booking.payment_status || 'pending').toUpperCase()} · \${booking.payment_method || booking.payment_provider || (booking.payment_id && String(booking.payment_id).startsWith('TOSS:') ? 'Toss Payments' : (booking.payment_status === 'paid' ? 'PayPal' : '-'))}</div>
               <div><strong>Booked:</strong> \${new Date(booking.created_at).toLocaleDateString()}</div>
             </div>
             \${booking.notes ? \`<p class="mt-4 text-sm text-gray-600"><strong>Notes:</strong> \${booking.notes}</p>\` : ''}

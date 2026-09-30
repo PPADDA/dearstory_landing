@@ -374,7 +374,7 @@ async function sendBookingNotification(env: Bindings, booking: any, provider: st
       color: 0x111111,
       fields: [
         { name: 'Booking', value: `#${booking.id}`, inline: true },
-        { name: 'Payment', value: provider, inline: true },
+        { name: 'Payment', value: booking.payment_method || provider, inline: true },
         { name: 'Amount', value: amount, inline: true },
         { name: 'Customer', value: booking.name || '-', inline: true },
         { name: 'Package', value: String(booking.package_type || '-').toUpperCase(), inline: true },
@@ -623,7 +623,9 @@ app.post('/api/bookings/:id/toss/confirm', async (c) => {
     WHERE id = ? AND payment_status != 'paid'
   `).bind(
     `TOSS:${paymentKey}`,
-    tossResult.method || 'Toss Payments',
+    tossResult.easyPay?.provider
+      ? `${tossResult.easyPay.provider} · ${tossResult.method || '간편결제'}`
+      : (tossResult.method || 'Toss Payments'),
     card?.number || null,
     card?.issuerCode || null,
     card?.cardType || null,
