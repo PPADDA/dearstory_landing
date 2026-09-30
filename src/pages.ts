@@ -620,12 +620,10 @@ export const paymentPage = (bookingId: string) => `
           </button>
 
           <div id="toss-section" class="hidden mb-6 border border-gray-200 p-4">
-            <div id="toss-payment-methods"></div>
-            <div id="toss-agreement"></div>
             <button id="toss-pay-button" class="w-full btn-modern py-4 mt-4" disabled>
               PAY WITH TOSS PAYMENTS
             </button>
-            <p id="toss-loading-message" class="text-xs text-gray-400 text-center mt-3">Loading Toss Payments...</p>
+            <p id="toss-loading-message" class="text-xs text-gray-400 text-center mt-3">Preparing Toss Payments...</p>
             <p class="text-xs text-gray-400 text-center mt-2">Test mode — no real charge will be made.</p>
           </div>
 
@@ -666,11 +664,11 @@ export const paymentPage = (bookingId: string) => `
   <script src="https://www.paypal.com/sdk/js?client-id=BAA1pPgZ9MocU387qFjGhDvDSWRcJ8tmMhNUACphk9gx8snOoSaeU9Zbo_s3ANNsuUqg46qNINoHYsvGVg&currency=USD&components=buttons"></script>
   <script>
     const bookingId = '${bookingId}';
-    const tossClientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+    const tossClientKey = 'test_ck_ma60RZblrqj70jRdxXQW8wzYWBn1';
     let bookingData = null;
     let paypalRendered = false;
-    let tossWidgets = null;
-    let tossRendered = false;
+    let tossPayment = null;
+    let tossReady = false;
 
     function showSuccess(detail) {
       document.getElementById('loading-state').classList.add('hidden');
@@ -743,37 +741,18 @@ export const paymentPage = (bookingId: string) => `
       }
     }
 
-    async function renderTossPayments() {
-      if (tossRendered || !bookingData) return;
-
+    async function prepareTossPayment() {
+      if (tossReady || !bookingData) return;
       const loadingMessage = document.getElementById('toss-loading-message');
       const payButton = document.getElementById('toss-pay-button');
-
       try {
         const tossPayments = TossPayments(tossClientKey);
-        tossWidgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
-
-        await tossWidgets.setAmount({
-          currency: 'KRW',
-          value: Number(bookingData.total_price)
-        });
-
-        await Promise.all([
-          tossWidgets.renderPaymentMethods({
-            selector: '#toss-payment-methods',
-            variantKey: 'DEFAULT'
-          }),
-          tossWidgets.renderAgreement({
-            selector: '#toss-agreement',
-            variantKey: 'AGREEMENT'
-          })
-        ]);
-
-        tossRendered = true;
+        tossPayment = tossPayments.payment({ customerKey: TossPayments.ANONYMOUS });
+        tossReady = true;
         payButton.disabled = false;
         loadingMessage.classList.add('hidden');
       } catch (error) {
-        console.error('Toss widget render error:', error);
+        console.error('Toss initialization error:', error);
         loadingMessage.textContent = error?.message || 'Could not load Toss Payments.';
         payButton.disabled = true;
       }
@@ -783,36 +762,35 @@ export const paymentPage = (bookingId: string) => `
       const section = document.getElementById('toss-section');
       const opening = section.classList.contains('hidden');
       section.classList.toggle('hidden');
-
       if (opening) {
         document.getElementById('paypal-section').classList.add('hidden');
-        await renderTossPayments();
+        await prepareTossPayment();
       }
     });
 
     document.getElementById('toss-pay-button').addEventListener('click', async function() {
-      if (!bookingData || !tossWidgets || !tossRendered) return;
-
+      if (!bookingData || !tossPayment || !tossReady) return;
       const button = this;
       const originalText = button.textContent;
       button.disabled = true;
       button.textContent = 'OPENING PAYMENT...';
-
       try {
         const orderId = 'dearstory-' + bookingId + '-' + Date.now();
         const baseUrl = window.location.origin + '/payment/' + bookingId;
-
-        await tossWidgets.requestPayment({
-          orderId: orderId,
+        await tossPayment.requestPayment({
+          method: 'CARD',
+          amount: { currency: 'KRW', value: Number(bookingData.total_price) },
+          orderId,
           orderName: 'Dear Story ' + bookingData.package_type.toUpperCase() + ' Package',
           customerEmail: bookingData.email,
           customerName: bookingData.name,
           successUrl: baseUrl + '?provider=toss',
-          failUrl: baseUrl + '?provider=toss'
+          failUrl: baseUrl + '?provider=toss',
+          card: { useEscrow: false, flowMode: 'DEFAULT', useCardPoint: false, useAppCardOnly: false }
         });
       } catch (error) {
         console.error('Toss payment error:', error);
-        if (error?.code !== 'USER_CANCEL') {
+        if (error?.code !== 'USER_CANCEL' && error?.code !== 'PAY_PROCESS_CANCELED') {
           alert(error?.message || 'Could not open Toss Payments. Please try again.');
         }
         button.disabled = false;
