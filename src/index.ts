@@ -590,14 +590,6 @@ app.post('/api/bookings/:id/toss/confirm', async (c) => {
   })
 
   const tossResult = await tossResponse.json() as any
-
-  // TEMP DEBUG: logs only easy-pay provider metadata, never paymentKey/card data.
-  console.log('TOSS_EASYPAY_DEBUG', {
-    method: tossResult?.method ?? null,
-    easyPayProvider: tossResult?.easyPay?.provider ?? null,
-    easyPayAmount: tossResult?.easyPay?.amount ?? null,
-    easyPayDiscountAmount: tossResult?.easyPay?.discountAmount ?? null
-  })
   if (!tossResponse.ok) {
     console.error('Toss confirm error:', tossResult)
     return c.json({
