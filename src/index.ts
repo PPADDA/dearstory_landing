@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 
 type Bindings = {
   DB: D1Database;
+  TOSS_SECRET_KEY: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -513,6 +514,75 @@ app.patch('/api/bookings/:id/payment', async (c) => {
   }
 
   return c.json({ success: true })
+})
+
+// Confirm Toss Payments payment (server-side)
+app.post('/api/bookings/:id/toss/confirm', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+
+  let body: { paymentKey?: string; orderId?: string; amount?: number }
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid request body' }, 400)
+  }
+
+  const { paymentKey, orderId, amount } = body
+  if (!paymentKey || !orderId || !Number.isFinite(Number(amount))) {
+    return c.json({ error: 'paymentKey, orderId and amount are required' }, 400)
+  }
+
+  const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
+  if (!booking) return c.json({ error: 'Booking not found' }, 404)
+  if (booking.payment_status === 'paid') return c.json({ error: 'Booking is already paid' }, 400)
+
+  const expectedAmount = Number(booking.total_price)
+  if (Number(amount) !== expectedAmount) {
+    return c.json({ error: 'Payment amount does not match booking amount' }, 400)
+  }
+
+  const expectedOrderPrefix = `dearstory-${id}-`
+  if (!orderId.startsWith(expectedOrderPrefix)) {
+    return c.json({ error: 'Invalid order ID' }, 400)
+  }
+
+  if (!env.TOSS_SECRET_KEY) {
+    console.error('TOSS_SECRET_KEY is not configured')
+    return c.json({ error: 'Payment service is not configured' }, 500)
+  }
+
+  const auth = btoa(`${env.TOSS_SECRET_KEY}:`)
+  const tossResponse = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ paymentKey, orderId, amount: expectedAmount })
+  })
+
+  const tossResult = await tossResponse.json() as any
+  if (!tossResponse.ok) {
+    console.error('Toss confirm error:', tossResult)
+    return c.json({
+      error: tossResult?.message || 'Toss payment confirmation failed',
+      code: tossResult?.code || 'TOSS_CONFIRM_FAILED'
+    }, tossResponse.status as any)
+  }
+
+  if (tossResult.status !== 'DONE' || Number(tossResult.totalAmount) !== expectedAmount) {
+    console.error('Unexpected Toss payment result:', tossResult)
+    return c.json({ error: 'Payment verification failed' }, 400)
+  }
+
+  await env.DB.prepare(`
+    UPDATE bookings
+    SET payment_status = 'paid', payment_id = ?, status = 'confirmed'
+    WHERE id = ? AND payment_status != 'paid'
+  `).bind(`TOSS:${paymentKey}`, id).run()
+
+  return c.json({ success: true, paymentKey, orderId })
 })
 
 // Get booking details for payment page

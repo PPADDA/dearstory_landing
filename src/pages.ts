@@ -596,59 +596,50 @@ export const paymentPage = (bookingId: string) => `
       </div>
 
       <div id="payment-content" class="hidden">
-        <!-- Booking Summary -->
         <div class="bg-white border border-gray-200 p-8 mb-8">
           <h3 class="text-lg uppercase tracking-wider mb-6 pb-4 border-b border-gray-200">Booking Summary</h3>
           <div class="space-y-4">
-            <div class="flex justify-between">
-              <span class="text-gray-600">Package</span>
-              <span id="summary-package" class="font-medium uppercase"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Date & Time</span>
-              <span id="summary-datetime" class="font-medium"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Number of People</span>
-              <span id="summary-people" class="font-medium"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Customer</span>
-              <span id="summary-name" class="font-medium"></span>
-            </div>
+            <div class="flex justify-between"><span class="text-gray-600">Package</span><span id="summary-package" class="font-medium uppercase"></span></div>
+            <div class="flex justify-between"><span class="text-gray-600">Date & Time</span><span id="summary-datetime" class="font-medium"></span></div>
+            <div class="flex justify-between"><span class="text-gray-600">Number of People</span><span id="summary-people" class="font-medium"></span></div>
+            <div class="flex justify-between"><span class="text-gray-600">Customer</span><span id="summary-name" class="font-medium"></span></div>
             <div class="border-t border-gray-200 pt-4 mt-4">
-              <div class="flex justify-between text-lg">
-                <span class="font-medium">Total</span>
-                <span id="summary-price" class="font-semibold"></span>
-              </div>
-              <div class="flex justify-end">
-                <span id="summary-price-krw" class="text-sm text-gray-500"></span>
-              </div>
+              <div class="flex justify-between text-lg"><span class="font-medium">Total</span><span id="summary-price" class="font-semibold"></span></div>
+              <div class="flex justify-end"><span id="summary-price-krw" class="text-sm text-gray-500"></span></div>
             </div>
           </div>
         </div>
 
-        <!-- PayPal Button Container -->
-        <div class="bg-white border border-gray-200 p-8">
-          <h3 class="text-lg uppercase tracking-wider mb-6 pb-4 border-b border-gray-200">Pay with PayPal</h3>
-          <div id="paypal-button-container"></div>
-          <p class="text-xs text-gray-400 text-center mt-4">Secure payment powered by PayPal</p>
+        <div class="bg-white border border-gray-200 p-8 mb-6">
+          <h3 class="text-lg uppercase tracking-wider mb-2">Choose Payment Method</h3>
+          <p class="text-sm text-gray-500 mb-6">Choose the option that matches your card or payment method.</p>
+
+          <button id="toss-pay-button" class="w-full border border-black px-6 py-4 mb-3 hover:bg-black hover:text-white transition text-left">
+            <span class="block font-medium">Korean Payment</span>
+            <span class="block text-xs opacity-60 mt-1">Korean cards & local payment methods · KRW</span>
+          </button>
+
+          <button id="paypal-toggle" class="w-full border border-gray-300 px-6 py-4 hover:border-black transition text-left">
+            <span class="block font-medium">International Payment</span>
+            <span class="block text-xs opacity-60 mt-1">International cards & PayPal · USD</span>
+          </button>
+
+          <div id="paypal-section" class="hidden mt-6 pt-6 border-t border-gray-200">
+            <div id="paypal-button-container"></div>
+            <p class="text-xs text-gray-400 text-center mt-4">Secure payment powered by PayPal</p>
+          </div>
+          <p class="text-xs text-gray-400 text-center mt-5">Toss Payments is currently connected in test mode.</p>
         </div>
 
-        <!-- Cancel -->
-        <div class="text-center mt-6">
-          <a href="/booking" class="text-sm text-gray-500 hover:text-black transition">← Cancel and return to booking</a>
-        </div>
+        <div class="text-center mt-6"><a href="/booking" class="text-sm text-gray-500 hover:text-black transition">← Cancel and return to booking</a></div>
       </div>
 
-      <!-- Error State -->
       <div id="error-state" class="hidden text-center py-12">
         <i class="fas fa-exclamation-circle text-3xl text-red-400"></i>
-        <p class="mt-4 text-gray-600">Could not load booking details. Please try again.</p>
+        <p id="error-message" class="mt-4 text-gray-600">Could not load booking details. Please try again.</p>
         <a href="/booking" class="inline-block mt-4 btn-modern px-8 py-3">Back to Booking</a>
       </div>
 
-      <!-- Success State -->
       <div id="success-state" class="hidden text-center py-12">
         <div class="bg-white border border-gray-200 p-12">
           <i class="fas fa-check-circle text-5xl text-green-500 mb-6"></i>
@@ -662,20 +653,67 @@ export const paymentPage = (bookingId: string) => `
     </div>
   </section>
 
-  <script src="https://www.paypal.com/sdk/js?client-id=AVKfSGHhVpOl43Vz5O_wWnjW3qjj2GxGRYfUMVeaTSHlz_mo95WVOUBl1vjvYTR0DRWMok7oTdBdL-cI&currency=USD"></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=BAA1pPgZ9MocU387qFjGhDvDSWRcJ8tmMhNUACphk9gx8snOoSaeU9Zbo_s3ANNsuUqg46qNINoHYsvGVg&currency=USD&components=buttons"></script>
   <script>
     const bookingId = '${bookingId}';
+    const tossClientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
     let bookingData = null;
+    let paypalRendered = false;
+
+    function showSuccess(detail) {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('payment-content').classList.add('hidden');
+      document.getElementById('error-state').classList.add('hidden');
+      document.getElementById('success-state').classList.remove('hidden');
+      document.getElementById('success-booking-id').textContent = 'Booking ID: #' + bookingId + (detail ? ' | ' + detail : '');
+    }
+
+    function showError(message) {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('payment-content').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('error-message').textContent = message || 'There was an error processing your payment.';
+    }
+
+    async function confirmTossPaymentFromRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('provider') !== 'toss') return false;
+
+      if (params.get('code')) {
+        showError(params.get('message') || 'Toss payment was cancelled or failed.');
+        return true;
+      }
+
+      const paymentKey = params.get('paymentKey');
+      const orderId = params.get('orderId');
+      const amount = Number(params.get('amount'));
+      if (!paymentKey || !orderId || !amount) {
+        showError('Invalid Toss payment response. Please try again.');
+        return true;
+      }
+
+      try {
+        const response = await axios.post('/api/bookings/' + bookingId + '/toss/confirm', { paymentKey, orderId, amount });
+        if (!response.data.success) throw new Error('Payment confirmation failed');
+        window.history.replaceState({}, document.title, '/payment/' + bookingId);
+        showSuccess('Toss Payments');
+      } catch (error) {
+        console.error('Toss confirmation error:', error);
+        const message = error?.response?.data?.error || 'Payment confirmation failed. Please contact us with Booking ID #' + bookingId + '.';
+        showError(message);
+      }
+      return true;
+    }
 
     async function loadBooking() {
+      if (await confirmTossPaymentFromRedirect()) return;
       try {
         const response = await axios.get('/api/bookings/' + bookingId);
         bookingData = response.data;
 
         if (bookingData.payment_status === 'paid') {
-          document.getElementById('loading-state').classList.add('hidden');
-          document.getElementById('success-state').classList.remove('hidden');
-          document.getElementById('success-booking-id').textContent = 'Booking ID: #' + bookingId;
+          showSuccess('Already paid');
           return;
         }
 
@@ -688,44 +726,62 @@ export const paymentPage = (bookingId: string) => `
 
         document.getElementById('loading-state').classList.add('hidden');
         document.getElementById('payment-content').classList.remove('hidden');
-
-        renderPayPalButton();
       } catch (error) {
         console.error('Error loading booking:', error);
-        document.getElementById('loading-state').classList.add('hidden');
-        document.getElementById('error-state').classList.remove('hidden');
+        showError('Could not load booking details. Please try again.');
       }
     }
 
+    document.getElementById('toss-pay-button').addEventListener('click', async function() {
+      if (!bookingData) return;
+      try {
+        const tossPayments = TossPayments(tossClientKey);
+        const payment = tossPayments.payment({ customerKey: TossPayments.ANONYMOUS });
+        const orderId = 'dearstory-' + bookingId + '-' + Date.now();
+        const baseUrl = window.location.origin + '/payment/' + bookingId;
+
+        await payment.requestPayment({
+          method: 'CARD',
+          amount: { currency: 'KRW', value: Number(bookingData.total_price) },
+          orderId: orderId,
+          orderName: 'Dear Story ' + bookingData.package_type.toUpperCase() + ' Package',
+          customerEmail: bookingData.email,
+          customerName: bookingData.name,
+          successUrl: baseUrl + '?provider=toss',
+          failUrl: baseUrl + '?provider=toss'
+        });
+      } catch (error) {
+        console.error('Toss payment error:', error);
+        if (error?.code !== 'USER_CANCEL') alert(error?.message || 'Could not open Toss Payments. Please try again.');
+      }
+    });
+
+    document.getElementById('paypal-toggle').addEventListener('click', function() {
+      const section = document.getElementById('paypal-section');
+      section.classList.toggle('hidden');
+      if (!paypalRendered) {
+        renderPayPalButton();
+        paypalRendered = true;
+      }
+    });
+
     function renderPayPalButton() {
       paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'black',
-          shape: 'rect',
-          label: 'pay'
-        },
+        style: { layout: 'vertical', color: 'black', shape: 'rect', label: 'pay' },
         createOrder: function(data, actions) {
           return actions.order.create({
             purchase_units: [{
               description: 'Dear Story ' + bookingData.package_type.toUpperCase() + ' Package - Booking #' + bookingId,
-              amount: {
-                value: Number(bookingData.price_usd).toFixed(2),
-                currency_code: 'USD'
-              }
+              amount: { value: Number(bookingData.price_usd).toFixed(2), currency_code: 'USD' }
             }]
           });
         },
         onApprove: async function(data, actions) {
           const order = await actions.order.capture();
           const paymentId = order.id;
-
           try {
             await axios.patch('/api/bookings/' + bookingId + '/payment', { payment_id: paymentId });
-
-            document.getElementById('payment-content').classList.add('hidden');
-            document.getElementById('success-state').classList.remove('hidden');
-            document.getElementById('success-booking-id').textContent = 'Booking ID: #' + bookingId + ' | PayPal: ' + paymentId;
+            showSuccess('PayPal: ' + paymentId);
           } catch (error) {
             console.error('Payment confirmation error:', error);
             alert('Payment was received but there was an error confirming your booking. Please contact us with PayPal ID: ' + paymentId);
@@ -735,9 +791,7 @@ export const paymentPage = (bookingId: string) => `
           console.error('PayPal error:', err);
           alert('There was an error processing your payment. Please try again.');
         },
-        onCancel: function() {
-          alert('Payment was cancelled. You can try again when ready.');
-        }
+        onCancel: function() { alert('Payment was cancelled. You can try again when ready.'); }
       }).render('#paypal-button-container');
     }
 
