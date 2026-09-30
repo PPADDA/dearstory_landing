@@ -398,22 +398,50 @@ app.post('/api/bookings', async (c) => {
     return c.json({ error: 'Bookings must be made at least 3 days in advance' }, 400)
   }
 
-  // Check if time slot is blocked
-  const blockedCheck = await env.DB.prepare(`
-    SELECT id FROM blocked_times WHERE blocked_date = ? AND blocked_time = ?
+  // Validate the requested start time (10:00-21:00, on the hour)
+  const allowedTimes = Array.from({ length: 12 }, (_, i) => `${String(i + 10).padStart(2, '0')}:00`)
+  if (!allowedTimes.includes(data.booking_time)) {
+    return c.json({ error: 'Invalid booking time' }, 400)
+  }
+
+  // Only time slots explicitly opened in Admin can be booked
+  const openSlot = await env.DB.prepare(`
+    SELECT id FROM availability_slots WHERE available_date = ? AND available_time = ?
   `).bind(data.booking_date, data.booking_time).first()
 
-  if (blockedCheck) {
+  if (!openSlot) {
     return c.json({ error: 'This time slot is not available' }, 400)
   }
 
-  // Check if time slot already has a booking
-  const bookingCheck = await env.DB.prepare(`
-    SELECT id FROM bookings WHERE booking_date = ? AND booking_time = ? AND status != 'cancelled'
-  `).bind(data.booking_date, data.booking_time).first()
+  // Every booking / external block occupies a 3-hour window.
+  // Reject any requested session whose 3-hour window overlaps an existing one.
+  const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(':').map(Number)
+    return h * 60 + m
+  }
+  const requestedStart = timeToMinutes(data.booking_time)
+  const requestedEnd = requestedStart + 180
 
-  if (bookingCheck) {
-    return c.json({ error: 'This time slot is already booked' }, 400)
+  const bookingRows = await env.DB.prepare(`
+    SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
+  `).bind(data.booking_date).all()
+  const blockedRows = await env.DB.prepare(`
+    SELECT blocked_time FROM blocked_times WHERE blocked_date = ?
+  `).bind(data.booking_date).all()
+
+  const occupiedStarts = [
+    ...bookingRows.results.map((r: any) => r.booking_time),
+    ...blockedRows.results.map((r: any) => r.blocked_time)
+  ]
+
+  const hasOverlap = occupiedStarts.some((time: string) => {
+    const occupiedStart = timeToMinutes(time)
+    const occupiedEnd = occupiedStart + 180
+    return requestedStart < occupiedEnd && requestedEnd > occupiedStart
+  })
+
+  if (hasOverlap) {
+    return c.json({ error: 'This time overlaps another 3-hour session' }, 400)
   }
 
   const messengerData = data.customer_messengers || '[]'
@@ -661,73 +689,125 @@ app.delete('/api/gallery/:id', async (c) => {
   return c.json({ success: true })
 })
 
-// ========== BLOCKED TIMES API ==========
+// ========== AVAILABILITY & BLOCKED TIMES API ==========
 
-// Get all blocked times
+const BOOKING_START_TIMES = Array.from({ length: 12 }, (_, i) => `${String(i + 10).padStart(2, '0')}:00`)
+const SESSION_MINUTES = 180
+
+const timeToMinutes = (time: string) => {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+const overlapsThreeHourWindow = (candidate: string, occupied: string) => {
+  const candidateStart = timeToMinutes(candidate)
+  const occupiedStart = timeToMinutes(occupied)
+  return candidateStart < occupiedStart + SESSION_MINUTES && candidateStart + SESSION_MINUTES > occupiedStart
+}
+
+// Get availability slots opened by Admin
+app.get('/api/availability-slots', async (c) => {
+  const db = c.env.DB
+  const date = c.req.query('date')
+  const result = date
+    ? await db.prepare(`SELECT * FROM availability_slots WHERE available_date = ? ORDER BY available_time ASC`).bind(date).all()
+    : await db.prepare(`SELECT * FROM availability_slots ORDER BY available_date ASC, available_time ASC`).all()
+  return c.json(result.results)
+})
+
+// Open a start time for customer booking
+app.post('/api/availability-slots', async (c) => {
+  const db = c.env.DB
+  const { date, time } = await c.req.json()
+  if (!date || !BOOKING_START_TIMES.includes(time)) {
+    return c.json({ error: 'Please select a valid date and time (10:00-21:00)' }, 400)
+  }
+
+  const existing = await db.prepare(`
+    SELECT id FROM availability_slots WHERE available_date = ? AND available_time = ?
+  `).bind(date, time).first()
+  if (existing) return c.json({ error: 'This time is already open' }, 400)
+
+  const result = await db.prepare(`
+    INSERT INTO availability_slots (available_date, available_time) VALUES (?, ?)
+  `).bind(date, time).run()
+  return c.json({ success: true, id: result.meta.last_row_id })
+})
+
+app.delete('/api/availability-slots/:id', async (c) => {
+  await c.env.DB.prepare(`DELETE FROM availability_slots WHERE id = ?`).bind(c.req.param('id')).run()
+  return c.json({ success: true })
+})
+
+// Get all manually/external blocked starts
 app.get('/api/blocked-times', async (c) => {
   const db = c.env.DB
   const result = await db.prepare(`
-    SELECT * FROM blocked_times ORDER BY blocked_date DESC, blocked_time ASC
+    SELECT * FROM blocked_times ORDER BY blocked_date ASC, blocked_time ASC
   `).all()
   return c.json(result.results)
 })
 
-// Create blocked time
+// Add an external booking/manual block. It occupies 3 hours from its start time.
 app.post('/api/blocked-times', async (c) => {
   const db = c.env.DB
   const { date, time, reason } = await c.req.json()
+  if (!date || !BOOKING_START_TIMES.includes(time)) {
+    return c.json({ error: 'Please select a valid date and time (10:00-21:00)' }, 400)
+  }
 
-  // Check for duplicate
   const existing = await db.prepare(`
     SELECT id FROM blocked_times WHERE blocked_date = ? AND blocked_time = ?
   `).bind(date, time).first()
+  if (existing) return c.json({ error: 'This start time is already blocked' }, 400)
 
-  if (existing) {
-    return c.json({ error: 'This time slot is already blocked' }, 400)
+  const bookingRows = await db.prepare(`
+    SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
+  `).bind(date).all()
+  const conflictsWithBooking = bookingRows.results.some((r: any) => overlapsThreeHourWindow(time, r.booking_time))
+  if (conflictsWithBooking) {
+    return c.json({ error: 'This 3-hour block overlaps an existing DearStory booking' }, 400)
   }
 
   const result = await db.prepare(`
     INSERT INTO blocked_times (blocked_date, blocked_time, reason) VALUES (?, ?, ?)
-  `).bind(date, time, reason || null).run()
-
+  `).bind(date, time, reason || 'Manual block').run()
   return c.json({ success: true, id: result.meta.last_row_id })
 })
 
-// Delete blocked time
 app.delete('/api/blocked-times/:id', async (c) => {
-  const db = c.env.DB
-  const id = c.req.param('id')
-  await db.prepare(`DELETE FROM blocked_times WHERE id = ?`).bind(id).run()
+  await c.env.DB.prepare(`DELETE FROM blocked_times WHERE id = ?`).bind(c.req.param('id')).run()
   return c.json({ success: true })
 })
 
-// Get available times for a specific date
+// Public booking availability: only Admin-opened starts, excluding any 3-hour overlap.
 app.get('/api/available-times', async (c) => {
   const db = c.env.DB
   const date = c.req.query('date')
+  if (!date) return c.json({ error: 'date parameter is required' }, 400)
 
-  if (!date) {
-    return c.json({ error: 'date parameter is required' }, 400)
-  }
+  const openResult = await db.prepare(`
+    SELECT available_time FROM availability_slots WHERE available_date = ? ORDER BY available_time ASC
+  `).bind(date).all()
+  const opened = openResult.results.map((r: any) => r.available_time).filter((t: string) => BOOKING_START_TIMES.includes(t))
 
-  const allTimes = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00']
-
-  // Get booked times (non-cancelled)
   const bookedResult = await db.prepare(`
     SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
   `).bind(date).all()
-  const booked = bookedResult.results.map((r: any) => r.booking_time)
+  const bookedStarts = bookedResult.results.map((r: any) => r.booking_time)
 
-  // Get blocked times
   const blockedResult = await db.prepare(`
     SELECT blocked_time FROM blocked_times WHERE blocked_date = ?
   `).bind(date).all()
-  const blocked = blockedResult.results.map((r: any) => r.blocked_time)
+  const blockedStarts = blockedResult.results.map((r: any) => r.blocked_time)
 
-  const unavailable = new Set([...booked, ...blocked])
-  const available = allTimes.filter(t => !unavailable.has(t))
+  const occupiedStarts = [...bookedStarts, ...blockedStarts]
+  const unavailable = opened.filter((candidate: string) =>
+    occupiedStarts.some((occupied: string) => overlapsThreeHourWindow(candidate, occupied))
+  )
+  const available = opened.filter((t: string) => !unavailable.includes(t))
 
-  return c.json({ available, booked, blocked })
+  return c.json({ available, opened, unavailable, booked: bookedStarts, blocked: blockedStarts })
 })
 
 // ========== FRONTEND ROUTES ==========

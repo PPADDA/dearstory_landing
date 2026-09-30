@@ -375,7 +375,8 @@ export const bookingPage = (packageParam?: string) => `
     const timeLabels = {
       '10:00': '10:00 AM', '11:00': '11:00 AM', '12:00': '12:00 PM',
       '13:00': '1:00 PM', '14:00': '2:00 PM', '15:00': '3:00 PM',
-      '16:00': '4:00 PM', '17:00': '5:00 PM', '18:00': '6:00 PM'
+      '16:00': '4:00 PM', '17:00': '5:00 PM', '18:00': '6:00 PM',
+      '19:00': '7:00 PM', '20:00': '8:00 PM', '21:00': '9:00 PM'
     };
 
     // Load available times when date changes
@@ -393,24 +394,18 @@ export const bookingPage = (packageParam?: string) => `
 
       try {
         const response = await axios.get('/api/available-times?date=' + date);
-        const { available, booked, blocked } = response.data;
-        const allTimes = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+        const { available } = response.data;
+
+        if (!available || available.length === 0) {
+          timeSelect.innerHTML = '<option value="">No available times for this date</option>';
+          return;
+        }
 
         timeSelect.innerHTML = '<option value="">Select time</option>';
-        allTimes.forEach(time => {
+        available.forEach(time => {
           const option = document.createElement('option');
           option.value = time;
-          if (booked.includes(time)) {
-            option.textContent = timeLabels[time] + ' (Booked)';
-            option.disabled = true;
-            option.style.color = '#999';
-          } else if (blocked.includes(time)) {
-            option.textContent = timeLabels[time] + ' (Unavailable)';
-            option.disabled = true;
-            option.style.color = '#999';
-          } else {
-            option.textContent = timeLabels[time];
-          }
+          option.textContent = timeLabels[time] || time;
           timeSelect.appendChild(option);
         });
       } catch (error) {
@@ -877,6 +872,9 @@ export const adminPage = () => `
           <button onclick="showTab('bookings')" id="tab-bookings" class="py-4 text-sm uppercase tracking-wider border-b-2 border-black">
             Bookings
           </button>
+          <button onclick="showTab('calendar')" id="tab-calendar" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
+            Calendar
+          </button>
           <button onclick="showTab('gallery')" id="tab-gallery" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
             Gallery
           </button>
@@ -918,36 +916,61 @@ export const adminPage = () => `
           <div id="calendar-container"></div>
         </div>
 
-        <!-- Blocked Times Management -->
-        <div class="bg-white p-8 border border-gray-200 mt-8">
-          <h2 class="text-2xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Time Slot Blocking</h2>
+      </div>
+
+      <!-- Calendar / Availability Tab -->
+      <div id="content-calendar" class="tab-content hidden">
+        <div class="bg-white p-8 border border-gray-200 mb-8">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+            <div>
+              <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Availability</p>
+              <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Open Booking Times</h2>
+              <p class="text-sm text-gray-500 mt-2">Customers can start a session from 10:00 AM to 9:00 PM. Each booking occupies 3 hours.</p>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label class="block text-sm uppercase tracking-wider mb-2">Date</label>
+              <input type="date" id="availability-date" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm uppercase tracking-wider mb-2">Start Time</label>
+              <select id="availability-time" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
+                ${Array.from({length:12}, (_,i) => { const h=i+10; const label=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM'; return `<option value="${String(h).padStart(2,'0')}:00">${label}</option>` }).join('')}
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button onclick="addAvailabilitySlot()" class="w-full px-4 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800">Open Time</button>
+            </div>
+          </div>
+          <button onclick="openWholeDay()" class="mb-6 px-5 py-3 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white">Open All 10:00 AM – 9:00 PM</button>
+          <div id="availability-slots-container" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-white p-8 border border-gray-200">
+          <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">External / Manual</p>
+          <h2 class="text-3xl font-light mb-2" style="font-family: 'Cormorant Garamond', serif;">Block a 3-Hour Session</h2>
+          <p class="text-sm text-gray-500 mb-8">Use this when a booking comes from Airbnb, Trazy, KKday, or another source.</p>
           <div class="grid md:grid-cols-4 gap-4 mb-6">
             <div>
               <label class="block text-sm uppercase tracking-wider mb-2">Date</label>
               <input type="date" id="block-date" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
             </div>
             <div>
-              <label class="block text-sm uppercase tracking-wider mb-2">Time</label>
+              <label class="block text-sm uppercase tracking-wider mb-2">Start Time</label>
               <select id="block-time" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="13:00">1:00 PM</option>
-                <option value="14:00">2:00 PM</option>
-                <option value="15:00">3:00 PM</option>
-                <option value="16:00">4:00 PM</option>
-                <option value="17:00">5:00 PM</option>
-                <option value="18:00">6:00 PM</option>
+                ${Array.from({length:12}, (_,i) => { const h=i+10; const label=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM'; return `<option value="${String(h).padStart(2,'0')}:00">${label}</option>` }).join('')}
               </select>
             </div>
             <div>
-              <label class="block text-sm uppercase tracking-wider mb-2">Reason (Optional)</label>
-              <input type="text" id="block-reason" placeholder="e.g. Equipment maintenance" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
+              <label class="block text-sm uppercase tracking-wider mb-2">Source / Note</label>
+              <select id="block-source" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none mb-2">
+                <option value="Airbnb">Airbnb</option><option value="Trazy">Trazy</option><option value="KKday">KKday</option><option value="Personal">Personal</option><option value="Other">Other</option>
+              </select>
+              <input type="text" id="block-reason" placeholder="Optional note" class="w-full p-3 border border-gray-300 text-sm focus:border-black focus:outline-none">
             </div>
             <div class="flex items-end">
-              <button onclick="addBlockedTime()" class="w-full px-4 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800">
-                Block Time
-              </button>
+              <button onclick="addBlockedTime()" class="w-full px-4 py-3 border border-black text-sm uppercase tracking-wider hover:bg-black hover:text-white">Block 3 Hours</button>
             </div>
           </div>
           <div id="blocked-times-container" class="space-y-2"></div>
@@ -1304,13 +1327,73 @@ export const adminPage = () => `
       }
     }
 
+    // Availability management
+    document.getElementById('availability-date').min = new Date().toISOString().split('T')[0];
+
+    async function addAvailabilitySlot() {
+      const date = document.getElementById('availability-date').value;
+      const time = document.getElementById('availability-time').value;
+      if (!date) { alert('Please select a date'); return; }
+      try {
+        await axios.post('/api/availability-slots', { date, time });
+        loadAvailabilitySlots();
+      } catch (error) {
+        alert(error.response?.data?.error || 'Error opening time');
+      }
+    }
+
+    async function openWholeDay() {
+      const date = document.getElementById('availability-date').value;
+      if (!date) { alert('Please select a date'); return; }
+      const times = Array.from({ length: 12 }, (_, i) => String(i + 10).padStart(2, '0') + ':00');
+      try {
+        await Promise.all(times.map(time => axios.post('/api/availability-slots', { date, time }).catch(err => {
+          if (err.response?.status !== 400) throw err;
+        })));
+        loadAvailabilitySlots();
+      } catch (error) { alert('Error opening the day'); }
+    }
+
+    async function removeAvailabilitySlot(id) {
+      if (!confirm('Close this booking start time?')) return;
+      try {
+        await axios.delete('/api/availability-slots/' + id);
+        loadAvailabilitySlots();
+      } catch (error) { alert('Error closing time'); }
+    }
+
+    async function loadAvailabilitySlots() {
+      try {
+        const response = await axios.get('/api/availability-slots');
+        const container = document.getElementById('availability-slots-container');
+        const today = new Date().toISOString().split('T')[0];
+        const items = response.data.filter(item => item.available_date >= today);
+        if (items.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-sm">No upcoming booking times opened yet</p>';
+          return;
+        }
+        container.innerHTML = items.map(item => \`
+          <div class="flex justify-between items-center border border-gray-200 p-4">
+            <div class="flex items-center gap-6">
+              <span class="text-sm font-medium">\${item.available_date}</span>
+              <span class="text-sm">\${item.available_time}</span>
+              <span class="text-xs uppercase tracking-wider text-green-700">Open</span>
+            </div>
+            <button onclick="removeAvailabilitySlot(\${item.id})" class="px-4 py-2 border border-gray-300 text-xs uppercase tracking-wider hover:bg-gray-50">Close</button>
+          </div>
+        \`).join('');
+      } catch (error) { console.error('Error:', error); }
+    }
+
     // Blocked times management
     document.getElementById('block-date').min = new Date().toISOString().split('T')[0];
 
     async function addBlockedTime() {
       const date = document.getElementById('block-date').value;
       const time = document.getElementById('block-time').value;
-      const reason = document.getElementById('block-reason').value;
+      const source = document.getElementById('block-source').value;
+      const note = document.getElementById('block-reason').value.trim();
+      const reason = note ? source + ' - ' + note : source;
 
       if (!date) {
         alert('Please select a date');
@@ -1498,6 +1581,7 @@ export const adminPage = () => `
 
     loadBookings();
     loadAdminGallery();
+    loadAvailabilitySlots();
     loadBlockedTimes();
   </script>
 `;
