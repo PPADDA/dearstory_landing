@@ -4,6 +4,7 @@ import { cors } from 'hono/cors'
 type Bindings = {
   DB: D1Database;
   TOSS_SECRET_KEY: string;
+  DISCORD_WEBHOOK_URL: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -353,6 +354,55 @@ const layout = (title: string, content: string) => `
 </html>
 `
 
+
+// Send a paid-booking notification to the private Discord booking-alerts channel.
+// The webhook URL lives only in Cloudflare as DISCORD_WEBHOOK_URL.
+async function sendBookingNotification(env: Bindings, booking: any, provider: string) {
+  if (!env.DISCORD_WEBHOOK_URL) {
+    console.warn('DISCORD_WEBHOOK_URL is not configured')
+    return
+  }
+
+  const amount = provider === 'PayPal' && booking.price_usd
+    ? `$${Number(booking.price_usd).toFixed(2)} USD`
+    : `₩${Number(booking.total_price || 0).toLocaleString()} KRW`
+
+  const payload = {
+    username: 'DearStory Booking',
+    embeds: [{
+      title: '🎵 New DearStory Booking',
+      color: 0x111111,
+      fields: [
+        { name: 'Booking', value: `#${booking.id}`, inline: true },
+        { name: 'Payment', value: provider, inline: true },
+        { name: 'Amount', value: amount, inline: true },
+        { name: 'Customer', value: booking.name || '-', inline: true },
+        { name: 'Package', value: String(booking.package_type || '-').toUpperCase(), inline: true },
+        { name: 'Guests', value: String(booking.num_people || '-'), inline: true },
+        { name: 'Date', value: booking.booking_date || '-', inline: true },
+        { name: 'Time', value: booking.booking_time || '-', inline: true },
+        { name: 'Email', value: booking.email || '-', inline: false }
+      ],
+      footer: { text: 'DearStory · Paid booking confirmed' },
+      timestamp: new Date().toISOString()
+    }]
+  }
+
+  try {
+    const response = await fetch(env.DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    if (!response.ok) {
+      console.error('Discord notification failed:', response.status, await response.text())
+    }
+  } catch (error) {
+    // A Discord outage must never turn a successful payment into a failed payment.
+    console.error('Discord notification error:', error)
+  }
+}
+
 // ========== API ROUTES ==========
 
 // Get all bookings (admin)
@@ -485,54 +535,9 @@ app.patch('/api/bookings/:id/payment', async (c) => {
     WHERE id = ?
   `).bind(payment_id, id).run()
 
-  // Send Discord notification after successful payment
-  try {
-    const discordWebhook = 'https://discord.com/api/webhooks/1467482422902784063/iEh1AY8yoIvrv_Vy0Z51yQ8O34s4UboBYOCG6lYI1UI0Gyn0WAaNvt8lQX5NZW0Bapu4'
-
-    const packageEmoji: Record<string, string> = { basic: '🎤', signature: '🎵', premium: '⭐' }
-
-    const messengerLabels: Record<string, string> = {
-      whatsapp: 'WhatsApp', instagram: 'Instagram', kakaotalk: 'KakaoTalk',
-      wechat: 'WeChat', line: 'Line', email_only: 'Email Only'
-    }
-    let parsedMessengers: Array<{ type: string, id: string }> = []
-    try { parsedMessengers = JSON.parse(booking.phone || '[]') } catch { }
-    const messengerText = parsedMessengers.map((m: { type: string, id: string }) =>
-      m.type === 'email_only' ? '📧 Email Only' : `${messengerLabels[m.type] || m.type}: ${m.id}`
-    ).join('\n') || 'None specified'
-
-    const embed = {
-      title: `${packageEmoji[booking.package_type] || '📝'} New Paid Booking!`,
-      color: 0x00AA00,
-      fields: [
-        { name: '👤 Customer', value: `**${booking.name}**\n${booking.email}`, inline: true },
-        { name: '🌍 Location', value: `${booking.country}\nLanguage: ${booking.preferred_language}`, inline: true },
-        { name: '📦 Package', value: `**${booking.package_type.toUpperCase()}**\nPeople: ${booking.num_people}`, inline: true },
-        { name: '📅 Date & Time', value: `${booking.booking_date}\n${booking.booking_time}`, inline: true },
-        { name: '💰 Price', value: `$${booking.price_usd} USD\n(₩${Number(booking.total_price).toLocaleString()})`, inline: true },
-        { name: '🆔 Booking ID', value: `#${booking.id}`, inline: true },
-        { name: '💳 PayPal ID', value: payment_id, inline: false },
-        { name: '📱 Contact Methods', value: messengerText, inline: false }
-      ],
-      timestamp: new Date().toISOString(),
-      footer: { text: 'Dear Story Booking System' }
-    }
-
-    if (booking.notes) {
-      embed.fields.push({ name: '📝 Additional Notes', value: booking.notes, inline: false })
-    }
-
-    await fetch(discordWebhook, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: 'Dear Story Bookings',
-        avatar_url: 'https://3000-i18qtppwaskwsh5k8uc7i-18e660f9.sandbox.novita.ai/logo.png',
-        embeds: [embed]
-      })
-    })
-  } catch (error) {
-    console.error('Discord notification error:', error)
+  const paidBooking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first()
+  if (paidBooking) {
+    await sendBookingNotification(env, paidBooking, 'PayPal')
   }
 
   return c.json({ success: true })
@@ -628,6 +633,11 @@ app.post('/api/bookings/:id/toss/confirm', async (c) => {
     tossResult.approvedAt || new Date().toISOString(),
     id
   ).run()
+
+  const paidBooking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first()
+  if (paidBooking) {
+    await sendBookingNotification(env, paidBooking, 'Toss Payments')
+  }
 
   return c.json({ success: true, paymentKey, orderId })
 })
