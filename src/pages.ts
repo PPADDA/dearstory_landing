@@ -1090,10 +1090,17 @@ export const adminPage = () => `
           <p id="modal-cancel-help" class="text-xs text-gray-500 mb-4">
             Cancelling here releases the reserved time. It does not refund a completed payment.
           </p>
-          <button id="modal-cancel-button" onclick="cancelBookingFromModal()"
-                  class="px-5 py-3 border border-red-500 text-red-600 text-xs uppercase tracking-wider hover:bg-red-600 hover:text-white">
-            Cancel Booking
-          </button>
+          <div class="flex flex-wrap gap-3">
+            <button id="modal-cancel-button" onclick="cancelBookingFromModal()"
+                    class="px-5 py-3 border border-red-500 text-red-600 text-xs uppercase tracking-wider hover:bg-red-600 hover:text-white">
+              Cancel Booking
+            </button>
+            <button id="modal-refund-button" onclick="refundBookingFromModal()"
+                    class="hidden px-5 py-3 bg-red-600 text-white text-xs uppercase tracking-wider hover:bg-red-700">
+              Cancel & Refund
+            </button>
+          </div>
+          <div id="modal-refund-info" class="hidden mt-4 text-xs text-gray-500"></div>
         </div>
 
         <!-- Notes -->
@@ -1519,14 +1526,33 @@ export const adminPage = () => `
       }
 
       const cancelButton = document.getElementById('modal-cancel-button');
+      const refundButton = document.getElementById('modal-refund-button');
+      const refundInfo = document.getElementById('modal-refund-info');
       const cancelHelp = document.getElementById('modal-cancel-help');
+
+      const isTossPaid = booking.payment_status === 'paid' &&
+        booking.payment_id && String(booking.payment_id).startsWith('TOSS:');
+
+      refundButton.classList.toggle('hidden', !isTossPaid);
+      refundInfo.classList.add('hidden');
+      refundInfo.textContent = '';
+
+      if (booking.payment_status === 'refunded') {
+        refundButton.classList.add('hidden');
+        refundInfo.classList.remove('hidden');
+        const amountText = booking.refund_amount ? '₩' + Number(booking.refund_amount).toLocaleString() : '';
+        const dateText = booking.refunded_at ? new Date(booking.refunded_at).toLocaleString() : '';
+        refundInfo.textContent = 'REFUNDED' + (amountText ? ' · ' + amountText : '') + (dateText ? ' · ' + dateText : '');
+      }
       if (booking.status === 'cancelled') {
         cancelButton.disabled = true;
         cancelButton.textContent = 'Booking Cancelled';
         cancelButton.classList.add('opacity-40', 'cursor-not-allowed');
-        cancelHelp.textContent = booking.payment_status === 'paid'
-          ? 'This booking is cancelled. Payment is still marked as paid unless you refund it separately.'
-          : 'This booking is cancelled and its time has been released.';
+        cancelHelp.textContent = booking.payment_status === 'refunded'
+          ? 'This booking is cancelled and the payment has been refunded.'
+          : booking.payment_status === 'paid'
+            ? 'This booking is cancelled. Payment is still marked as paid unless you refund it separately.'
+            : 'This booking is cancelled and its time has been released.';
       } else {
         cancelButton.disabled = false;
         cancelButton.textContent = 'Cancel Booking';
@@ -1573,6 +1599,47 @@ export const adminPage = () => `
       } catch (error) {
         alert('Error updating progress status');
         console.error(error);
+      }
+    }
+
+    async function refundBookingFromModal() {
+      if (!currentModalBookingId) return;
+      const booking = allBookings.find(b => b.id === currentModalBookingId);
+      if (!booking) return;
+
+      if (booking.payment_status !== 'paid' ||
+          !booking.payment_id ||
+          !String(booking.payment_id).startsWith('TOSS:')) {
+        alert('Automatic refund is currently available for paid Toss Payments bookings only.');
+        return;
+      }
+
+      const amount = Number(booking.total_price || 0).toLocaleString();
+
+      if (!confirm('REFUND ₩' + amount + ' AND CANCEL BOOKING #' + booking.id + '?\\n\\nThis will send a real refund request to Toss Payments and release the reserved time.')) return;
+      if (!confirm('FINAL CONFIRMATION\\n\\nRefund ₩' + amount + '? This action cannot be undone from DearStory Admin.')) return;
+
+      const reason = prompt('Refund reason', 'Customer requested cancellation');
+      if (reason === null) return;
+
+      const button = document.getElementById('modal-refund-button');
+      button.disabled = true;
+      button.textContent = 'REFUNDING...';
+
+      try {
+        const response = await axios.post('/api/bookings/' + booking.id + '/toss/refund', {
+          reason: reason || 'Customer requested cancellation'
+        });
+
+        alert('Refund completed. Booking cancelled and time released.');
+        closeBookingModal();
+        await loadBookings();
+        renderCalendar();
+      } catch (error) {
+        alert(error.response?.data?.error || 'Refund failed. The booking was not changed.');
+        console.error(error);
+        button.disabled = false;
+        button.textContent = 'Cancel & Refund';
       }
     }
 

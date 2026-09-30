@@ -643,6 +643,84 @@ app.get('/api/bookings/:id', async (c) => {
   return c.json(booking)
 })
 
+// Cancel a Toss payment in full, then cancel the booking.
+// The booking is only marked refunded/cancelled after Toss confirms the cancellation.
+app.post('/api/bookings/:id/toss/refund', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+
+  const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
+  if (!booking) return c.json({ error: 'Booking not found' }, 404)
+  if (booking.payment_status === 'refunded') {
+    return c.json({ success: true, alreadyRefunded: true })
+  }
+  if (booking.payment_status !== 'paid') {
+    return c.json({ error: 'This booking is not marked as paid' }, 400)
+  }
+  if (!booking.payment_id || !String(booking.payment_id).startsWith('TOSS:')) {
+    return c.json({ error: 'Automatic refund is currently available for Toss Payments only' }, 400)
+  }
+  if (!env.TOSS_SECRET_KEY) {
+    return c.json({ error: 'Toss payment service is not configured' }, 500)
+  }
+
+  let body: { reason?: string } = {}
+  try {
+    body = await c.req.json()
+  } catch {}
+
+  const paymentKey = String(booking.payment_id).slice(5)
+  const cancelReason = (body.reason || 'Customer requested cancellation').slice(0, 200)
+  const auth = btoa(`${env.TOSS_SECRET_KEY}:`)
+
+  const tossResponse = await fetch(
+    `https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}/cancel`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `dearstory-refund-${id}`
+      },
+      body: JSON.stringify({ cancelReason })
+    }
+  )
+
+  const tossResult = await tossResponse.json() as any
+  if (!tossResponse.ok) {
+    console.error('Toss refund error:', tossResult)
+    return c.json({
+      error: tossResult?.message || 'Toss refund failed',
+      code: tossResult?.code || 'TOSS_REFUND_FAILED'
+    }, tossResponse.status as any)
+  }
+
+  const latestCancel = Array.isArray(tossResult.cancels) && tossResult.cancels.length
+    ? tossResult.cancels[tossResult.cancels.length - 1]
+    : null
+
+  await env.DB.prepare(`
+    UPDATE bookings
+    SET payment_status = 'refunded',
+        status = 'cancelled',
+        refund_amount = ?,
+        refund_reason = ?,
+        refunded_at = ?
+    WHERE id = ?
+  `).bind(
+    latestCancel?.cancelAmount ?? booking.total_price,
+    latestCancel?.cancelReason ?? cancelReason,
+    latestCancel?.canceledAt ?? new Date().toISOString(),
+    id
+  ).run()
+
+  return c.json({
+    success: true,
+    refundAmount: latestCancel?.cancelAmount ?? booking.total_price,
+    refundedAt: latestCancel?.canceledAt ?? null
+  })
+})
+
 // Cancel a booking without refunding the payment.
 // Availability automatically re-opens because cancelled bookings are excluded from conflict checks.
 app.patch('/api/bookings/:id/cancel', async (c) => {
