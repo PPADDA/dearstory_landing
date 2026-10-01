@@ -1455,7 +1455,7 @@ export const adminPage = () => `
       document.getElementById('dash-revenue').textContent = '₩' + net.toLocaleString();
 
       const upcomingList = document.getElementById('dash-upcoming-list');
-      upcomingList.innerHTML = upcoming.length ? upcoming.slice(0, 6).map(b => `
+      upcomingList.innerHTML = upcoming.length ? upcoming.slice(0, 6).map(b => \`
         <button onclick="openBookingModal(\${b.id})" class="w-full text-left border border-gray-200 p-4 hover:border-black transition flex items-center justify-between gap-4">
           <div>
             <p class="font-medium">\${b.name}</p>
@@ -1465,7 +1465,7 @@ export const adminPage = () => `
             <p class="text-sm">\${b.booking_date}</p>
             <p class="text-xs text-gray-500 mt-1">\${b.booking_time}</p>
           </div>
-        </button>`).join('') : '<p class="text-sm text-gray-400 py-4">No upcoming sessions.</p>';
+        </button>\`).join('') : '<p class="text-sm text-gray-400 py-4">No upcoming sessions.</p>';
 
       const packageNames = ['basic', 'signature', 'premium'];
       const packageCounts = Object.fromEntries(packageNames.map(name => [name, confirmed.filter(b => b.package_type === name).length]));
@@ -1473,15 +1473,15 @@ export const adminPage = () => `
       document.getElementById('dash-packages').innerHTML = packageNames.map(name => {
         const count = packageCounts[name];
         const width = Math.round((count / maxCount) * 100);
-        return `<div><div class="flex justify-between text-sm mb-2"><span class="capitalize">\${name}</span><span>\${count}</span></div><div class="h-1.5 bg-gray-100"><div class="h-1.5 bg-black" style="width:\${width}%"></div></div></div>`;
+        return \`<div><div class="flex justify-between text-sm mb-2"><span class="capitalize">\${name}</span><span>\${count}</span></div><div class="h-1.5 bg-gray-100"><div class="h-1.5 bg-black" style="width:\${width}%"></div></div></div>\`;
       }).join('');
 
       const recentPaid = [...paid].sort((a,b) => new Date(b.paid_at || b.created_at).getTime() - new Date(a.paid_at || a.created_at).getTime()).slice(0, 5);
-      document.getElementById('dash-recent-payments').innerHTML = recentPaid.length ? recentPaid.map(b => `
+      document.getElementById('dash-recent-payments').innerHTML = recentPaid.length ? recentPaid.map(b => \`
         <button onclick="openBookingModal(\${b.id})" class="w-full text-left border-b border-gray-100 pb-3 flex items-center justify-between gap-4">
           <div><p class="text-sm font-medium">\${b.name}</p><p class="text-xs text-gray-500 mt-1">\${b.booking_date} · \${String(b.package_type || '').toUpperCase()}\${b.promo_code ? ' · ' + b.promo_code : ''}</p></div>
           <div class="text-right"><p class="text-sm">₩\${Number(b.total_price || 0).toLocaleString()}</p><p class="text-xs text-gray-400 mt-1">\${b.payment_method || b.payment_provider || 'Paid'}</p></div>
-        </button>`).join('') : '<p class="text-sm text-gray-400 py-4">No paid bookings yet.</p>';
+        </button>\`).join('') : '<p class="text-sm text-gray-400 py-4">No paid bookings yet.</p>';
     }
 
     async function loadBookings() {
