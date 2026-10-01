@@ -846,6 +846,64 @@ app.post('/api/gallery', async (c) => {
   }
 })
 
+// Edit a gallery track. Title is required; album art and audio are optional replacements.
+app.patch('/api/gallery/:id', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const current = await env.DB.prepare(`SELECT * FROM gallery_items WHERE id = ?`).bind(id).first() as any
+  if (!current) return c.json({ error: 'Gallery item not found' }, 404)
+
+  const form = await c.req.formData()
+  const title = String(form.get('title') || '').trim()
+  const image = form.get('image')
+  const audio = form.get('audio')
+  if (!title) return c.json({ error: 'Title is required' }, 400)
+  if (image instanceof File && image.size > 0 && !image.type.startsWith('image/')) return c.json({ error: 'Album art must be an image file' }, 400)
+  if (audio instanceof File && audio.size > 0 && !audio.type.startsWith('audio/')) return c.json({ error: 'Audio must be an audio file' }, 400)
+
+  const safeExt = (name: string, fallback: string) => {
+    const ext = name.includes('.') ? name.split('.').pop()!.toLowerCase().replace(/[^a-z0-9]/g, '') : ''
+    return ext || fallback
+  }
+  const uid = crypto.randomUUID()
+  let newImageKey: string | null = null
+  let newAudioKey: string | null = null
+
+  try {
+    if (image instanceof File && image.size > 0) {
+      newImageKey = `gallery/${uid}/cover.${safeExt(image.name, 'jpg')}`
+      await env.GALLERY_BUCKET.put(newImageKey, image.stream(), { httpMetadata: { contentType: image.type } })
+    }
+    if (audio instanceof File && audio.size > 0) {
+      newAudioKey = `gallery/${uid}/audio.${safeExt(audio.name, 'mp3')}`
+      await env.GALLERY_BUCKET.put(newAudioKey, audio.stream(), { httpMetadata: { contentType: audio.type } })
+    }
+
+    const imageKey = newImageKey || current.image_key
+    const audioKey = newAudioKey || current.audio_key
+    const imageUrl = newImageKey ? `/api/gallery/media/${encodeURIComponent(newImageKey)}` : current.thumbnail_url
+    const audioUrl = newAudioKey ? `/api/gallery/media/${encodeURIComponent(newAudioKey)}` : current.file_url
+
+    await env.DB.prepare(`
+      UPDATE gallery_items
+      SET title = ?, thumbnail_url = ?, file_url = ?, image_key = ?, audio_key = ?
+      WHERE id = ?
+    `).bind(title, imageUrl, audioUrl, imageKey, audioKey, id).run()
+
+    const oldKeys: string[] = []
+    if (newImageKey && current.image_key) oldKeys.push(current.image_key)
+    if (newAudioKey && current.audio_key) oldKeys.push(current.audio_key)
+    if (oldKeys.length) await Promise.allSettled(oldKeys.map(key => env.GALLERY_BUCKET.delete(key)))
+
+    return c.json({ success: true })
+  } catch (error) {
+    const newKeys = [newImageKey, newAudioKey].filter(Boolean) as string[]
+    if (newKeys.length) await Promise.allSettled(newKeys.map(key => env.GALLERY_BUCKET.delete(key)))
+    console.error('Gallery edit failed:', error)
+    return c.json({ error: 'Gallery update failed' }, 500)
+  }
+})
+
 // Show / hide a gallery item.
 app.patch('/api/gallery/:id/visibility', async (c) => {
   const { env } = c

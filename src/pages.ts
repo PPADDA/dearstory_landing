@@ -150,9 +150,7 @@ export const galleryPage = () => `
   <section class="section-padding bg-white">
     <div class="max-w-7xl mx-auto">
       <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-        <div class="text-center py-20 col-span-full">
-          <p class="text-gray-400 text-sm uppercase tracking-wider">Loading...</p>
-        </div>
+        <div class="text-center py-20 col-span-full"><p class="text-gray-400 text-sm uppercase tracking-wider">Loading...</p></div>
       </div>
     </div>
   </section>
@@ -162,6 +160,24 @@ export const galleryPage = () => `
       return String(value ?? '').replace(/[&<>\"']/g, ch => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#039;'
       })[ch]);
+    }
+
+    function toggleGalleryAudio(id) {
+      const selected = document.getElementById('gallery-audio-' + id);
+      if (!selected) return;
+      document.querySelectorAll('.gallery-audio').forEach(audio => {
+        if (audio !== selected && !audio.paused) audio.pause();
+      });
+      if (selected.paused) selected.play(); else selected.pause();
+    }
+
+    function setGalleryButton(id, playing) {
+      const button = document.getElementById('gallery-play-' + id);
+      if (!button) return;
+      button.innerHTML = playing
+        ? '<span class="text-2xl leading-none">Ⅱ</span>'
+        : '<span class="text-2xl leading-none ml-1">▶</span>';
+      button.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     }
 
     async function loadGalleryItems() {
@@ -176,11 +192,14 @@ export const galleryPage = () => `
 
         container.innerHTML = items.map(item =>
           '<article class="group">' +
-            '<div class="aspect-square bg-gray-100 overflow-hidden mb-5">' +
+            '<div class="aspect-square bg-gray-100 overflow-hidden mb-5 relative">' +
               '<img src="' + galleryEscape(item.thumbnail_url) + '" alt="' + galleryEscape(item.title) + '" class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]">' +
+              '<div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition">' +
+                '<button id="gallery-play-' + item.id + '" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play" class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/90 text-black flex items-center justify-center shadow-lg backdrop-blur-sm transition hover:scale-105"><span class="text-2xl leading-none ml-1">▶</span></button>' +
+              '</div>' +
+              '<audio id="gallery-audio-' + item.id + '" class="gallery-audio hidden" preload="metadata" src="' + galleryEscape(item.file_url) + '" onplay="setGalleryButton(' + item.id + ', true)" onpause="setGalleryButton(' + item.id + ', false)" onended="setGalleryButton(' + item.id + ', false)"></audio>' +
             '</div>' +
-            '<h3 class="text-2xl font-light mb-4" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
-            '<audio controls preload="metadata" class="w-full" src="' + galleryEscape(item.file_url) + '"></audio>' +
+            '<h3 class="text-2xl font-light" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
           '</article>'
         ).join('');
       } catch (error) {
@@ -961,6 +980,39 @@ export const adminPage = () => `
             <button type="submit" id="gallery-submit" class="btn-modern">Upload & Publish</button>
           </form>
         </div>
+        <div id="gallery-edit-panel" class="bg-white p-8 border border-black mb-8 hidden">
+          <div class="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Edit Track</p>
+              <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Update Gallery Item</h2>
+            </div>
+            <button type="button" onclick="cancelGalleryEdit()" class="text-2xl leading-none">×</button>
+          </div>
+          <form id="gallery-edit-form" class="space-y-5">
+            <input type="hidden" id="gallery-edit-id">
+            <div>
+              <label class="block text-xs uppercase tracking-wider mb-2">Title *</label>
+              <input type="text" id="gallery-edit-title" required class="w-full p-3 border border-gray-300 text-sm">
+            </div>
+            <div class="grid md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs uppercase tracking-wider mb-2">Replace Album Art <span class="normal-case text-gray-400">(optional)</span></label>
+                <input type="file" id="gallery-edit-image" accept="image/*" class="w-full p-3 border border-gray-300 text-sm bg-white">
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-wider mb-2">Replace Audio <span class="normal-case text-gray-400">(optional)</span></label>
+                <input type="file" id="gallery-edit-audio" accept="audio/*" class="w-full p-3 border border-gray-300 text-sm bg-white">
+              </div>
+            </div>
+            <p class="text-xs text-gray-400">Leave a file empty to keep the current upload.</p>
+            <div id="gallery-edit-status" class="text-sm text-gray-500 hidden"></div>
+            <div class="flex gap-3">
+              <button type="submit" id="gallery-edit-submit" class="btn-modern">Save Changes</button>
+              <button type="button" onclick="cancelGalleryEdit()" class="px-5 py-3 border border-gray-300 text-xs uppercase tracking-wider">Cancel</button>
+            </div>
+          </form>
+        </div>
+
         <div class="bg-white p-8 border border-gray-200">
           <div class="flex items-end justify-between gap-4 mb-6">
             <div>
@@ -1280,6 +1332,7 @@ export const adminPage = () => `
             '<div class="flex items-center gap-2 flex-wrap justify-end">' +
               '<button onclick="moveGalleryItem(' + index + ', -1)" ' + (index === 0 ? 'disabled' : '') + ' class="w-9 h-9 border border-gray-300 disabled:opacity-25">↑</button>' +
               '<button onclick="moveGalleryItem(' + index + ', 1)" ' + (index === adminGalleryItems.length - 1 ? 'disabled' : '') + ' class="w-9 h-9 border border-gray-300 disabled:opacity-25">↓</button>' +
+              '<button onclick="editGalleryItem(' + item.id + ')" class="px-3 py-2 border border-gray-300 text-xs uppercase tracking-wider">Edit</button>' +
               '<button onclick="toggleGalleryVisibility(' + item.id + ', ' + (item.is_visible == 0 ? 'true' : 'false') + ')" class="px-3 py-2 border border-gray-300 text-xs uppercase tracking-wider">' + (item.is_visible == 0 ? 'Show' : 'Hide') + '</button>' +
               '<button onclick="deleteGalleryItem(' + item.id + ')" class="px-3 py-2 bg-black text-white text-xs uppercase tracking-wider">Delete</button>' +
             '</div>' +
@@ -1318,6 +1371,55 @@ export const adminPage = () => `
       } finally {
         button.disabled = false;
         button.textContent = 'UPLOAD & PUBLISH';
+      }
+    });
+
+    function editGalleryItem(id) {
+      const item = adminGalleryItems.find(item => Number(item.id) === Number(id));
+      if (!item) return;
+      document.getElementById('gallery-edit-id').value = item.id;
+      document.getElementById('gallery-edit-title').value = item.title || '';
+      document.getElementById('gallery-edit-image').value = '';
+      document.getElementById('gallery-edit-audio').value = '';
+      document.getElementById('gallery-edit-status').classList.add('hidden');
+      const panel = document.getElementById('gallery-edit-panel');
+      panel.classList.remove('hidden');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelGalleryEdit() {
+      document.getElementById('gallery-edit-form').reset();
+      document.getElementById('gallery-edit-id').value = '';
+      document.getElementById('gallery-edit-panel').classList.add('hidden');
+    }
+
+    document.getElementById('gallery-edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('gallery-edit-id').value;
+      if (!id) return;
+      const button = document.getElementById('gallery-edit-submit');
+      const status = document.getElementById('gallery-edit-status');
+      const form = new FormData();
+      form.append('title', document.getElementById('gallery-edit-title').value.trim());
+      const image = document.getElementById('gallery-edit-image').files[0];
+      const audio = document.getElementById('gallery-edit-audio').files[0];
+      if (image) form.append('image', image);
+      if (audio) form.append('audio', audio);
+
+      button.disabled = true;
+      button.textContent = 'SAVING...';
+      status.classList.remove('hidden');
+      status.textContent = 'Saving changes...';
+      try {
+        await axios.patch('/api/gallery/' + id, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+        status.textContent = 'Updated successfully.';
+        await loadAdminGallery();
+        setTimeout(cancelGalleryEdit, 500);
+      } catch (error) {
+        status.textContent = error.response?.data?.error || 'Update failed.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'SAVE CHANGES';
       }
     });
 
