@@ -539,6 +539,9 @@ app.patch('/api/bookings/:id/payment', async (c) => {
   const paidBooking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first()
   if (paidBooking) {
     await sendBookingNotification(env, paidBooking, 'PayPal')
+    if ((paidBooking as any).promo_code) {
+      await env.DB.prepare(`UPDATE promo_codes SET used_count = used_count + 1 WHERE UPPER(code) = UPPER(?)`).bind((paidBooking as any).promo_code).run()
+    }
   }
 
   return c.json({ success: true })
@@ -640,6 +643,9 @@ app.post('/api/bookings/:id/toss/confirm', async (c) => {
   const paidBooking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first()
   if (paidBooking) {
     await sendBookingNotification(env, paidBooking, 'Toss Payments')
+    if ((paidBooking as any).promo_code) {
+      await env.DB.prepare(`UPDATE promo_codes SET used_count = used_count + 1 WHERE UPPER(code) = UPPER(?)`).bind((paidBooking as any).promo_code).run()
+    }
   }
 
   return c.json({ success: true, paymentKey, orderId })
@@ -772,6 +778,85 @@ app.patch('/api/bookings/:id/status', async (c) => {
 })
 
 // Gallery media is stored privately in R2 and streamed through this Worker.
+// ========== PROMO CODES ==========
+// Public validation/apply endpoint. The server calculates the discount and updates the pending booking.
+app.post('/api/bookings/:id/promo', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const body = await c.req.json() as { code?: string }
+  const code = String(body.code || '').trim().toUpperCase()
+  if (!code) return c.json({ error: 'Enter a promo code' }, 400)
+
+  const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
+  if (!booking) return c.json({ error: 'Booking not found' }, 404)
+  if (booking.payment_status === 'paid') return c.json({ error: 'This booking is already paid' }, 400)
+
+  const promo = await env.DB.prepare(`SELECT * FROM promo_codes WHERE UPPER(code) = ?`).bind(code).first() as any
+  if (!promo || Number(promo.is_active) !== 1) return c.json({ error: 'Invalid promo code' }, 404)
+  if (promo.expires_at && new Date(promo.expires_at + 'T23:59:59') < new Date()) return c.json({ error: 'This promo code has expired' }, 400)
+  if (promo.max_uses !== null && promo.max_uses !== undefined && Number(promo.used_count || 0) >= Number(promo.max_uses)) {
+    return c.json({ error: 'This promo code has reached its usage limit' }, 400)
+  }
+
+  const percent = Math.max(1, Math.min(100, Number(promo.discount_percent)))
+  const originalKrw = Number(booking.original_total_price || booking.total_price)
+  const originalUsd = Number(booking.original_price_usd || booking.price_usd)
+  const finalKrw = Math.max(0, Math.round(originalKrw * (100 - percent) / 100))
+  const finalUsd = Math.max(0, Math.round(originalUsd * (100 - percent)) / 100)
+  const discountKrw = originalKrw - finalKrw
+
+  await env.DB.prepare(`
+    UPDATE bookings SET
+      original_total_price = ?, original_price_usd = ?,
+      promo_code = ?, promo_discount_percent = ?, discount_amount = ?,
+      total_price = ?, price_usd = ?
+    WHERE id = ?
+  `).bind(originalKrw, originalUsd, code, percent, discountKrw, finalKrw, finalUsd, id).run()
+
+  return c.json({ success: true, code, discount_percent: percent, original_total_price: originalKrw, original_price_usd: originalUsd, discount_amount: discountKrw, total_price: finalKrw, price_usd: finalUsd })
+})
+
+// Admin promo code management.
+app.get('/api/promo-codes', async (c) => {
+  const { env } = c
+  const result = await env.DB.prepare(`SELECT * FROM promo_codes ORDER BY created_at DESC`).all()
+  return c.json(result.results)
+})
+
+app.post('/api/promo-codes', async (c) => {
+  const { env } = c
+  const data = await c.req.json() as any
+  const code = String(data.code || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '')
+  const percent = Number(data.discount_percent)
+  if (!code) return c.json({ error: 'Promo code is required' }, 400)
+  if (!Number.isFinite(percent) || percent < 1 || percent > 100) return c.json({ error: 'Discount must be between 1 and 100%' }, 400)
+  const maxUses = data.max_uses === '' || data.max_uses === null || data.max_uses === undefined ? null : Math.max(1, Number(data.max_uses))
+  try {
+    const result = await env.DB.prepare(`INSERT INTO promo_codes (code, discount_percent, expires_at, max_uses, is_active) VALUES (?, ?, ?, ?, 1)`)
+      .bind(code, percent, data.expires_at || null, maxUses).run()
+    return c.json({ success: true, id: result.meta.last_row_id })
+  } catch (e) {
+    return c.json({ error: 'That promo code already exists' }, 409)
+  }
+})
+
+app.patch('/api/promo-codes/:id', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const data = await c.req.json() as any
+  const current = await env.DB.prepare(`SELECT * FROM promo_codes WHERE id = ?`).bind(id).first() as any
+  if (!current) return c.json({ error: 'Promo code not found' }, 404)
+  await env.DB.prepare(`UPDATE promo_codes SET is_active = ? WHERE id = ?`).bind(data.is_active ? 1 : 0, id).run()
+  return c.json({ success: true })
+})
+
+app.delete('/api/promo-codes/:id', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  await env.DB.prepare(`DELETE FROM promo_codes WHERE id = ?`).bind(id).run()
+  return c.json({ success: true })
+})
+
 app.get('/api/gallery/media/*', async (c) => {
   const { env } = c
   const key = decodeURIComponent(c.req.path.replace('/api/gallery/media/', ''))

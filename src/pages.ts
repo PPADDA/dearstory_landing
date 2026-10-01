@@ -636,8 +636,20 @@ export const paymentPage = (bookingId: string) => `
             <div class="flex justify-between"><span class="text-gray-600">Number of People</span><span id="summary-people" class="font-medium"></span></div>
             <div class="flex justify-between"><span class="text-gray-600">Customer</span><span id="summary-name" class="font-medium"></span></div>
             <div class="border-t border-gray-200 pt-4 mt-4">
+              <div id="promo-breakdown" class="hidden space-y-2 mb-3 text-sm">
+                <div class="flex justify-between text-gray-500"><span>Subtotal</span><span id="summary-subtotal"></span></div>
+                <div class="flex justify-between text-green-700"><span id="summary-discount-label">Promo discount</span><span id="summary-discount"></span></div>
+              </div>
               <div class="flex justify-between text-lg"><span class="font-medium">Total</span><span id="summary-price" class="font-semibold"></span></div>
               <div class="flex justify-end"><span id="summary-price-krw" class="text-sm text-gray-500"></span></div>
+            </div>
+            <div class="border-t border-gray-200 pt-5 mt-5">
+              <label class="block text-xs uppercase tracking-wider mb-2">Promo Code</label>
+              <div class="flex gap-2">
+                <input id="promo-code-input" type="text" placeholder="Enter code" class="flex-1 p-3 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase">
+                <button id="promo-apply-button" type="button" class="px-5 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white transition">Apply</button>
+              </div>
+              <p id="promo-message" class="text-xs mt-2 hidden"></p>
             </div>
           </div>
         </div>
@@ -747,6 +759,58 @@ export const paymentPage = (bookingId: string) => `
       return true;
     }
 
+    function renderBookingPrice() {
+      if (!bookingData) return;
+      const hasPromo = bookingData.promo_code && Number(bookingData.promo_discount_percent || 0) > 0;
+      const originalUsd = Number(bookingData.original_price_usd || bookingData.price_usd);
+      const originalKrw = Number(bookingData.original_total_price || bookingData.total_price);
+      document.getElementById('summary-price').textContent = '$' + Number(bookingData.price_usd).toFixed(2) + ' USD';
+      document.getElementById('summary-price-krw').textContent = '(₩' + Number(bookingData.total_price).toLocaleString() + ')';
+      const breakdown = document.getElementById('promo-breakdown');
+      if (hasPromo) {
+        breakdown.classList.remove('hidden');
+        document.getElementById('summary-subtotal').textContent = '$' + originalUsd.toFixed(2) + ' / ₩' + originalKrw.toLocaleString();
+        document.getElementById('summary-discount-label').textContent = bookingData.promo_code + ' (' + Number(bookingData.promo_discount_percent) + '% off)';
+        document.getElementById('summary-discount').textContent = '-₩' + Number(bookingData.discount_amount || 0).toLocaleString();
+        document.getElementById('promo-code-input').value = bookingData.promo_code;
+      } else {
+        breakdown.classList.add('hidden');
+      }
+    }
+
+    async function applyPromoCode() {
+      if (!bookingData) return;
+      const input = document.getElementById('promo-code-input');
+      const button = document.getElementById('promo-apply-button');
+      const message = document.getElementById('promo-message');
+      const code = input.value.trim().toUpperCase();
+      if (!code) return;
+      button.disabled = true;
+      button.textContent = 'APPLYING...';
+      message.classList.remove('hidden', 'text-red-600', 'text-green-700');
+      try {
+        const response = await axios.post('/api/bookings/' + bookingId + '/promo', { code });
+        bookingData = { ...bookingData, ...response.data, promo_code: response.data.code, promo_discount_percent: response.data.discount_percent };
+        renderBookingPrice();
+        message.textContent = response.data.code + ' applied — ' + response.data.discount_percent + '% off.';
+        message.classList.add('text-green-700');
+        // Re-render PayPal later so its order uses the discounted USD total.
+        document.getElementById('paypal-button-container').innerHTML = '';
+        paypalRendered = false;
+      } catch (error) {
+        message.textContent = error?.response?.data?.error || 'Could not apply this promo code.';
+        message.classList.add('text-red-600');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'APPLY';
+      }
+    }
+
+    document.getElementById('promo-apply-button').addEventListener('click', applyPromoCode);
+    document.getElementById('promo-code-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); applyPromoCode(); }
+    });
+
     async function loadBooking() {
       if (await confirmTossPaymentFromRedirect()) return;
       try {
@@ -762,8 +826,7 @@ export const paymentPage = (bookingId: string) => `
         document.getElementById('summary-datetime').textContent = bookingData.booking_date + ' at ' + bookingData.booking_time;
         document.getElementById('summary-people').textContent = bookingData.num_people + (bookingData.num_people > 1 ? ' people' : ' person');
         document.getElementById('summary-name').textContent = bookingData.name;
-        document.getElementById('summary-price').textContent = '$' + Number(bookingData.price_usd).toFixed(2) + ' USD';
-        document.getElementById('summary-price-krw').textContent = '(₩' + Number(bookingData.total_price).toLocaleString() + ')';
+        renderBookingPrice();
 
         document.getElementById('loading-state').classList.add('hidden');
         document.getElementById('payment-content').classList.remove('hidden');
@@ -915,6 +978,9 @@ export const adminPage = () => `
           <button onclick="showTab('gallery')" id="tab-gallery" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
             Gallery
           </button>
+          <button onclick="showTab('promos')" id="tab-promos" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
+            Promo Codes
+          </button>
 
         </div>
       </div>
@@ -1062,6 +1128,27 @@ export const adminPage = () => `
             <p class="text-xs text-gray-400">Use arrows to change display order</p>
           </div>
           <div id="admin-gallery-container" class="space-y-3"></div>
+        </div>
+      </div>
+
+
+      <!-- Promo Codes Tab -->
+      <div id="content-promos" class="tab-content hidden">
+        <div class="bg-white p-8 border border-gray-200 mb-8">
+          <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Discounts</p>
+          <h2 class="text-3xl font-light mb-2" style="font-family: 'Cormorant Garamond', serif;">Create Promo Code</h2>
+          <p class="text-sm text-gray-500 mb-8">Create percentage discounts for the payment page.</p>
+          <form id="promo-form" class="grid md:grid-cols-4 gap-4 items-end">
+            <div><label class="block text-xs uppercase tracking-wider mb-2">Code *</label><input id="promo-admin-code" required placeholder="WELCOME10" class="w-full p-3 border border-gray-300 text-sm uppercase"></div>
+            <div><label class="block text-xs uppercase tracking-wider mb-2">Discount % *</label><input id="promo-admin-percent" type="number" min="1" max="100" required placeholder="10" class="w-full p-3 border border-gray-300 text-sm"></div>
+            <div><label class="block text-xs uppercase tracking-wider mb-2">Expires</label><input id="promo-admin-expiry" type="date" class="w-full p-3 border border-gray-300 text-sm"></div>
+            <div><label class="block text-xs uppercase tracking-wider mb-2">Max Uses</label><input id="promo-admin-max" type="number" min="1" placeholder="Unlimited" class="w-full p-3 border border-gray-300 text-sm"></div>
+            <div class="md:col-span-4"><button type="submit" class="btn-modern">Create Promo Code</button><span id="promo-admin-status" class="ml-4 text-sm text-gray-500"></span></div>
+          </form>
+        </div>
+        <div class="bg-white p-8 border border-gray-200">
+          <h2 class="text-3xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Promo Codes</h2>
+          <div id="promo-admin-list" class="space-y-3"></div>
         </div>
       </div>
 
@@ -1495,6 +1582,47 @@ export const adminPage = () => `
       }
     }
 
+    async function loadPromoCodes() {
+      const container = document.getElementById('promo-admin-list');
+      try {
+        const response = await axios.get('/api/promo-codes');
+        const items = response.data || [];
+        if (!items.length) { container.innerHTML = '<p class="text-sm text-gray-400 py-6">No promo codes yet</p>'; return; }
+        container.innerHTML = items.map(item =>
+          '<div class="grid md:grid-cols-[1fr_auto] gap-4 items-center border border-gray-200 p-4">' +
+            '<div><div class="flex items-center gap-3"><strong class="tracking-wider">' + item.code + '</strong><span class="text-xs px-2 py-1 ' + (item.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500') + '">' + (item.is_active ? 'ACTIVE' : 'INACTIVE') + '</span></div>' +
+            '<p class="text-xs text-gray-500 mt-2">' + item.discount_percent + '% off · ' + (item.expires_at ? 'Expires ' + item.expires_at : 'No expiry') + ' · Used ' + (item.used_count || 0) + (item.max_uses ? ' / ' + item.max_uses : ' / unlimited') + '</p></div>' +
+            '<div class="flex gap-2"><button onclick="togglePromoCode(' + item.id + ',' + (item.is_active ? 'false' : 'true') + ')" class="px-3 py-2 border border-gray-300 text-xs uppercase tracking-wider">' + (item.is_active ? 'Disable' : 'Enable') + '</button>' +
+            '<button onclick="deletePromoCode(' + item.id + ')" class="px-3 py-2 bg-black text-white text-xs uppercase tracking-wider">Delete</button></div>' +
+          '</div>'
+        ).join('');
+      } catch (error) { container.innerHTML = '<p class="text-sm text-red-500">Could not load promo codes.</p>'; }
+    }
+
+    document.getElementById('promo-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('promo-admin-status');
+      try {
+        await axios.post('/api/promo-codes', {
+          code: document.getElementById('promo-admin-code').value,
+          discount_percent: Number(document.getElementById('promo-admin-percent').value),
+          expires_at: document.getElementById('promo-admin-expiry').value || null,
+          max_uses: document.getElementById('promo-admin-max').value || null
+        });
+        e.target.reset(); status.textContent = 'Created.'; await loadPromoCodes();
+      } catch (error) { status.textContent = error.response?.data?.error || 'Could not create promo code.'; }
+    });
+
+    async function togglePromoCode(id, active) {
+      await axios.patch('/api/promo-codes/' + id, { is_active: active });
+      await loadPromoCodes();
+    }
+    async function deletePromoCode(id) {
+      if (!confirm('Delete this promo code?')) return;
+      await axios.delete('/api/promo-codes/' + id);
+      await loadPromoCodes();
+    }
+
     function getProgressBadgeStyle(status) {
       switch(status) {
         case '예약확인중': return 'background-color: #fef3c7; color: #92400e';
@@ -1861,6 +1989,7 @@ export const adminPage = () => `
     loadBookings();
     loadAdminGallery();
     loadBlockedTimes();
+    loadPromoCodes();
   </script>
 `;
 
