@@ -155,11 +155,24 @@ export const galleryPage = () => `
     </div>
   </section>
 
+  <style>
+    .gallery-progress { -webkit-appearance: none; appearance: none; height: 2px; background: linear-gradient(to right, #111 0%, #111 var(--progress, 0%), #d1d5db var(--progress, 0%), #d1d5db 100%); cursor: pointer; }
+    .gallery-progress::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 9999px; background: #111; cursor: grab; }
+    .gallery-progress::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 9999px; background: #111; cursor: grab; }
+  </style>
+
   <script>
     function galleryEscape(value) {
       return String(value ?? '').replace(/[&<>\"']/g, ch => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#039;'
       })[ch]);
+    }
+
+    function formatGalleryTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return mins + ':' + secs;
     }
 
     function toggleGalleryAudio(id) {
@@ -180,6 +193,28 @@ export const galleryPage = () => `
       button.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     }
 
+    function updateGalleryProgress(id) {
+      const audio = document.getElementById('gallery-audio-' + id);
+      const range = document.getElementById('gallery-progress-' + id);
+      const current = document.getElementById('gallery-current-' + id);
+      const duration = document.getElementById('gallery-duration-' + id);
+      if (!audio || !range || !current || !duration) return;
+      const total = Number.isFinite(audio.duration) ? audio.duration : 0;
+      range.max = total || 0;
+      if (!range.matches(':active')) range.value = audio.currentTime || 0;
+      current.textContent = formatGalleryTime(audio.currentTime || 0);
+      duration.textContent = formatGalleryTime(total);
+      const pct = total > 0 ? ((audio.currentTime || 0) / total) * 100 : 0;
+      range.style.setProperty('--progress', pct + '%');
+    }
+
+    function seekGalleryAudio(id, value) {
+      const audio = document.getElementById('gallery-audio-' + id);
+      if (!audio) return;
+      audio.currentTime = Number(value) || 0;
+      updateGalleryProgress(id);
+    }
+
     async function loadGalleryItems() {
       const container = document.getElementById('gallery-container');
       try {
@@ -197,9 +232,14 @@ export const galleryPage = () => `
               '<div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition">' +
                 '<button id="gallery-play-' + item.id + '" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play" class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/90 text-black flex items-center justify-center shadow-lg backdrop-blur-sm transition hover:scale-105"><span class="text-2xl leading-none ml-1">▶</span></button>' +
               '</div>' +
-              '<audio id="gallery-audio-' + item.id + '" class="gallery-audio hidden" preload="metadata" src="' + galleryEscape(item.file_url) + '" onplay="setGalleryButton(' + item.id + ', true)" onpause="setGalleryButton(' + item.id + ', false)" onended="setGalleryButton(' + item.id + ', false)"></audio>' +
+              '<audio id="gallery-audio-' + item.id + '" class="gallery-audio hidden" preload="metadata" src="' + galleryEscape(item.file_url) + '" onloadedmetadata="updateGalleryProgress(' + item.id + ')" ontimeupdate="updateGalleryProgress(' + item.id + ')" onplay="setGalleryButton(' + item.id + ', true)" onpause="setGalleryButton(' + item.id + ', false)" onended="setGalleryButton(' + item.id + ', false); updateGalleryProgress(' + item.id + ')"></audio>' +
             '</div>' +
-            '<h3 class="text-2xl font-light" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
+            '<h3 class="text-2xl font-light mb-3" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
+            '<div class="flex items-center gap-3 text-[11px] tracking-wide text-gray-500">' +
+              '<span id="gallery-current-' + item.id + '" class="w-8 tabular-nums">0:00</span>' +
+              '<input id="gallery-progress-' + item.id + '" type="range" min="0" max="0" value="0" step="0.01" oninput="seekGalleryAudio(' + item.id + ', this.value)" aria-label="Audio progress" class="gallery-progress flex-1">' +
+              '<span id="gallery-duration-' + item.id + '" class="w-8 text-right tabular-nums">0:00</span>' +
+            '</div>' +
           '</article>'
         ).join('');
       } catch (error) {
