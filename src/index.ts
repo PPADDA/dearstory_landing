@@ -798,22 +798,40 @@ app.post('/api/bookings/:id/promo', async (c) => {
     return c.json({ error: 'This promo code has reached its usage limit' }, 400)
   }
 
-  const percent = Math.max(1, Math.min(100, Number(promo.discount_percent)))
   const originalKrw = Number(booking.original_total_price || booking.total_price)
   const originalUsd = Number(booking.original_price_usd || booking.price_usd)
-  const finalKrw = Math.max(0, Math.round(originalKrw * (100 - percent) / 100))
-  const finalUsd = Math.max(0, Math.round(originalUsd * (100 - percent)) / 100)
-  const discountKrw = originalKrw - finalKrw
+  const discountType = promo.discount_type === 'fixed' ? 'fixed' : 'percent'
+  const discountValue = Number(promo.discount_value ?? promo.discount_percent ?? 0)
+  if (!Number.isFinite(discountValue) || discountValue <= 0) return c.json({ error: 'Invalid promo discount' }, 400)
+
+  let discountKrw = 0
+  let effectivePercent = 0
+  if (discountType === 'fixed') {
+    discountKrw = Math.min(originalKrw, Math.round(discountValue))
+    effectivePercent = originalKrw > 0 ? (discountKrw / originalKrw) * 100 : 0
+  } else {
+    const percent = Math.max(1, Math.min(100, discountValue))
+    discountKrw = originalKrw - Math.max(0, Math.round(originalKrw * (100 - percent) / 100))
+    effectivePercent = percent
+  }
+
+  const finalKrw = Math.max(0, originalKrw - discountKrw)
+  // USD uses the same effective discount ratio as KRW, so international checkout stays equivalent.
+  const finalUsd = Math.max(0, Math.round(originalUsd * (100 - effectivePercent)) / 100)
 
   await env.DB.prepare(`
     UPDATE bookings SET
       original_total_price = ?, original_price_usd = ?,
-      promo_code = ?, promo_discount_percent = ?, discount_amount = ?,
+      promo_code = ?, promo_discount_percent = ?, promo_discount_type = ?, promo_discount_value = ?, discount_amount = ?,
       total_price = ?, price_usd = ?
     WHERE id = ?
-  `).bind(originalKrw, originalUsd, code, percent, discountKrw, finalKrw, finalUsd, id).run()
+  `).bind(originalKrw, originalUsd, code, effectivePercent, discountType, discountValue, discountKrw, finalKrw, finalUsd, id).run()
 
-  return c.json({ success: true, code, discount_percent: percent, original_total_price: originalKrw, original_price_usd: originalUsd, discount_amount: discountKrw, total_price: finalKrw, price_usd: finalUsd })
+  return c.json({
+    success: true, code, discount_type: discountType, discount_value: discountValue,
+    discount_percent: effectivePercent, original_total_price: originalKrw, original_price_usd: originalUsd,
+    discount_amount: discountKrw, total_price: finalKrw, price_usd: finalUsd
+  })
 })
 
 // Admin promo code management.
@@ -827,13 +845,16 @@ app.post('/api/promo-codes', async (c) => {
   const { env } = c
   const data = await c.req.json() as any
   const code = String(data.code || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '')
-  const percent = Number(data.discount_percent)
+  const discountType = data.discount_type === 'fixed' ? 'fixed' : 'percent'
+  const discountValue = Number(data.discount_value)
   if (!code) return c.json({ error: 'Promo code is required' }, 400)
-  if (!Number.isFinite(percent) || percent < 1 || percent > 100) return c.json({ error: 'Discount must be between 1 and 100%' }, 400)
+  if (!Number.isFinite(discountValue) || discountValue <= 0) return c.json({ error: 'Enter a valid discount value' }, 400)
+  if (discountType === 'percent' && discountValue > 100) return c.json({ error: 'Percentage discount cannot exceed 100%' }, 400)
   const maxUses = data.max_uses === '' || data.max_uses === null || data.max_uses === undefined ? null : Math.max(1, Number(data.max_uses))
+  const legacyPercent = discountType === 'percent' ? discountValue : 0
   try {
-    const result = await env.DB.prepare(`INSERT INTO promo_codes (code, discount_percent, expires_at, max_uses, is_active) VALUES (?, ?, ?, ?, 1)`)
-      .bind(code, percent, data.expires_at || null, maxUses).run()
+    const result = await env.DB.prepare(`INSERT INTO promo_codes (code, discount_percent, discount_type, discount_value, expires_at, max_uses, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)`)
+      .bind(code, legacyPercent, discountType, discountValue, data.expires_at || null, maxUses).run()
     return c.json({ success: true, id: result.meta.last_row_id })
   } catch (e) {
     return c.json({ error: 'That promo code already exists' }, 409)

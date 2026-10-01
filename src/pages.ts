@@ -761,7 +761,7 @@ export const paymentPage = (bookingId: string) => `
 
     function renderBookingPrice() {
       if (!bookingData) return;
-      const hasPromo = bookingData.promo_code && Number(bookingData.promo_discount_percent || 0) > 0;
+      const hasPromo = bookingData.promo_code && Number(bookingData.discount_amount || 0) > 0;
       const originalUsd = Number(bookingData.original_price_usd || bookingData.price_usd);
       const originalKrw = Number(bookingData.original_total_price || bookingData.total_price);
       document.getElementById('summary-price').textContent = '$' + Number(bookingData.price_usd).toFixed(2) + ' USD';
@@ -770,7 +770,8 @@ export const paymentPage = (bookingId: string) => `
       if (hasPromo) {
         breakdown.classList.remove('hidden');
         document.getElementById('summary-subtotal').textContent = '$' + originalUsd.toFixed(2) + ' / ₩' + originalKrw.toLocaleString();
-        document.getElementById('summary-discount-label').textContent = bookingData.promo_code + ' (' + Number(bookingData.promo_discount_percent) + '% off)';
+        const promoLabel = bookingData.promo_discount_type === 'fixed' ? ('₩' + Number(bookingData.promo_discount_value || bookingData.discount_amount).toLocaleString() + ' off') : (Number(bookingData.promo_discount_value || bookingData.promo_discount_percent) + '% off');
+        document.getElementById('summary-discount-label').textContent = bookingData.promo_code + ' (' + promoLabel + ')';
         document.getElementById('summary-discount').textContent = '-₩' + Number(bookingData.discount_amount || 0).toLocaleString();
         document.getElementById('promo-code-input').value = bookingData.promo_code;
       } else {
@@ -790,9 +791,10 @@ export const paymentPage = (bookingId: string) => `
       message.classList.remove('hidden', 'text-red-600', 'text-green-700');
       try {
         const response = await axios.post('/api/bookings/' + bookingId + '/promo', { code });
-        bookingData = { ...bookingData, ...response.data, promo_code: response.data.code, promo_discount_percent: response.data.discount_percent };
+        bookingData = { ...bookingData, ...response.data, promo_code: response.data.code, promo_discount_percent: response.data.discount_percent, promo_discount_type: response.data.discount_type, promo_discount_value: response.data.discount_value };
         renderBookingPrice();
-        message.textContent = response.data.code + ' applied — ' + response.data.discount_percent + '% off.';
+        const appliedText = response.data.discount_type === 'fixed' ? ('₩' + Number(response.data.discount_value).toLocaleString() + ' off') : (Number(response.data.discount_value) + '% off');
+        message.textContent = response.data.code + ' applied — ' + appliedText + '.';
         message.classList.add('text-green-700');
         // Re-render PayPal later so its order uses the discounted USD total.
         document.getElementById('paypal-button-container').innerHTML = '';
@@ -1137,13 +1139,13 @@ export const adminPage = () => `
         <div class="bg-white p-8 border border-gray-200 mb-8">
           <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Discounts</p>
           <h2 class="text-3xl font-light mb-2" style="font-family: 'Cormorant Garamond', serif;">Create Promo Code</h2>
-          <p class="text-sm text-gray-500 mb-8">Create percentage discounts for the payment page.</p>
-          <form id="promo-form" class="grid md:grid-cols-4 gap-4 items-end">
+          <p class="text-sm text-gray-500 mb-8">Create percentage or fixed KRW discounts for the payment page.</p>
+          <form id="promo-form" class="grid md:grid-cols-5 gap-4 items-end">
             <div><label class="block text-xs uppercase tracking-wider mb-2">Code *</label><input id="promo-admin-code" required placeholder="WELCOME10" class="w-full p-3 border border-gray-300 text-sm uppercase"></div>
-            <div><label class="block text-xs uppercase tracking-wider mb-2">Discount % *</label><input id="promo-admin-percent" type="number" min="1" max="100" required placeholder="10" class="w-full p-3 border border-gray-300 text-sm"></div>
+            <div><label class="block text-xs uppercase tracking-wider mb-2">Discount Type *</label><select id="promo-admin-type" class="w-full p-3 border border-gray-300 text-sm"><option value="percent">Percent (%)</option><option value="fixed">Fixed (KRW)</option></select></div><div><label id="promo-admin-value-label" class="block text-xs uppercase tracking-wider mb-2">Discount % *</label><input id="promo-admin-value" type="number" min="1" required placeholder="10" class="w-full p-3 border border-gray-300 text-sm"></div>
             <div><label class="block text-xs uppercase tracking-wider mb-2">Expires</label><input id="promo-admin-expiry" type="date" class="w-full p-3 border border-gray-300 text-sm"></div>
             <div><label class="block text-xs uppercase tracking-wider mb-2">Max Uses</label><input id="promo-admin-max" type="number" min="1" placeholder="Unlimited" class="w-full p-3 border border-gray-300 text-sm"></div>
-            <div class="md:col-span-4"><button type="submit" class="btn-modern">Create Promo Code</button><span id="promo-admin-status" class="ml-4 text-sm text-gray-500"></span></div>
+            <div class="md:col-span-5"><button type="submit" class="btn-modern">Create Promo Code</button><span id="promo-admin-status" class="ml-4 text-sm text-gray-500"></span></div>
           </form>
         </div>
         <div class="bg-white p-8 border border-gray-200">
@@ -1591,7 +1593,7 @@ export const adminPage = () => `
         container.innerHTML = items.map(item =>
           '<div class="grid md:grid-cols-[1fr_auto] gap-4 items-center border border-gray-200 p-4">' +
             '<div><div class="flex items-center gap-3"><strong class="tracking-wider">' + item.code + '</strong><span class="text-xs px-2 py-1 ' + (item.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500') + '">' + (item.is_active ? 'ACTIVE' : 'INACTIVE') + '</span></div>' +
-            '<p class="text-xs text-gray-500 mt-2">' + item.discount_percent + '% off · ' + (item.expires_at ? 'Expires ' + item.expires_at : 'No expiry') + ' · Used ' + (item.used_count || 0) + (item.max_uses ? ' / ' + item.max_uses : ' / unlimited') + '</p></div>' +
+            '<p class="text-xs text-gray-500 mt-2">' + ((item.discount_type === 'fixed') ? ('₩' + Number(item.discount_value).toLocaleString() + ' off') : (Number(item.discount_value ?? item.discount_percent) + '% off')) + ' · ' + (item.expires_at ? 'Expires ' + item.expires_at : 'No expiry') + ' · Used ' + (item.used_count || 0) + (item.max_uses ? ' / ' + item.max_uses : ' / unlimited') + '</p></div>' +
             '<div class="flex gap-2"><button onclick="togglePromoCode(' + item.id + ',' + (item.is_active ? 'false' : 'true') + ')" class="px-3 py-2 border border-gray-300 text-xs uppercase tracking-wider">' + (item.is_active ? 'Disable' : 'Enable') + '</button>' +
             '<button onclick="deletePromoCode(' + item.id + ')" class="px-3 py-2 bg-black text-white text-xs uppercase tracking-wider">Delete</button></div>' +
           '</div>'
@@ -1599,13 +1601,28 @@ export const adminPage = () => `
       } catch (error) { container.innerHTML = '<p class="text-sm text-red-500">Could not load promo codes.</p>'; }
     }
 
+    document.getElementById('promo-admin-type').addEventListener('change', function() {
+      const label = document.getElementById('promo-admin-value-label');
+      const input = document.getElementById('promo-admin-value');
+      if (this.value === 'fixed') {
+        label.textContent = 'Discount Amount (KRW) *';
+        input.placeholder = '50000';
+        input.removeAttribute('max');
+      } else {
+        label.textContent = 'Discount % *';
+        input.placeholder = '10';
+        input.max = '100';
+      }
+    });
+
     document.getElementById('promo-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const status = document.getElementById('promo-admin-status');
       try {
         await axios.post('/api/promo-codes', {
           code: document.getElementById('promo-admin-code').value,
-          discount_percent: Number(document.getElementById('promo-admin-percent').value),
+          discount_type: document.getElementById('promo-admin-type').value,
+          discount_value: Number(document.getElementById('promo-admin-value').value),
           expires_at: document.getElementById('promo-admin-expiry').value || null,
           max_uses: document.getElementById('promo-admin-max').value || null
         });
