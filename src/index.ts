@@ -466,7 +466,10 @@ app.post('/api/bookings', async (c) => {
   const requestedEnd = requestedStart + 180
 
   const bookingRows = await env.DB.prepare(`
-    SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
+    SELECT booking_time FROM bookings
+    WHERE booking_date = ?
+      AND status != 'cancelled'
+      AND (payment_status = 'paid' OR (payment_status = 'pending' AND datetime(created_at) > datetime('now', '-15 minutes')))
   `).bind(data.booking_date).all()
   const blockedRows = await env.DB.prepare(`
     SELECT blocked_time FROM blocked_times WHERE blocked_date = ?
@@ -510,6 +513,19 @@ app.post('/api/bookings', async (c) => {
   return c.json({ success: true, id: result.meta.last_row_id, totalPrice, totalPriceUSD })
 })
 
+// Pending bookings hold their time for 15 minutes. After that, the slot automatically reopens.
+async function isBookingHoldActive(env: Bindings, id: string) {
+  const row = await env.DB.prepare(`
+    SELECT CASE
+      WHEN payment_status = 'paid' THEN 1
+      WHEN payment_status = 'pending' AND datetime(created_at) > datetime('now', '-15 minutes') THEN 1
+      ELSE 0
+    END AS active
+    FROM bookings WHERE id = ?
+  `).bind(id).first() as any
+  return Number(row?.active || 0) === 1
+}
+
 // Complete payment for a booking
 app.patch('/api/bookings/:id/payment', async (c) => {
   const { env } = c
@@ -527,6 +543,9 @@ app.patch('/api/bookings/:id/payment', async (c) => {
   }
   if (booking.payment_status === 'paid') {
     return c.json({ error: 'Booking is already paid' }, 400)
+  }
+  if (!(await isBookingHoldActive(env, id))) {
+    return c.json({ error: 'Your 15-minute reservation hold has expired. Please choose the time again.' }, 409)
   }
 
   // Update payment status
@@ -567,6 +586,9 @@ app.post('/api/bookings/:id/toss/confirm', async (c) => {
   const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
   if (!booking) return c.json({ error: 'Booking not found' }, 404)
   if (booking.payment_status === 'paid') return c.json({ error: 'Booking is already paid' }, 400)
+  if (!(await isBookingHoldActive(env, id))) {
+    return c.json({ error: 'Your 15-minute reservation hold has expired. Please choose the time again.' }, 409)
+  }
 
   const expectedAmount = Number(booking.total_price)
   if (Number(amount) !== expectedAmount) {
@@ -790,6 +812,9 @@ app.post('/api/bookings/:id/promo', async (c) => {
   const booking = await env.DB.prepare(`SELECT * FROM bookings WHERE id = ?`).bind(id).first() as any
   if (!booking) return c.json({ error: 'Booking not found' }, 404)
   if (booking.payment_status === 'paid') return c.json({ error: 'This booking is already paid' }, 400)
+  if (!(await isBookingHoldActive(env, id))) {
+    return c.json({ error: 'Your 15-minute reservation hold has expired. Please choose the time again.' }, 409)
+  }
 
   const promo = await env.DB.prepare(`SELECT * FROM promo_codes WHERE UPPER(code) = ?`).bind(code).first() as any
   if (!promo || Number(promo.is_active) !== 1) return c.json({ error: 'Invalid promo code' }, 404)
@@ -1082,7 +1107,10 @@ app.post('/api/blocked-times', async (c) => {
   }
 
   const bookingRows = await db.prepare(`
-    SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
+    SELECT booking_time FROM bookings
+    WHERE booking_date = ?
+      AND status != 'cancelled'
+      AND (payment_status = 'paid' OR (payment_status = 'pending' AND datetime(created_at) > datetime('now', '-15 minutes')))
   `).bind(date).all()
 
   const blockedRows = await db.prepare(`
@@ -1123,7 +1151,10 @@ app.get('/api/available-times', async (c) => {
   if (!date) return c.json({ error: 'date parameter is required' }, 400)
 
   const bookedResult = await db.prepare(`
-    SELECT booking_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'
+    SELECT booking_time FROM bookings
+    WHERE booking_date = ?
+      AND status != 'cancelled'
+      AND (payment_status = 'paid' OR (payment_status = 'pending' AND datetime(created_at) > datetime('now', '-15 minutes')))
   `).bind(date).all()
   const bookedStarts = bookedResult.results.map((r: any) => r.booking_time)
 
