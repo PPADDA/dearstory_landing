@@ -971,7 +971,10 @@ export const adminPage = () => `
       <!-- Tab Navigation -->
       <div class="bg-white border-b border-gray-200 mb-8">
         <div class="flex space-x-8 px-8">
-          <button onclick="showTab('bookings')" id="tab-bookings" class="py-4 text-sm uppercase tracking-wider border-b-2 border-black">
+          <button onclick="showTab('dashboard')" id="tab-dashboard" class="py-4 text-sm uppercase tracking-wider border-b-2 border-black">
+            Dashboard
+          </button>
+          <button onclick="showTab('bookings')" id="tab-bookings" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
             Bookings
           </button>
           <button onclick="showTab('calendar')" id="tab-calendar" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
@@ -987,8 +990,59 @@ export const adminPage = () => `
         </div>
       </div>
 
+      <!-- Dashboard Tab -->
+      <div id="content-dashboard" class="tab-content">
+        <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white p-6 border border-gray-200">
+            <p class="text-xs uppercase tracking-wider text-gray-500 mb-3">Today's Sessions</p>
+            <p id="dash-today" class="text-4xl font-light" style="font-family: 'Cormorant Garamond', serif;">0</p>
+          </div>
+          <div class="bg-white p-6 border border-gray-200">
+            <p class="text-xs uppercase tracking-wider text-gray-500 mb-3">Upcoming</p>
+            <p id="dash-upcoming" class="text-4xl font-light" style="font-family: 'Cormorant Garamond', serif;">0</p>
+          </div>
+          <div class="bg-white p-6 border border-gray-200">
+            <p class="text-xs uppercase tracking-wider text-gray-500 mb-3">Paid Bookings</p>
+            <p id="dash-paid" class="text-4xl font-light" style="font-family: 'Cormorant Garamond', serif;">0</p>
+          </div>
+          <div class="bg-white p-6 border border-gray-200">
+            <p class="text-xs uppercase tracking-wider text-gray-500 mb-3">Net Revenue</p>
+            <p id="dash-revenue" class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">₩0</p>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 bg-white p-8 border border-gray-200">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-gray-500 mb-2">Schedule</p>
+                <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Upcoming Sessions</h2>
+              </div>
+              <button onclick="showTab('bookings')" class="text-xs uppercase tracking-wider border-b border-black">View All</button>
+            </div>
+            <div id="dash-upcoming-list" class="space-y-3"></div>
+          </div>
+
+          <div class="bg-white p-8 border border-gray-200">
+            <p class="text-xs uppercase tracking-wider text-gray-500 mb-2">Overview</p>
+            <h2 class="text-3xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Packages</h2>
+            <div id="dash-packages" class="space-y-5"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-8 border border-gray-200 mt-8">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-gray-500 mb-2">Payments</p>
+              <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Recent Paid Bookings</h2>
+            </div>
+          </div>
+          <div id="dash-recent-payments" class="space-y-3"></div>
+        </div>
+      </div>
+
       <!-- Bookings Tab -->
-      <div id="content-bookings" class="tab-content">
+      <div id="content-bookings" class="tab-content hidden">
         <!-- View Toggle -->
         <div class="bg-white p-4 border border-gray-200 mb-4 flex justify-between items-center">
           <h2 class="text-2xl font-light" style="font-family: 'Cormorant Garamond', serif;">All Bookings</h2>
@@ -1383,6 +1437,53 @@ export const adminPage = () => `
       document.getElementById('calendar-container').innerHTML = html;
     }
 
+    function renderDashboard() {
+      const today = new Date();
+      const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      const active = allBookings.filter(b => b.status !== 'cancelled');
+      const confirmed = active.filter(b => b.payment_status === 'paid' || b.status === 'confirmed');
+      const todayBookings = confirmed.filter(b => b.booking_date === todayStr);
+      const upcoming = confirmed.filter(b => b.booking_date >= todayStr).sort((a,b) => (a.booking_date + ' ' + a.booking_time).localeCompare(b.booking_date + ' ' + b.booking_time));
+      const paid = allBookings.filter(b => b.payment_status === 'paid');
+      const gross = paid.reduce((sum, b) => sum + Number(b.total_price || 0), 0);
+      const refunds = allBookings.reduce((sum, b) => sum + Number(b.refund_amount || 0), 0);
+      const net = Math.max(0, gross - refunds);
+
+      document.getElementById('dash-today').textContent = String(todayBookings.length);
+      document.getElementById('dash-upcoming').textContent = String(upcoming.length);
+      document.getElementById('dash-paid').textContent = String(paid.length);
+      document.getElementById('dash-revenue').textContent = '₩' + net.toLocaleString();
+
+      const upcomingList = document.getElementById('dash-upcoming-list');
+      upcomingList.innerHTML = upcoming.length ? upcoming.slice(0, 6).map(b => `
+        <button onclick="openBookingModal(\${b.id})" class="w-full text-left border border-gray-200 p-4 hover:border-black transition flex items-center justify-between gap-4">
+          <div>
+            <p class="font-medium">\${b.name}</p>
+            <p class="text-xs text-gray-500 mt-1">\${String(b.package_type || '').toUpperCase()} · \${b.num_people} guest\${Number(b.num_people) === 1 ? '' : 's'}</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-sm">\${b.booking_date}</p>
+            <p class="text-xs text-gray-500 mt-1">\${b.booking_time}</p>
+          </div>
+        </button>`).join('') : '<p class="text-sm text-gray-400 py-4">No upcoming sessions.</p>';
+
+      const packageNames = ['basic', 'signature', 'premium'];
+      const packageCounts = Object.fromEntries(packageNames.map(name => [name, confirmed.filter(b => b.package_type === name).length]));
+      const maxCount = Math.max(1, ...Object.values(packageCounts));
+      document.getElementById('dash-packages').innerHTML = packageNames.map(name => {
+        const count = packageCounts[name];
+        const width = Math.round((count / maxCount) * 100);
+        return `<div><div class="flex justify-between text-sm mb-2"><span class="capitalize">\${name}</span><span>\${count}</span></div><div class="h-1.5 bg-gray-100"><div class="h-1.5 bg-black" style="width:\${width}%"></div></div></div>`;
+      }).join('');
+
+      const recentPaid = [...paid].sort((a,b) => new Date(b.paid_at || b.created_at).getTime() - new Date(a.paid_at || a.created_at).getTime()).slice(0, 5);
+      document.getElementById('dash-recent-payments').innerHTML = recentPaid.length ? recentPaid.map(b => `
+        <button onclick="openBookingModal(\${b.id})" class="w-full text-left border-b border-gray-100 pb-3 flex items-center justify-between gap-4">
+          <div><p class="text-sm font-medium">\${b.name}</p><p class="text-xs text-gray-500 mt-1">\${b.booking_date} · \${String(b.package_type || '').toUpperCase()}\${b.promo_code ? ' · ' + b.promo_code : ''}</p></div>
+          <div class="text-right"><p class="text-sm">₩\${Number(b.total_price || 0).toLocaleString()}</p><p class="text-xs text-gray-400 mt-1">\${b.payment_method || b.payment_provider || 'Paid'}</p></div>
+        </button>`).join('') : '<p class="text-sm text-gray-400 py-4">No paid bookings yet.</p>';
+    }
+
     async function loadBookings() {
       try {
         const response = await axios.get('/api/bookings');
@@ -1391,6 +1492,7 @@ export const adminPage = () => `
         
         if (response.data.length === 0) {
           container.innerHTML = '<p class="text-gray-400 text-sm">No bookings yet</p>';
+          renderDashboard();
           return;
         }
 
