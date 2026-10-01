@@ -5,6 +5,7 @@ type Bindings = {
   DB: D1Database;
   TOSS_SECRET_KEY: string;
   DISCORD_WEBHOOK_URL: string;
+  GALLERY_BUCKET: R2Bucket;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -770,52 +771,112 @@ app.patch('/api/bookings/:id/status', async (c) => {
   return c.json({ success: true })
 })
 
-// Get gallery items
+// Gallery media is stored privately in R2 and streamed through this Worker.
+app.get('/api/gallery/media/*', async (c) => {
+  const { env } = c
+  const key = decodeURIComponent(c.req.path.replace('/api/gallery/media/', ''))
+  if (!key) return c.notFound()
+
+  const object = await env.GALLERY_BUCKET.get(key)
+  if (!object) return c.notFound()
+
+  const headers = new Headers()
+  object.writeHttpMetadata(headers)
+  headers.set('etag', object.httpEtag)
+  headers.set('Cache-Control', 'public, max-age=86400')
+  return new Response(object.body, { headers })
+})
+
+// Public gallery returns visible tracks only. Admin can request all items with ?admin=1.
 app.get('/api/gallery', async (c) => {
   const { env } = c
-  const type = c.req.query('type')
-
-  let stmt
-  if (type) {
-    stmt = env.DB.prepare(`SELECT * FROM gallery_items WHERE type = ? ORDER BY display_order ASC, created_at DESC`).bind(type)
-  } else {
-    stmt = env.DB.prepare(`SELECT * FROM gallery_items ORDER BY display_order ASC, created_at DESC`)
-  }
-
-  const result = await stmt.all()
+  const isAdminView = c.req.query('admin') === '1'
+  const sql = isAdminView
+    ? `SELECT * FROM gallery_items ORDER BY display_order ASC, created_at DESC`
+    : `SELECT * FROM gallery_items WHERE COALESCE(is_visible, 1) = 1 ORDER BY display_order ASC, created_at DESC`
+  const result = await env.DB.prepare(sql).all()
   return c.json(result.results)
 })
 
-// Add gallery item (admin)
+// Upload a gallery track: title + album art + audio.
 app.post('/api/gallery', async (c) => {
   const { env } = c
-  const data = await c.req.json()
+  const form = await c.req.formData()
+  const title = String(form.get('title') || '').trim()
+  const image = form.get('image')
+  const audio = form.get('audio')
 
-  // Determine type based on which URL is provided
-  const type = data.audio_url ? 'audio' : 'image'
-  const fileUrl = data.audio_url || data.image_url || ''
-  const thumbnailUrl = data.audio_url ? (data.image_url || null) : null
+  if (!title) return c.json({ error: 'Title is required' }, 400)
+  if (!(image instanceof File) || image.size === 0) return c.json({ error: 'Album art is required' }, 400)
+  if (!(audio instanceof File) || audio.size === 0) return c.json({ error: 'Audio file is required' }, 400)
+  if (!image.type.startsWith('image/')) return c.json({ error: 'Album art must be an image file' }, 400)
+  if (!audio.type.startsWith('audio/')) return c.json({ error: 'Audio must be an audio file' }, 400)
 
-  const result = await env.DB.prepare(`
-    INSERT INTO gallery_items (type, title, description, file_url, thumbnail_url, display_order)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(
-    type,
-    data.title,
-    data.description || null,
-    fileUrl,
-    thumbnailUrl,
-    data.display_order || 0
-  ).run()
+  const safeExt = (name: string, fallback: string) => {
+    const ext = name.includes('.') ? name.split('.').pop()!.toLowerCase().replace(/[^a-z0-9]/g, '') : ''
+    return ext || fallback
+  }
+  const uid = crypto.randomUUID()
+  const imageKey = `gallery/${uid}/cover.${safeExt(image.name, 'jpg')}`
+  const audioKey = `gallery/${uid}/audio.${safeExt(audio.name, 'mp3')}`
 
-  return c.json({ success: true, id: result.meta.last_row_id })
+  try {
+    await env.GALLERY_BUCKET.put(imageKey, image.stream(), { httpMetadata: { contentType: image.type } })
+    await env.GALLERY_BUCKET.put(audioKey, audio.stream(), { httpMetadata: { contentType: audio.type } })
+
+    const maxOrder = await env.DB.prepare(`SELECT COALESCE(MAX(display_order), -1) AS max_order FROM gallery_items`).first() as any
+    const displayOrder = Number(maxOrder?.max_order ?? -1) + 1
+    const imageUrl = `/api/gallery/media/${encodeURIComponent(imageKey)}`
+    const audioUrl = `/api/gallery/media/${encodeURIComponent(audioKey)}`
+
+    const result = await env.DB.prepare(`
+      INSERT INTO gallery_items
+        (type, title, description, file_url, thumbnail_url, display_order, is_visible, image_key, audio_key)
+      VALUES ('audio', ?, NULL, ?, ?, ?, 1, ?, ?)
+    `).bind(title, audioUrl, imageUrl, displayOrder, imageKey, audioKey).run()
+
+    return c.json({ success: true, id: result.meta.last_row_id })
+  } catch (error) {
+    await Promise.allSettled([
+      env.GALLERY_BUCKET.delete(imageKey),
+      env.GALLERY_BUCKET.delete(audioKey)
+    ])
+    console.error('Gallery upload failed:', error)
+    return c.json({ error: 'Gallery upload failed' }, 500)
+  }
 })
 
-// Delete gallery item (admin)
+// Show / hide a gallery item.
+app.patch('/api/gallery/:id/visibility', async (c) => {
+  const { env } = c
+  const id = c.req.param('id')
+  const body = await c.req.json() as { is_visible?: boolean }
+  await env.DB.prepare(`UPDATE gallery_items SET is_visible = ? WHERE id = ?`)
+    .bind(body.is_visible ? 1 : 0, id).run()
+  return c.json({ success: true })
+})
+
+// Reorder gallery items. Body: { ids: [3, 8, 1] }
+app.patch('/api/gallery/reorder', async (c) => {
+  const { env } = c
+  const body = await c.req.json() as { ids?: number[] }
+  if (!Array.isArray(body.ids)) return c.json({ error: 'ids array is required' }, 400)
+  const statements = body.ids.map((id, index) =>
+    env.DB.prepare(`UPDATE gallery_items SET display_order = ? WHERE id = ?`).bind(index, id)
+  )
+  if (statements.length) await env.DB.batch(statements)
+  return c.json({ success: true })
+})
+
+// Delete DB row and its R2 files.
 app.delete('/api/gallery/:id', async (c) => {
   const { env } = c
   const id = c.req.param('id')
+  const item = await env.DB.prepare(`SELECT image_key, audio_key FROM gallery_items WHERE id = ?`).bind(id).first() as any
+  if (!item) return c.json({ error: 'Gallery item not found' }, 404)
 
+  const keys = [item.image_key, item.audio_key].filter(Boolean)
+  if (keys.length) await env.GALLERY_BUCKET.delete(keys)
   await env.DB.prepare(`DELETE FROM gallery_items WHERE id = ?`).bind(id).run()
   return c.json({ success: true })
 })

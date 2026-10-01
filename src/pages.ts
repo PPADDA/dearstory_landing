@@ -140,28 +140,16 @@ export const experiencesPage = () => `
 
 // ==================== GALLERY PAGE ====================
 export const galleryPage = () => `
-  <!-- Hero Section -->
-  <section class="relative h-[60vh] flex items-center justify-center bg-black">
+  <section class="relative h-[48vh] flex items-center justify-center bg-black">
     <div class="relative z-10 text-center text-white px-4">
-      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-90">PORTFOLIO</p>
-      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-        Our Work
-      </h1>
+      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-70">DEARSTORY MUSIC</p>
+      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">Our Work</h1>
     </div>
   </section>
 
-  <!-- Audio Samples Section -->
   <section class="section-padding bg-white">
     <div class="max-w-7xl mx-auto">
-      <div class="mb-12">
-        <p class="text-sm uppercase tracking-wider mb-4 text-gray-500">LISTEN</p>
-        <h2 class="text-4xl md:text-5xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-          Audio Samples
-        </h2>
-      </div>
-
-      <div id="gallery-container" class="grid md:grid-cols-3 gap-8">
-        <!-- Gallery items will be loaded here -->
+      <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
         <div class="text-center py-20 col-span-full">
           <p class="text-gray-400 text-sm uppercase tracking-wider">Loading...</p>
         </div>
@@ -170,44 +158,34 @@ export const galleryPage = () => `
   </section>
 
   <script>
+    function galleryEscape(value) {
+      return String(value ?? '').replace(/[&<>\"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#039;'
+      })[ch]);
+    }
+
     async function loadGalleryItems() {
+      const container = document.getElementById('gallery-container');
       try {
         const response = await axios.get('/api/gallery');
-        const container = document.getElementById('gallery-container');
-        
-        if (response.data.length === 0) {
-          container.innerHTML = \`
-            <div class="col-span-full text-center py-20">
-              <p class="text-gray-400 text-sm uppercase tracking-wider">No audio samples yet</p>
-            </div>
-          \`;
+        const items = response.data || [];
+        if (!items.length) {
+          container.innerHTML = '<div class="col-span-full text-center py-20"><p class="text-gray-400 text-sm uppercase tracking-wider">Music coming soon</p></div>';
           return;
         }
 
-        container.innerHTML = response.data.map(item => \`
-          <div class="modern-card">
-            \${item.thumbnail_url ? \`
-              <div class="h-64 overflow-hidden">
-                <img src="\${item.thumbnail_url}" alt="\${item.title}" class="w-full h-full object-cover">
-              </div>
-            \` : ''}
-            <div class="p-6">
-              <h3 class="text-xl font-light mb-3">\${item.title}</h3>
-              <p class="text-sm text-gray-600 mb-4">\${item.description || ''}</p>
-              \${item.type === 'audio' ? \`
-                <audio controls class="w-full">
-                  <source src="\${item.file_url}" type="audio/mpeg">
-                </audio>
-              \` : (item.type === 'image' && !item.thumbnail_url ? \`
-                <div class="h-64 overflow-hidden">
-                  <img src="\${item.file_url}" alt="\${item.title}" class="w-full h-full object-cover">
-                </div>
-              \` : '')}
-            </div>
-          </div>
-        \`).join('');
+        container.innerHTML = items.map(item =>
+          '<article class="group">' +
+            '<div class="aspect-square bg-gray-100 overflow-hidden mb-5">' +
+              '<img src="' + galleryEscape(item.thumbnail_url) + '" alt="' + galleryEscape(item.title) + '" class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]">' +
+            '</div>' +
+            '<h3 class="text-2xl font-light mb-4" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
+            '<audio controls preload="metadata" class="w-full" src="' + galleryEscape(item.file_url) + '"></audio>' +
+          '</article>'
+        ).join('');
       } catch (error) {
         console.error('Error loading gallery:', error);
+        container.innerHTML = '<div class="col-span-full text-center py-20"><p class="text-gray-400 text-sm">Unable to load music right now.</p></div>';
       }
     }
 
@@ -961,18 +939,37 @@ export const adminPage = () => `
       <!-- Gallery Tab -->
       <div id="content-gallery" class="tab-content hidden">
         <div class="bg-white p-8 border border-gray-200 mb-8">
-          <h2 class="text-2xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Add Gallery Item</h2>
-          <form id="gallery-form" class="space-y-4">
-            <input type="text" id="gallery-title" placeholder="Title" required class="w-full p-3 border border-gray-300 text-sm">
-            <textarea id="gallery-description" placeholder="Description" class="w-full p-3 border border-gray-300 text-sm"></textarea>
-            <input type="url" id="gallery-audio" placeholder="Audio URL" class="w-full p-3 border border-gray-300 text-sm">
-            <input type="url" id="gallery-image" placeholder="Image URL" class="w-full p-3 border border-gray-300 text-sm">
-            <button type="submit" class="btn-modern">Add Item</button>
+          <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Music Gallery</p>
+          <h2 class="text-3xl font-light mb-2" style="font-family: 'Cormorant Garamond', serif;">Upload a Track</h2>
+          <p class="text-sm text-gray-500 mb-8">Add a title, square album artwork and audio file. Published tracks appear on the website immediately.</p>
+          <form id="gallery-form" class="space-y-5">
+            <div>
+              <label class="block text-xs uppercase tracking-wider mb-2">Title *</label>
+              <input type="text" id="gallery-title" placeholder="Song title" required class="w-full p-3 border border-gray-300 text-sm">
+            </div>
+            <div class="grid md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs uppercase tracking-wider mb-2">Album Art *</label>
+                <input type="file" id="gallery-image" accept="image/*" required class="w-full p-3 border border-gray-300 text-sm bg-white">
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-wider mb-2">Audio File *</label>
+                <input type="file" id="gallery-audio" accept="audio/*" required class="w-full p-3 border border-gray-300 text-sm bg-white">
+              </div>
+            </div>
+            <div id="gallery-upload-status" class="text-sm text-gray-500 hidden"></div>
+            <button type="submit" id="gallery-submit" class="btn-modern">Upload & Publish</button>
           </form>
         </div>
         <div class="bg-white p-8 border border-gray-200">
-          <h2 class="text-2xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Gallery Items</h2>
-          <div id="admin-gallery-container" class="space-y-4"></div>
+          <div class="flex items-end justify-between gap-4 mb-6">
+            <div>
+              <p class="text-sm uppercase tracking-wider text-gray-500 mb-2">Published Music</p>
+              <h2 class="text-3xl font-light" style="font-family: 'Cormorant Garamond', serif;">Gallery Items</h2>
+            </div>
+            <p class="text-xs text-gray-400">Use arrows to change display order</p>
+          </div>
+          <div id="admin-gallery-container" class="space-y-3"></div>
         </div>
       </div>
 
@@ -1262,58 +1259,97 @@ export const adminPage = () => `
       }
     }
 
+    let adminGalleryItems = [];
+
     async function loadAdminGallery() {
       try {
-        const response = await axios.get('/api/gallery');
+        const response = await axios.get('/api/gallery?admin=1');
+        adminGalleryItems = response.data || [];
         const container = document.getElementById('admin-gallery-container');
-        
-        if (response.data.length === 0) {
-          container.innerHTML = '<p class="text-gray-400 text-sm">No items yet</p>';
+
+        if (!adminGalleryItems.length) {
+          container.innerHTML = '<p class="text-gray-400 text-sm py-8 text-center">No tracks yet</p>';
           return;
         }
 
-        container.innerHTML = response.data.map(item => \`
-          <div class="flex justify-between items-center border border-gray-200 p-4">
-            <div>
-              <h3 class="font-medium">\${item.title}</h3>
-              <p class="text-sm text-gray-500">\${item.description || 'No description'}</p>
-            </div>
-            <button onclick="deleteGalleryItem(\${item.id})" class="px-4 py-2 bg-black text-white text-xs uppercase tracking-wider hover:bg-gray-800">
-              Delete
-            </button>
-          </div>
-        \`).join('');
+        container.innerHTML = adminGalleryItems.map((item, index) =>
+          '<div class="grid grid-cols-[72px_1fr_auto] gap-4 items-center border border-gray-200 p-3">' +
+            '<img src="' + item.thumbnail_url + '" class="w-[72px] h-[72px] object-cover bg-gray-100" alt="">' +
+            '<div class="min-w-0"><h3 class="font-medium truncate">' + item.title + '</h3>' +
+              '<p class="text-xs text-gray-400 mt-1">' + (item.is_visible == 0 ? 'HIDDEN' : 'VISIBLE') + '</p></div>' +
+            '<div class="flex items-center gap-2 flex-wrap justify-end">' +
+              '<button onclick="moveGalleryItem(' + index + ', -1)" ' + (index === 0 ? 'disabled' : '') + ' class="w-9 h-9 border border-gray-300 disabled:opacity-25">↑</button>' +
+              '<button onclick="moveGalleryItem(' + index + ', 1)" ' + (index === adminGalleryItems.length - 1 ? 'disabled' : '') + ' class="w-9 h-9 border border-gray-300 disabled:opacity-25">↓</button>' +
+              '<button onclick="toggleGalleryVisibility(' + item.id + ', ' + (item.is_visible == 0 ? 'true' : 'false') + ')" class="px-3 py-2 border border-gray-300 text-xs uppercase tracking-wider">' + (item.is_visible == 0 ? 'Show' : 'Hide') + '</button>' +
+              '<button onclick="deleteGalleryItem(' + item.id + ')" class="px-3 py-2 bg-black text-white text-xs uppercase tracking-wider">Delete</button>' +
+            '</div>' +
+          '</div>'
+        ).join('');
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Gallery load error:', error);
       }
     }
 
-
     document.getElementById('gallery-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const button = document.getElementById('gallery-submit');
+      const status = document.getElementById('gallery-upload-status');
+      const image = document.getElementById('gallery-image').files[0];
+      const audio = document.getElementById('gallery-audio').files[0];
+      if (!image || !audio) return;
+
+      const form = new FormData();
+      form.append('title', document.getElementById('gallery-title').value.trim());
+      form.append('image', image);
+      form.append('audio', audio);
+
+      button.disabled = true;
+      button.textContent = 'UPLOADING...';
+      status.classList.remove('hidden');
+      status.textContent = 'Uploading album art and audio. Please keep this page open.';
+
       try {
-        await axios.post('/api/gallery', {
-          title: document.getElementById('gallery-title').value,
-          description: document.getElementById('gallery-description').value,
-          audio_url: document.getElementById('gallery-audio').value,
-          image_url: document.getElementById('gallery-image').value
-        });
-        alert('Item added!');
+        await axios.post('/api/gallery', form, { headers: { 'Content-Type': 'multipart/form-data' } });
         e.target.reset();
-        loadAdminGallery();
+        status.textContent = 'Published successfully.';
+        await loadAdminGallery();
       } catch (error) {
-        alert('Error adding item');
+        status.textContent = error.response?.data?.error || 'Upload failed.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'UPLOAD & PUBLISH';
       }
     });
 
+    async function toggleGalleryVisibility(id, isVisible) {
+      try {
+        await axios.patch('/api/gallery/' + id + '/visibility', { is_visible: isVisible });
+        await loadAdminGallery();
+      } catch (error) {
+        alert('Could not update visibility.');
+      }
+    }
+
+    async function moveGalleryItem(index, direction) {
+      const target = index + direction;
+      if (target < 0 || target >= adminGalleryItems.length) return;
+      const reordered = [...adminGalleryItems];
+      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+      try {
+        await axios.patch('/api/gallery/reorder', { ids: reordered.map(item => item.id) });
+        await loadAdminGallery();
+      } catch (error) {
+        alert('Could not change display order.');
+      }
+    }
+
     async function deleteGalleryItem(id) {
-      if (!confirm('Delete this item?')) return;
+      if (!confirm('Delete this track and its uploaded files?')) return;
       try {
         await axios.delete('/api/gallery/' + id);
-        alert('Deleted!');
-        loadAdminGallery();
+        await loadAdminGallery();
       } catch (error) {
-        alert('Error deleting');
+        alert(error.response?.data?.error || 'Error deleting track.');
       }
     }
 
