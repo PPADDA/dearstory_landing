@@ -15,7 +15,7 @@ app.use('/api/*', cors())
 
 // ========== HELPER FUNCTIONS ==========
 
-const layout = (title: string, content: string) => `
+const layout = (title: string, content: string, isHome = false) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,48 +41,210 @@ const layout = (title: string, content: string) => `
       letter-spacing: 0.5px;
     }
     
-    /* Hero Section */
+    /* Hero Section — existing site fonts are preserved */
     .hero-section {
       position: relative;
-      height: 60vh;
+      height: 100vh;
+      min-height: 690px;
       overflow: hidden;
+      background: #eee6dd;
     }
     .hero-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.85);
+      object-position: center center;
     }
     .hero-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(26, 26, 26, 0.5), rgba(0, 0, 0, 0.3));
+      inset: 0;
+      background: linear-gradient(90deg, rgba(247,242,235,0.42) 0%, rgba(247,242,235,0.14) 45%, transparent 67%);
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
+      justify-content: flex-start;
+      text-align: left;
     }
     .hero-content {
-      color: white;
-      max-width: 800px;
-      padding: 2rem;
+      color: #342e2a;
+      width: min(62%, 850px);
+      padding: 9rem clamp(2rem, 6vw, 7rem) 3rem;
     }
     .hero-title {
-      font-size: clamp(3rem, 8vw, 6rem);
-      font-weight: 300;
-      margin-bottom: 1.5rem;
-      letter-spacing: 3px;
+      font-size: clamp(2.9rem, 4.8vw, 5.2rem);
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      line-height: 1.02;
+      margin-bottom: 1.25rem;
     }
     .hero-subtitle {
-      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-      font-weight: 200;
-      letter-spacing: 2px;
-      opacity: 0.95;
+      font-size: clamp(0.95rem, 1.35vw, 1.25rem);
+      font-weight: 500;
+      letter-spacing: 0.1px;
+      line-height: 1.5;
+      margin-bottom: 1.1rem;
     }
-    
+    .hero-description {
+      font-size: clamp(0.8rem, 1vw, 0.98rem);
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .hero-cta {
+      display: inline-block;
+      font-family: 'Montserrat', sans-serif;
+      color: #342e2a;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 1.3px;
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+      padding-bottom: 0.5rem;
+      transition: opacity 0.2s;
+    }
+    .hero-cta:hover { opacity: 0.65; }
+    @media (max-width: 768px) {
+      .hero-section { height: 100svh; min-height: 650px; }
+      /* Mobile hero: photo occupies the upper half, without an empty middle band. */
+      .hero-image {
+        position: absolute;
+        inset: 0 0 auto;
+        width: 100%;
+        height: 56%;
+        object-fit: cover;
+        object-position: 62% center;
+      }
+      .hero-overlay {
+        align-items: flex-end;
+        background: linear-gradient(to bottom, transparent 0%, transparent 27%, rgba(247,242,235,.12) 38%, rgba(247,242,235,.94) 54%, #f7f2eb 66%);
+      }
+      .hero-content { width: 100%; padding: 0 1.6rem 4.2rem; transform: none !important; }
+      .hero-title { font-size: clamp(2.8rem, 10vw, 4rem); margin-bottom: 1rem; }
+      .hero-subtitle { font-size: 0.96rem; }
+      .hero-description { font-size: 0.82rem; margin-bottom: 1.4rem; }
+    }
+
+    /* Homepage: transparent navigation sits on the hero photo. */
+    .home-nav { background: transparent; border: none; transition: background 0.3s; }
+    .home-nav.is-scrolled, .home-nav.menu-open { background: rgba(241, 240, 237, 0.85);
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px); border: none; box-shadow: none; }
+    .home-nav::before { content: ''; position: absolute; inset: 0 0 auto; height: 100%; pointer-events: none; background: linear-gradient(to bottom, rgba(248,244,239,0.58), rgba(248,244,239,0)); z-index: -1; }
+    .home-nav.is-scrolled::before, .home-nav.menu-open::before { display: none; }
+    @media (max-width: 768px) { .home-nav::before { background: linear-gradient(to bottom, rgba(248,244,239,0.82), rgba(248,244,239,0)); } }
+
+    /* Slim, left-aligned homepage navigation; hero dimensions stay unchanged. */
+    .home-nav .home-nav-inner { max-width: none; padding-left: clamp(24px, 5vw, 92px); padding-right: clamp(24px, 5vw, 92px); }
+    .home-nav .home-nav-row { height: 96px; justify-content: flex-start; gap: clamp(30px, 4vw, 76px); transition: height 0.3s ease; }
+    .home-nav .home-logo { height: 88px; width: auto; transition: height 0.3s ease; }
+    .home-nav .home-links { gap: clamp(20px, 2.5vw, 44px); }
+    .home-nav.is-scrolled .home-nav-row { height: 76px; }
+    .home-nav.is-scrolled .home-logo { height: 70px; }
+    @media (max-width: 767px) {
+      .home-nav .home-nav-row { height: 82px; justify-content: space-between; gap: 12px; }
+      .home-nav .home-logo { height: 76px; }
+      .home-nav.is-scrolled .home-nav-row { height: 68px; }
+      .home-nav.is-scrolled .home-logo { height: 62px; }
+      /* Explicit positioning wins over original flex order and Tailwind utilities. */
+      .home-nav .home-nav-row { position: relative; justify-content: center !important; }
+      .home-nav .home-nav-row > a { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1; }
+      .home-nav .home-nav-row > div.md\:hidden { position: absolute; left: 0; top: 50%; transform: translateY(-50%); margin-left: 0 !important; z-index: 2; }
+      .home-nav #mobile-menu-btn { display: flex; align-items: center; justify-content: flex-start; min-width: 44px; min-height: 44px; }
+
+    }
+
+
+    /* Mobile homepage: compact photographic hero, next section visible immediately. */
+    @media (max-width: 767px) {
+      .hero-section {
+        height: 53svh !important;
+        min-height: 370px !important;
+        max-height: 520px;
+        background: #eee6dd;
+      }
+      .hero-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 83% center;
+      }
+      .hero-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        background: linear-gradient(90deg, rgba(247,242,235,.82) 0%, rgba(247,242,235,.63) 32%, rgba(247,242,235,.12) 65%, transparent 85%);
+      }
+      .hero-content {
+        width: min(59%, 245px);
+        padding: 0 0 2rem 1.2rem;
+        margin: 0;
+        transform: none !important;
+      }
+      .hero-title {
+        font-size: clamp(1.75rem, 6.6vw, 2.25rem);
+        line-height: 1.05;
+        letter-spacing: 0 !important;
+        margin-bottom: .55rem;
+      }
+      .hero-subtitle { font-size: .7rem; line-height: 1.35; margin-bottom: .45rem; }
+      .hero-description { font-size: .63rem; line-height: 1.45; margin-bottom: .7rem; }
+      .hero-cta { font-size: .59rem; letter-spacing: .3px; padding-bottom: .25rem; white-space: nowrap; }
+      .story-experience { padding-top: 2rem !important; }
+      .story-experience .section-title { margin-bottom: 1.4rem; }
+      /* Header: hamburger left, logo centered. */
+      .home-nav .home-nav-row {
+        display: grid !important;
+        grid-template-columns: 44px 1fr 44px;
+        align-items: center;
+        justify-items: center;
+        position: relative;
+      }
+      .home-nav .home-nav-row > a {
+        grid-column: 2;
+        grid-row: 1;
+        position: static !important;
+        transform: none !important;
+      }
+      .home-nav .home-nav-row > div.md\:hidden {
+        grid-column: 1;
+        grid-row: 1;
+        position: static !important;
+        transform: none !important;
+        justify-self: start;
+      }
+      .home-nav #mobile-menu-btn { min-width: 44px; min-height: 44px; justify-content: flex-start; }
+    }
+
+    /* DearStory four-step experience */
+    .story-experience { background: #f1f0ed; }
+    .story-experience .section-title { margin-bottom: 2.8rem; letter-spacing: .4px; }
+    .story-track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+    .story-card { min-width: 0; }
+    .story-photo { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: #e4ded7; }
+    .story-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .story-number { position: absolute; top: 16px; left: 17px; color: #fff; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 1px; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+    .story-card h3 { margin-top: 18px; font-size: clamp(1.5rem, 2vw, 2rem); line-height: 1.05; letter-spacing: 0; }
+    .story-card p { margin-top: 9px; font-size: 12px; line-height: 1.7; color: #5b5551; font-weight: 400; }
+    .story-dots { display: none; }
+    @media (max-width: 767px) {
+      .story-experience { overflow: hidden; }
+      .story-experience .section-title { margin-bottom: 2rem; }
+      .story-track { display: flex; gap: 12px; margin: 0 -1.5rem; padding: 0 1.5rem 4px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+      .story-track::-webkit-scrollbar { display: none; }
+      .story-card { flex: 0 0 calc((100% - 24px) / 2.3); scroll-snap-align: start; padding: 0; }
+      .story-photo { aspect-ratio: 3 / 4; }
+      .story-card h3 { font-size: clamp(1.05rem, 4.5vw, 1.4rem); line-height: 1.12; margin-top: 12px; }
+      .story-card p { font-size: 10px; line-height: 1.5; margin-top: 6px; }
+      .story-number { top: 10px; left: 10px; font-size: 11px; }
+      .story-dots { display: flex; justify-content: center; gap: 9px; margin-top: 24px; }
+      .story-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: #c7c0ba; cursor: pointer; transition: background .2s, transform .2s; }
+      .story-dot[aria-current="true"] { background: #4d4540; transform: scale(1.3); }
+    }
+    @media (prefers-reduced-motion: reduce) { .story-track { scroll-behavior: auto; } }
+
     /* Modern Card */
     .modern-card {
       background: #ffffff;
@@ -259,23 +421,225 @@ const layout = (title: string, content: string) => `
       .hero-title {
         letter-spacing: 2px;
       }
+        
     }
+        /* Homepage: tighter final CTA and subtle separation from the footer */
+    .home-final-cta { padding-top: 4.5rem; padding-bottom: 4.5rem; }
+    .home-final-cta p { margin-bottom: 2rem; }
+    .home-footer { padding-top: 3.5rem; }
+    .home-footer > div { position: relative; }
+    .home-footer > div::before {
+      content: '';
+      position: absolute;
+      top: -3.5rem;
+      left: 1.5rem;
+      right: 1.5rem;
+      border-top: 1px solid #1f2937;
+    }
+    @media (min-width: 1024px) {
+      .home-footer > div::before { left: 3rem; right: 3rem; }
+    }
+    @media (max-width: 768px) {
+      .home-final-cta { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+      .home-footer { padding-top: 3rem; }
+      .home-footer > div::before { top: -3rem; }
+    }
+
+    /* Reduce space below experience section */
+    .story-experience {
+      padding-bottom: 3rem !important;
+    }
+
+    /* Homepage experience typography and mobile carousel inset */
+    .story-experience .section-title { font-weight: 600; }
+    @media (min-width: 768px) { .hero-mobile-break { display: none; } }
+    @media (max-width: 767px) {
+      .hero-description { white-space: nowrap; font-size: clamp(.56rem, 2.55vw, .68rem); }
+      .story-experience .section-subtitle { font-size: 8px; letter-spacing: 1.3px; margin-bottom: .65rem; }
+      .story-experience .section-title {  font-size: 24px !important;
+  font-weight: 500 !important;
+  line-height: 1.2;}
+      .story-track { margin: 0 !important; padding: 0 0 4px !important; }
+    }
+
+    /* Compact mobile booking CTA: keep it accessible without covering the story cards. */
+    @media (max-width: 767px) {
+      .floating-book-btn {
+        bottom: max(1.25rem, env(safe-area-inset-bottom));
+        right: 1.25rem;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.68rem;
+        letter-spacing: 1.1px;
+        gap: 0.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,.16);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: none;
+        transition: transform .25s ease, box-shadow .25s ease;
+      }
+      .floating-book-btn:hover { transform: translateY(-2px); }
+    }
+
+    /* Mobile refinements: manual swipe, single-line story heading, bold hero */
+    @media (max-width: 767px) {
+      .story-experience .section-title {
+          font-size: 26px !important;
+    font-weight: 500 !important;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+      }
+      .hero-title { font-weight: 700 !important; }
+      .story-track { scroll-behavior: auto; }
+      .story-dots { display: none !important; }
+    }
+
+    /* Homepage services: mobile compact cards and matching story section typography. */
+    @media (max-width: 767px) {
+      .home-services { padding-top: 2.2rem !important; padding-bottom: 3rem !important; }
+      .home-services .section-subtitle {
+        font-size: 8px !important;
+        letter-spacing: 1.3px !important;
+        margin-bottom: .65rem !important;
+      }
+      .home-services .section-title {
+        font-size: 26px !important;
+        font-weight: 500 !important;
+        line-height: 1.15 !important;
+        letter-spacing: -0.02em !important;
+        white-space: nowrap;
+        margin-bottom: 0 !important;
+      }
+      .home-services .grid { gap: 12px !important; margin-top: 1.6rem !important; }
+      .home-services .modern-card {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        align-items: center;
+        column-gap: 12px;
+        padding: 16px 14px;
+        position: relative;
+        min-height: 116px;
+      }
+      .home-services .modern-card > .bg-white {
+        padding: 0 !important;
+        min-height: 0 !important;
+        height: auto;
+        background: transparent !important;
+        align-self: start;
+        margin-top: 3px;
+      }
+      .home-services .modern-card > .bg-white i { font-size: 31px !important; }
+      .home-services .modern-card > .p-8 { padding: 0 !important; min-width: 0; }
+      .home-services .modern-card .flex.justify-between { margin-bottom: 5px !important; align-items: baseline; gap: 8px; }
+      .home-services .modern-card h3 { font-size: 13px !important; font-weight: 500 !important; white-space: nowrap; }
+      .home-services .modern-card .flex.justify-between p { font-size: 13px !important; white-space: nowrap; }
+      .home-services .modern-card .text-gray-600 { font-size: 10px !important; line-height: 1.45; margin-bottom: 9px !important; }
+      .home-services .modern-card a { font-size: 9px !important; letter-spacing: .7px; }
+      .home-services .modern-card > span.absolute {
+        top: 0 !important;
+        left: auto !important;
+        right: 0 !important;
+        font-size: 8px !important;
+        padding: 3px 7px !important;
+      }
+      .home-services .modern-card.border-2 { border-width: 1px !important; }
+      .home-services .modern-card:hover { transform: none; }
+    }
+
+    /* Homepage typography alignment: same hierarchy on both sections. */
+    .hero-subtitle {
+      color: #716d69;
+      font-weight: 300;
+      /* Keep the original font size unchanged. */
+    }
+    .story-experience .section-subtitle,
+    .home-services .section-subtitle {
+      margin-bottom: .55rem !important;
+    }
+    .story-experience .section-title,
+    .home-services .section-title {
+      font-weight: 300 !important;
+      letter-spacing: 2px;
+      line-height: 1.12;
+    }
+    .story-experience .section-title { margin-bottom: 2.1rem; }
+    @media (max-width: 767px) {
+      /* Match the desktop hero heading weight while retaining mobile sizing. */
+      .hero-title { font-weight: 400 !important; }
+      .story-experience .section-subtitle,
+      .home-services .section-subtitle {
+        font-size: 8px !important;
+        letter-spacing: 1.3px !important;
+        margin-bottom: .45rem !important;
+      }
+      .story-experience .section-title,
+      .home-services .section-title {
+        font-size: 26px !important;
+        font-weight: 400 !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.15 !important;
+        white-space: nowrap;
+      }
+      .story-experience .section-title { margin-bottom: 1.5rem !important; }
+    }
+    /* Mobile-only homepage spacing, CTA, and two-column footer */
+    @media (max-width: 767px) {
+      .story-experience { padding-bottom: 1.8rem !important; }
+      .home-services { padding-top: 1.6rem !important; }
+
+      .home-final-cta { padding: 2.1rem 1.5rem 2.4rem !important; }
+      .home-final-cta h2 { font-size: 2rem !important; line-height: 1.12 !important; margin-bottom: .65rem !important; }
+      .home-final-cta p { font-size: .82rem !important; line-height: 1.5 !important; margin-bottom: 1.4rem !important; }
+      .home-final-cta .btn-modern { display: inline-block; padding: .8rem 1.25rem !important; font-size: .66rem !important; letter-spacing: 1.1px !important; }
+
+      .home-footer { padding: 2.3rem 0 1.5rem !important; }
+      .home-footer > div::before { top: -2.3rem !important; }
+      .home-footer > div > .grid {
+        display: grid !important;
+        grid-template-columns: minmax(0, .9fr) minmax(0, 1.35fr) !important;
+        gap: .8rem 1.2rem !important;
+        margin-bottom: 1.7rem !important;
+      }
+      .home-footer > div > .grid > div:first-child {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+        align-items: flex-start !important;
+        text-align: left !important;
+      }
+      .home-footer > div > .grid > div:first-child img { height: 5rem !important; max-width: 100%; margin-bottom: .35rem !important; }
+      .home-footer > div > .grid > div:first-child p { font-size: .62rem !important; line-height: 1.5 !important; }
+      .home-footer > div > .grid > div:nth-child(2),
+      .home-footer > div > .grid > div:nth-child(3),
+      .home-footer > div > .grid > div:nth-child(4) { grid-column: 2; min-width: 0; }
+      /* Hide Quick Links only in the mobile homepage footer. */
+      .home-footer > div > .grid > div:nth-child(2) { display: none !important; }
+      .home-footer > div > .grid > div:first-child { grid-row: 1 / span 2 !important; }
+      .home-footer > div > .grid h4 { font-size: .7rem !important; margin-bottom: .65rem !important; }
+      .home-footer > div > .grid ul { font-size: .68rem !important; line-height: 1.45 !important; }
+      .home-footer > div > .grid ul.space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: .45rem !important; }
+      .home-footer > div > .grid .flex.space-x-4 { gap: .5rem; }
+      .home-footer > div > .grid .flex.space-x-4 > a { width: 2rem !important; height: 2rem !important; }
+      .home-footer > div > .border-t { padding-top: 1.2rem !important; }
+      .home-footer > div > .border-t p { font-size: .62rem !important; }
+    }
+
   </style>
 </head>
 <body>
-  <nav class="fixed w-full top-0 z-50 border-b border-gray-200" style="background: #f1f0ed;">
-    <div class="max-w-7xl mx-auto px-6 lg:px-12">
-      <div class="flex justify-between items-center h-48">
+  <nav id="site-nav" class="fixed w-full top-0 z-50 ${isHome ? 'home-nav' : 'border-b border-gray-200'}" ${isHome ? '' : 'style="background: #f1f0ed;"'}>
+    <div class="${isHome ? 'home-nav-inner' : 'max-w-7xl mx-auto px-6 lg:px-12'}">
+      <div class="flex items-center ${isHome ? 'home-nav-row' : 'justify-between h-48'}">
         <a href="/" class="flex items-center py-2">
-          <img src="/logo.png" alt="Dear Story" class="h-44 md:h-44 w-auto opacity-95 hover:opacity-100 transition" />
+          <img src="/logo.png" alt="Dear Story" class="${isHome ? 'home-logo' : 'h-44 md:h-44'} w-auto opacity-95 hover:opacity-100 transition" />
         </a>
-        <div class="hidden md:flex space-x-10">
+        <div class="hidden md:flex ${isHome ? 'home-links' : 'space-x-10'}">
           <a href="/" class="nav-link">Home</a>
           <a href="/experiences" class="nav-link">Experiences</a>
           <a href="/gallery" class="nav-link">Gallery</a>
           <a href="/booking" class="nav-link">Book</a>
         </div>
-        <div class="md:hidden">
+        <div class="md:hidden ${isHome ? 'ml-auto' : ''}">
           <button id="mobile-menu-btn" class="text-xl">
             <i class="fas fa-bars"></i>
           </button>
@@ -298,11 +662,11 @@ const layout = (title: string, content: string) => `
     <span>Book Now</span>
   </a>
   
-  <main class="mt-48">
+  <main class="${isHome ? '' : 'mt-48'}">
     ${content}
   </main>
   
-  <footer class="bg-black text-white py-16">
+  <footer class="bg-black text-white py-16 ${isHome ? 'home-footer' : ''}">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
       <div class="grid md:grid-cols-4 gap-12 mb-12">
         <div class="flex flex-col items-center text-center md:items-start md:text-left">
@@ -349,7 +713,15 @@ const layout = (title: string, content: string) => `
     document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
       const menu = document.getElementById('mobile-menu');
       menu?.classList.toggle('hidden');
+      document.getElementById('site-nav')?.classList.toggle('menu-open', !menu?.classList.contains('hidden'));
     });
+    // The home navigation becomes solid when the hero is scrolled away.
+    const siteNav = document.getElementById('site-nav');
+    if (siteNav?.classList.contains('home-nav')) {
+      const updateNav = () => siteNav.classList.toggle('is-scrolled', window.scrollY > 50);
+      window.addEventListener('scroll', updateNav, { passive: true });
+      updateNav();
+    }
   </script>
 </body>
 </html>
@@ -1185,31 +1557,51 @@ app.get('/', (c) => {
   const content = `
     <!-- Hero Section -->
     <section class="hero-section">
-      <img src="https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1920&q=80" alt="Music Studio" class="hero-image">
+      <img src="/hero-dearstory.jpg" alt="Singer recording in a warm sunlit studio" class="hero-image">
       <div class="hero-overlay">
-        <div class="hero-content">
-          <h1 class="hero-title">DEAR STORY</h1>
-          <p class="hero-subtitle">CREATE YOUR K-POP EXPERIENCE</p>
+        <div class="hero-content -translate-y-10">
+          <p class="hero-subtitle">Your Letter, Our Melody.</p>
+          <h1 class="hero-title">Create Your Own<br>K-Pop Song.</h1>
+          <p class="hero-description">Turn your story into music<br class="hero-mobile-break">with a professional producer.</p>
+          <a href="/experiences" class="hero-cta">EXPLORE EXPERIENCES &nearr;</a>
         </div>
       </div>
     </section>
 
-    <!-- About Section -->
-    <section class="section-padding" style="background: #ffffff;">
+    <!-- DearStory Experience: four photo-led stages -->
+    <section class="section-padding story-experience" aria-labelledby="story-experience-heading">
       <div class="max-w-7xl mx-auto">
-        <p class="section-subtitle">EXPERIENCE</p>
-        <h2 class="section-title">Become a K-pop Artist</h2>
-        <div class="max-w-3xl mx-auto text-center">
-          <p class="text-lg leading-relaxed text-gray-600 mb-8">
-            Dear Story is an exclusive K-pop experience studio for international visitors. 
-            Record your favorite songs, create original tracks, and release your music on major platforms.
-          </p>
+        <p class="section-subtitle">DEAR STORY EXPERIENCE</p>
+        <h2 id="story-experience-heading" class="section-title">Your Journey, Your Song.</h2>
+        <div class="story-track" id="story-track" aria-label="Four steps of your DearStory experience">
+          <article class="story-card">
+            <div class="story-photo"><img src="/story-step-1.jpg" alt="Guest and producer discussing a personalized song" loading="lazy"><span class="story-number">01</span></div>
+            <h3>Made Just for You.</h3>
+            <p>A song tailored to your voice and style.</p>
+          </article>
+          <article class="story-card">
+            <div class="story-photo"><img src="/story-step-2.jpg" alt="One-on-one vocal coaching in the studio" loading="lazy"><span class="story-number">02</span></div>
+            <h3>Find Your Voice.</h3>
+            <p>1:1 Vocal Coaching.</p>
+          </article>
+          <article class="story-card">
+            <div class="story-photo"><img src="/story-step-3.jpg" alt="Guest recording vocals with a producer in the control room" loading="lazy"><span class="story-number">03</span></div>
+            <h3>Your Moment to Shine.</h3>
+            <p>Record in a professional studio.</p>
+          </article>
+          <article class="story-card">
+            <div class="story-photo"><img src="/story-step-4.jpg" alt="NFC photocard keepsake attached to a bag" loading="lazy"><span class="story-number">04</span></div>
+            <h3>Take Your Story Home.</h3>
+            <p>Mixed &amp; Mastered Song + NFC Photocard</p>
+          </article>
         </div>
+
       </div>
     </section>
+
 
     <!-- Services Grid -->
-    <section class="section-padding" style="background: #f1f0ed;">
+    <section class="section-padding home-services" style="background: #f1f0ed;">
       <div class="max-w-7xl mx-auto">
         <p class="section-subtitle">OUR SERVICES</p>
         <h2 class="section-title">Three Unique Experiences</h2>
@@ -1264,45 +1656,8 @@ app.get('/', (c) => {
       </div>
     </section>
 
-    <!-- Process Section -->
-    <section class="section-padding" style="background: #ffffff;">
-      <div class="max-w-7xl mx-auto">
-        <p class="section-subtitle">HOW IT WORKS</p>
-        <h2 class="section-title">Simple Process</h2>
-        
-        <div class="grid md:grid-cols-4 gap-8 mt-12">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-6">1</div>
-            <h3 class="text-xl mb-3" style="font-family: 'Cormorant Garamond', serif;">Choose Package</h3>
-            <p class="text-gray-600">Select your perfect experience from three options</p>
-          </div>
-          <div class="text-center">
-            <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-6">2</div>
-            <h3 class="text-xl mb-3" style="font-family: 'Cormorant Garamond', serif;">Book Session</h3>
-            <p class="text-gray-600">Reserve your preferred date and time</p>
-          </div>
-          <div class="text-center">
-            <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-6">3</div>
-            <h3 class="text-xl mb-3" style="font-family: 'Cormorant Garamond', serif;">Record</h3>
-            <p class="text-gray-600">Professional coaching and studio recording</p>
-          </div>
-          <div class="text-center">
-            <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-6">4</div>
-            <h3 class="text-xl mb-3" style="font-family: 'Cormorant Garamond', serif;">Receive</h3>
-            <p class="text-gray-600">Get your professionally produced track</p>
-          </div>
-        </div>
-        
-        <div class="text-center mt-12">
-          <a href="/experiences" class="btn-modern bg-black text-white hover:bg-gray-800">
-            VIEW ALL EXPERIENCES
-          </a>
-        </div>
-      </div>
-    </section>
-
     <!-- CTA Section -->
-    <section class="section-padding bg-black text-white">
+    <section class="section-padding bg-black text-white home-final-cta">
       <div class="max-w-4xl mx-auto text-center">
         <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
           Ready to Begin?
@@ -1317,7 +1672,7 @@ app.get('/', (c) => {
     </section>
   `
 
-  return c.html(layout('Dear Story - Your Letter, Our Melody', content))
+  return c.html(layout('Dear Story - Your Letter, Our Melody', content, true))
 })
 
 // Import page content
