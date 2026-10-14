@@ -511,16 +511,19 @@ export const bookingPage = (packageParam?: string) => `
     // Set minimum date (3 days from now)
     const bookingDateInput = document.getElementById('booking_date');
     // Use Korea calendar dates, not UTC (which can be one day behind in Korea).
-    const koreaToday = () => new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
-    }).format(new Date());
+    const koreaToday = () => {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(new Date());
+      const part = type => parts.find(item => item.type === type).value;
+      return part('year') + '-' + part('month') + '-' + part('day');
+    };
     const minBookingDate = () => {
       const [y, m, d] = koreaToday().split('-').map(Number);
-      const min = new Date(Date.UTC(y, m - 1, d + 3));
-      return min.toISOString().slice(0, 10);
+      return new Date(Date.UTC(y, m - 1, d + 3)).toISOString().slice(0, 10);
     };
     bookingDateInput.min = minBookingDate();
-    const validBookingDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && value >= minBookingDate();
+    const validBookingDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') && value >= minBookingDate();
 
     // Time labels
     const timeLabels = {
@@ -602,7 +605,8 @@ export const bookingPage = (packageParam?: string) => `
           timeInput.appendChild(option);
         });
         timeInput.disabled = !available.length;
-        if (available.includes(selectedTime)) timeInput.value = selectedTime;
+        const matchingTime = available.find(time => String(time).slice(0,5) === selectedTime.slice(0,5));
+        if (matchingTime) timeInput.value = matchingTime;
       } catch (error) {
         timeInput.innerHTML = '<option value="">Unable to load times</option>';
         console.error('Unable to preselect booking time', error);
@@ -776,6 +780,22 @@ export const bookingPage = (packageParam?: string) => `
     });
 
     updatePrice();
+
+    // The global floating BOOK NOW shortcut is redundant on the booking form.
+    // Hide only the fixed-position shortcut, never the actual form submit button.
+    function hideBookingShortcut() {
+      document.querySelectorAll('a, button').forEach(el => {
+        if (el.textContent.trim().replace(/\s+/g, ' ').toUpperCase() !== 'BOOK NOW') return;
+        if (el.closest('#booking-form')) return;
+        const style = window.getComputedStyle(el);
+        const parentStyle = el.parentElement ? window.getComputedStyle(el.parentElement) : null;
+        if (style.position === 'fixed' || (parentStyle && parentStyle.position === 'fixed')) {
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+    }
+    hideBookingShortcut();
+    document.addEventListener('DOMContentLoaded', hideBookingShortcut, {once:true});
   </script>
 `;
 
@@ -2319,10 +2339,12 @@ export const basicDetailPage = () => `
       const message = document.getElementById('basic-availability-message');
       const button = document.getElementById('basic-continue');
       if (!dateInput || !timeInput || !button) return;
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 3);
-      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
-      dateInput.min = localDate(minDate);
+      const koreaMinDate = () => {
+        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+        const part = type => parts.find(item => item.type === type).value;
+        return new Date(Date.UTC(Number(part('year')), Number(part('month'))-1, Number(part('day'))+3)).toISOString().slice(0,10);
+      };
+      dateInput.min = koreaMinDate();
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2331,7 +2353,14 @@ export const basicDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        if (!date || date < dateInput.min) return;
+        dateInput.min = koreaMinDate();
+        if (!date || date < dateInput.min) {
+          if (date) {
+            dateInput.value = '';
+            message.textContent = 'Please choose a date at least 3 days from today (Korea time).';
+          }
+          return;
+        }
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2360,6 +2389,7 @@ export const basicDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
+        dateInput.min = koreaMinDate();
         if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
           message.textContent = 'Please select a date at least 3 days from today and an available time.';
           return;
@@ -2468,10 +2498,12 @@ export const signatureDetailPage = () => `
       const message = document.getElementById('signature-availability-message');
       const button = document.getElementById('signature-continue');
       if (!dateInput || !timeInput || !button) return;
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 3);
-      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
-      dateInput.min = localDate(minDate);
+      const koreaMinDate = () => {
+        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+        const part = type => parts.find(item => item.type === type).value;
+        return new Date(Date.UTC(Number(part('year')), Number(part('month'))-1, Number(part('day'))+3)).toISOString().slice(0,10);
+      };
+      dateInput.min = koreaMinDate();
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2480,7 +2512,14 @@ export const signatureDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        if (!date || date < dateInput.min) return;
+        dateInput.min = koreaMinDate();
+        if (!date || date < dateInput.min) {
+          if (date) {
+            dateInput.value = '';
+            message.textContent = 'Please choose a date at least 3 days from today (Korea time).';
+          }
+          return;
+        }
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2509,6 +2548,7 @@ export const signatureDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
+        dateInput.min = koreaMinDate();
         if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
           message.textContent = 'Please select a date at least 3 days from today and an available time.';
           return;
@@ -2623,10 +2663,12 @@ export const premiumDetailPage = () => `
       const message = document.getElementById('premium-availability-message');
       const button = document.getElementById('premium-continue');
       if (!dateInput || !timeInput || !button) return;
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 3);
-      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
-      dateInput.min = localDate(minDate);
+      const koreaMinDate = () => {
+        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+        const part = type => parts.find(item => item.type === type).value;
+        return new Date(Date.UTC(Number(part('year')), Number(part('month'))-1, Number(part('day'))+3)).toISOString().slice(0,10);
+      };
+      dateInput.min = koreaMinDate();
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2635,7 +2677,14 @@ export const premiumDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        if (!date || date < dateInput.min) return;
+        dateInput.min = koreaMinDate();
+        if (!date || date < dateInput.min) {
+          if (date) {
+            dateInput.value = '';
+            message.textContent = 'Please choose a date at least 3 days from today (Korea time).';
+          }
+          return;
+        }
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2664,6 +2713,7 @@ export const premiumDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
+        dateInput.min = koreaMinDate();
         if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
           message.textContent = 'Please select a date at least 3 days from today and an available time.';
           return;
