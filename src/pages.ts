@@ -80,7 +80,12 @@ export const experiencesPage = () => `
     .de-exp .check-icon { width:16px; height:16px; stroke-width:3; }
     .de-exp tbody tr.highlight-feature .check-icon { width:18px; height:18px; }
 
-    .de-exp .cta { padding:73px 20px; }
+    /* Match the homepage final CTA on mobile; keep desktop and comparison untouched. */
+    .de-exp .cta { padding:2.1rem 1.5rem 2.4rem; }
+    .de-exp .cta .exp-cta-eyebrow { display:none; }
+    .de-exp .cta h2 { font-size:2rem; line-height:1.12; margin:0 0 .65rem; }
+    .de-exp .cta p:not(.eyebrow) { font-size:.82rem; line-height:1.5; margin:0 0 1.4rem; color:#fff; opacity:.9; }
+    .de-exp .cta a { padding:.8rem 1.25rem; font-size:.66rem; letter-spacing:1.1px; font-weight:400; }
   }
   /* The DearStory Difference — inserted between packages and comparison */
   .de-exp .difference { padding:12px 24px 108px; background:#f1f0ed; }
@@ -185,7 +190,7 @@ export const experiencesPage = () => `
       <p class="compare-note">For full details about each experience, select “View Details” above.</p>
     </div>
   </section>
-  <section class="cta"><p class="eyebrow">YOUR STORY STARTS HERE</p><h2 class="serif">Ready to Begin?</h2><p>Turn your story into music.</p><a href="/booking">BOOK YOUR EXPERIENCE &nbsp; ↗</a></section>
+  <section class="cta"><p class="eyebrow exp-cta-eyebrow">YOUR STORY STARTS HERE</p><h2 class="serif">Ready to Begin?</h2><p>Start your K-pop journey today</p><a href="/booking">BOOK YOUR EXPERIENCE</a></section>
 </main>
 `;
 
