@@ -330,6 +330,29 @@ export const bookingPage = (packageParam?: string) => `
     .de-shared-hero .de-shared-eyebrow { font-size:9px; letter-spacing:.06em; }
     .de-shared-hero .de-shared-title { font-size:clamp(30px,7vw,38px); letter-spacing:-.025em; margin-top:8px; }
   }
+  /* Compact booking form on phones only; desktop and form behavior stay unchanged. */
+  @media (max-width:767px) {
+    .de-booking-section { padding:28px 20px 44px !important; }
+    .de-booking-section #booking-form { display:flex; flex-direction:column; gap:20px; }
+    .de-booking-section #booking-form > * { margin-top:0 !important; margin-bottom:0 !important; }
+    .de-booking-section #booking-form label { font-size:11px !important; line-height:1.4; letter-spacing:1px; margin-bottom:8px !important; font-weight:500; }
+    .de-booking-section #booking-form input:not([type=checkbox]),
+    .de-booking-section #booking-form select { box-sizing:border-box; min-width:0; width:100%; height:46px; min-height:46px; padding:0 12px !important; font-size:14px !important; line-height:1.35; border-radius:0; }
+    .de-booking-section #booking-form input[type=date] { -webkit-appearance:none; appearance:none; max-width:100%; }
+    .de-booking-section #booking-form textarea { padding:12px !important; font-size:14px !important; min-height:88px; }
+    .de-booking-section #booking-form .grid { gap:20px !important; }
+    .de-booking-section #booking-form .bg-gray-50.p-8 { padding:17px 12px !important; }
+    .de-booking-section #booking-form .bg-gray-50.p-8 > p:first-child { font-size:11px !important; margin-bottom:5px !important; letter-spacing:1px; }
+    .de-booking-section #booking-form .bg-gray-50.p-8 > p.text-4xl { font-size:28px !important; line-height:1.15; }
+    .de-booking-section #booking-form .border-t.pt-8 { padding-top:0 !important; }
+    .de-booking-section #booking-form .messenger-entry { gap:8px !important; }
+    .de-booking-section #booking-form .messenger-select { width:38% !important; flex-shrink:0; }
+    .de-booking-section #booking-form .messenger-id { flex:1; min-width:0; }
+    .de-booking-section #booking-form .messenger-remove { width:36px !important; height:46px !important; }
+    .de-booking-section #booking-form #add-messenger-btn { font-size:11px !important; }
+    .de-booking-section #booking-form button[type=submit] { padding:14px 12px !important; font-size:12px !important; }
+    .de-booking-section #booking-form > p.text-center { font-size:11px !important; line-height:1.5; }
+  }
 </style>
   <section class="de-shared-hero">
     <p class="de-shared-eyebrow">RESERVATION</p>
@@ -337,7 +360,7 @@ export const bookingPage = (packageParam?: string) => `
   </section>
 
   <!-- Booking Form -->
-  <section class="section-padding bg-white">
+  <section class="section-padding bg-white de-booking-section">
     <div class="max-w-3xl mx-auto">
       <form id="booking-form" class="space-y-8">
         <!-- Package Selection -->
