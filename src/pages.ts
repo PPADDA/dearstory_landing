@@ -49,8 +49,9 @@ export const experiencesPage = () => `
   .de-exp .cta p { font-size:13px; color:#b9b9b9; margin-bottom:30px; }
   .de-exp .cta a { display:inline-block; padding:16px 30px; background:#fff; color:#111; font-size:11px; font-weight:600; letter-spacing:.12em; }
   @media(max-width:767px) {
-    .de-exp .hero { padding:78px 20px 52px; }
-    .de-exp .hero h1 { font-size:59px; }
+    .de-exp .hero { padding:28px 20px 25px; }
+    .de-exp .hero > .eyebrow { font-size:8px; letter-spacing:.22em; }
+    .de-exp .hero h1 { font-size:clamp(25px, 7vw, 34px); white-space:nowrap; letter-spacing:-0.025em; margin:10px 0 9px; }
     .de-exp .cards { grid-template-columns:1fr; padding:0 18px 68px; gap:12px; }
     .de-exp .card { flex-direction:row; min-height:120px; }
     .de-exp .art { width:34%; min-height:120px; padding:12px; flex-shrink:0; }
@@ -66,7 +67,19 @@ export const experiencesPage = () => `
     .de-exp .card:hover { transform:none; }
     .de-exp .comparison { padding:69px 18px 75px; }
     .de-exp .comparison-header { margin-bottom:27px; }
-    .de-exp .comparison-header h2 { font-size:47px; }
+    .de-exp .comparison-header .eyebrow { font-size:8px; letter-spacing:.22em; color:#89847e; }
+    .de-exp .comparison-header h2 { font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; color:#191919; }
+    .de-exp .comparison-header p:last-child { font-size:13px; line-height:1.55; color:#77736e; }
+    /* Show all three packages at once on mobile, without horizontal scrolling. */
+    .de-exp .table-scroll { overflow-x:visible; }
+    .de-exp table { min-width:0; width:100%; table-layout:fixed; }
+    .de-exp th,.de-exp td { padding:13px 3px; font-size:9px; line-height:1.35; overflow-wrap:break-word; }
+    .de-exp th:first-child,.de-exp td:first-child { width:46%; padding-left:6px; padding-right:6px; }
+    .de-exp th:not(:first-child),.de-exp td:not(:first-child) { width:18%; }
+    .de-exp thead th { font-size:10px; }
+    .de-exp .check-icon { width:16px; height:16px; stroke-width:3; }
+    .de-exp tbody tr.highlight-feature .check-icon { width:18px; height:18px; }
+
     .de-exp .cta { padding:73px 20px; }
   }
   /* The DearStory Difference — inserted between packages and comparison */
@@ -86,13 +99,17 @@ export const experiencesPage = () => `
     .de-exp .difference-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:34px 22px; }
   }
   @media(max-width:767px) {
-    .de-exp .difference { padding:0 18px 74px; }
-    .de-exp .difference-head { margin-bottom:30px; }
-    .de-exp .difference-head h2 { font-size:43px; }
-    .de-exp .difference-head .subtitle { line-height:1.65; }
-    .de-exp .difference-grid { grid-template-columns:1fr; gap:42px; }
-    .de-exp .difference-item h3 { font-size:17px; margin-top:17px; }
+    .de-exp .difference { padding:14px 0 62px; }
+    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; }
+    .de-exp .difference-head .eyebrow { font-size:8px; letter-spacing:.22em; }
+    .de-exp .difference-head h2 { font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; }
+    .de-exp .difference-head .subtitle { font-size:13px; line-height:1.55; }
+    .de-exp .difference-grid { display:flex; overflow-x:auto; overflow-y:hidden; gap:14px; padding:0 18px 15px; scroll-snap-type:x mandatory; scroll-padding-left:18px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .de-exp .difference-grid::-webkit-scrollbar { display:none; }
+    .de-exp .difference-item { flex:0 0 82%; scroll-snap-align:start; }
+    .de-exp .difference-item h3 { font-size:16px; margin:13px 0 7px; }
     .de-exp .difference-item .description { font-size:12px; }
+    .de-exp .difference-item img { aspect-ratio:1 / 1; }
   }
 </style>
 <main class="de-exp">
@@ -127,25 +144,21 @@ export const experiencesPage = () => `
           <img src="/images/difference-vocal.png" alt="Professional studio production workspace with vocal pitch editing software" loading="lazy">
           <h3>Professional Vocal Production</h3>
           <p class="description">From pitch correction to mixing and mastering, we polish your vocals into a studio-quality recording.</p>
-          
         </article>
         <article class="difference-item">
           <img src="/images/difference-nfc.png" alt="Personalized NFC music photocard held against the back of a smartphone" loading="lazy">
           <h3>NFC Music Photocard</h3>
           <p class="description">Your music, just one tap away. Simply tap your personalized photocard on the back of your phone to play your own music.</p>
-          
         </article>
         <article class="difference-item">
           <img src="/images/difference-cover.png" alt="Three original digital album cover designs displayed in a minimalist gallery" loading="lazy">
           <h3>Custom Album Cover Design</h3>
           <p class="description">Your song deserves its own visual identity. Receive a custom-designed digital album cover that reflects your music and personal style.</p>
-          
         </article>
         <article class="difference-item">
           <img src="/images/difference-release.png" alt="Original music playing on a smartphone with wired earphones" loading="lazy">
           <h3>Official Music Release</h3>
           <p class="description">Go beyond the studio and officially release your original track on music streaming platforms.</p>
-          
         </article>
       </div>
     </div>
@@ -169,7 +182,7 @@ export const experiencesPage = () => `
           <tr><td>DearStory Interpretation Support</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
         </tbody></table>
       </div>
-      <p class="compare-note">For full details about each experience, select “Learn More” above.</p>
+      <p class="compare-note">For full details about each experience, select “View Details” above.</p>
     </div>
   </section>
   <section class="cta"><p class="eyebrow">YOUR STORY STARTS HERE</p><h2 class="serif">Ready to Begin?</h2><p>Turn your story into music.</p><a href="/booking">BOOK YOUR EXPERIENCE &nbsp; ↗</a></section>
@@ -2183,14 +2196,14 @@ export const basicDetailPage = () => `
   <!-- Basic Hero: compact portrait left, booking right -->
   <section class="bg-[#f1f0ed] text-[#222] px-5 py-8 md:py-10">
     <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[290px_minmax(0,1fr)] items-start gap-7 md:gap-12">
-      <div class="w-full max-w-[290px] mx-auto md:mx-0">
+      <div class="w-full max-w-[210px] md:max-w-[290px] mx-auto md:mx-0">
         <img src="/images/basic.jpg" alt="Recording a K-pop song in the DearStory studio" class="block w-full h-auto" loading="eager" />
       </div>
       <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
         <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Basic</p>
         <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Cover Song Recording</h1>
         <p class="text-gray-600 text-sm leading-relaxed mb-5">Record your favorite K-pop song with professional vocal coaching and studio production.</p>
-        <div class="flex items-center flex-wrap gap-x-5 gap-y-1 border-t border-gray-300 pt-4 mb-4">
+        <div class="grid grid-cols-2 gap-3 items-center border-t border-gray-300 pt-4 mb-4">
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩400,000</span>
           <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2 hours</span>
         </div>
@@ -2301,32 +2314,26 @@ export const basicDetailPage = () => `
   </section>
 
   <!-- Basic inclusions: keep Signature/Premium-only benefits out of this list -->
-  <section class="bg-white px-5 py-12 md:py-16">
+  <section class="bg-white px-4 py-10 md:px-5 md:py-16">
     <div class="max-w-5xl mx-auto">
       <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">EVERYTHING YOU NEED</p>
-      <h2 class="text-4xl md:text-5xl text-center mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 max-w-4xl mx-auto">
+      <h2 class="text-3xl md:text-5xl text-center mb-7 md:mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
+      <div class="grid grid-cols-2 gap-x-3 sm:gap-x-8 md:gap-x-16 gap-y-4 md:gap-y-6 max-w-4xl mx-auto">
         ${['1:1 Vocal Coaching','Professional Studio Recording','Pitch Correction & Vocal Tuning','Mixing & Mastering','Photos & Videos','NFC Music Photocard','Interpretation Support'].map(item => `
-          <div class="flex items-start gap-4 text-sm md:text-base text-gray-800">
-            <svg class="w-5 h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+          <div class="flex items-start gap-2 sm:gap-3 md:gap-4 text-[11px] leading-snug sm:text-sm md:text-base text-gray-800">
+            <svg class="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
             <span>${item}</span>
           </div>`).join('')}
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
+  <!-- Unified homepage-style CTA -->
   <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
-      <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
-        Ready to Start Your Journey?
-      </h2>
-      <p class="text-xl mb-12 opacity-90">
-        Book your Basic experience today
-      </p>
-      <a href="/booking?package=basic" class="btn-modern bg-white text-black hover:bg-gray-100">
-        BOOK NOW
-      </a>
+      <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
+      <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
+      <a href="/booking" class="btn-modern bg-white text-black hover:bg-gray-100">BOOK YOUR EXPERIENCE</a>
     </div>
   </section>
 `
@@ -2335,16 +2342,16 @@ export const signatureDetailPage = () => `
   <!-- Basic Hero: compact portrait left, booking right -->
   <section class="bg-[#f1f0ed] text-[#222] px-5 py-8 md:py-10">
     <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[290px_minmax(0,1fr)] items-start gap-7 md:gap-12">
-      <div class="w-full max-w-[290px] mx-auto md:mx-0">
+      <div class="w-full max-w-[210px] md:max-w-[290px] mx-auto md:mx-0">
         <img src="/images/signature.jpg" alt="Recording a K-pop song in the DearStory studio" class="block w-full h-auto" loading="eager" />
       </div>
       <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
         <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Signature</p>
-        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Create Your <br>Own K-pop Song</h1>
+        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Create Your Own K-pop Song</h1>
         <p class="text-gray-600 text-sm leading-relaxed mb-5">Create your own original K-pop song with personalized music production, vocal coaching and professional recording.</p>
-        <div class="flex items-center flex-wrap gap-x-5 gap-y-1 border-t border-gray-300 pt-4 mb-4">
+        <div class="grid grid-cols-2 gap-3 items-center border-t border-gray-300 pt-4 mb-4">
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩600,000</span>
-          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2.5 hours</span>
+          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2–2.5 hours</span>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
@@ -2459,32 +2466,26 @@ export const signatureDetailPage = () => `
   </section>
 
   <!-- Signature package inclusions -->
-  <section class="bg-white px-5 py-12 md:py-16">
+  <section class="bg-white px-4 py-10 md:px-5 md:py-16">
     <div class="max-w-5xl mx-auto">
       <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">EVERYTHING YOU NEED</p>
-      <h2 class="text-4xl md:text-5xl text-center mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 max-w-4xl mx-auto">
+      <h2 class="text-3xl md:text-5xl text-center mb-7 md:mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
+      <div class="grid grid-cols-2 gap-x-3 sm:gap-x-8 md:gap-x-16 gap-y-4 md:gap-y-6 max-w-4xl mx-auto">
         ${['1:1 Vocal Coaching','Professional Studio Recording','Pitch Correction & Vocal Tuning','Mixing & Mastering','Photos & Videos','NFC Music Photocard','Interpretation Support','Original K-pop Song Production','Personalized Lyrics & Melody','Custom Digital Album Cover Design'].map(item => `
-          <div class="flex items-start gap-4 text-sm md:text-base text-gray-800">
-            <svg class="w-5 h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+          <div class="flex items-start gap-2 sm:gap-3 md:gap-4 text-[11px] leading-snug sm:text-sm md:text-base text-gray-800">
+            <svg class="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
             <span>${item}</span>
           </div>`).join('')}
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
+  <!-- Unified homepage-style CTA -->
   <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
-      <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
-        Ready to Start Your Journey?
-      </h2>
-      <p class="text-xl mb-12 opacity-90">
-        Book your Signature experience today
-      </p>
-      <a href="/booking?package=signature" class="btn-modern bg-white text-black hover:bg-gray-100">
-        BOOK NOW
-      </a>
+      <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
+      <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
+      <a href="/booking" class="btn-modern bg-white text-black hover:bg-gray-100">BOOK YOUR EXPERIENCE</a>
     </div>
   </section>
 `
@@ -2493,16 +2494,16 @@ export const premiumDetailPage = () => `
   <!-- Basic Hero: compact portrait left, booking right -->
   <section class="bg-[#f1f0ed] text-[#222] px-5 py-8 md:py-10">
     <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[290px_minmax(0,1fr)] items-start gap-7 md:gap-12">
-      <div class="w-full max-w-[290px] mx-auto md:mx-0">
+      <div class="w-full max-w-[210px] md:max-w-[290px] mx-auto md:mx-0">
         <img src="/images/premium.png" alt="Recording a K-pop song in the DearStory studio" class="block w-full h-auto" loading="eager" />
       </div>
       <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
         <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Premium</p>
         <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Your Song + Album Release</h1>
         <p class="text-gray-600 text-sm leading-relaxed mb-5">Create and record your original K-pop song, complete with custom digital artwork and an official music release.</p>
-        <div class="flex items-center flex-wrap gap-x-5 gap-y-1 border-t border-gray-300 pt-4 mb-4">
+        <div class="grid grid-cols-2 gap-3 items-center border-t border-gray-300 pt-4 mb-4">
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩700,000</span>
-          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2.5 hours</span>
+          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2–2.5 hours</span>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
@@ -2623,32 +2624,26 @@ export const premiumDetailPage = () => `
   </section>
 
   <!-- Premium package inclusions -->
-  <section class="bg-white px-5 py-12 md:py-16">
+  <section class="bg-white px-4 py-10 md:px-5 md:py-16">
     <div class="max-w-5xl mx-auto">
       <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">EVERYTHING YOU NEED</p>
-      <h2 class="text-4xl md:text-5xl text-center mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 max-w-4xl mx-auto">
+      <h2 class="text-3xl md:text-5xl text-center mb-7 md:mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
+      <div class="grid grid-cols-2 gap-x-3 sm:gap-x-8 md:gap-x-16 gap-y-4 md:gap-y-6 max-w-4xl mx-auto">
         ${['1:1 Vocal Coaching','Professional Studio Recording','Pitch Correction & Vocal Tuning','Mixing & Mastering','Photos & Videos','NFC Music Photocard','Interpretation Support','Original K-pop Song Production','Personalized Lyrics & Melody','Custom Digital Album Cover Design','Official Music Release'].map(item => `
-          <div class="flex items-start gap-4 text-sm md:text-base text-gray-800">
-            <svg class="w-5 h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+          <div class="flex items-start gap-2 sm:gap-3 md:gap-4 text-[11px] leading-snug sm:text-sm md:text-base text-gray-800">
+            <svg class="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
             <span>${item}</span>
           </div>`).join('')}
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
+  <!-- Unified homepage-style CTA -->
   <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
-      <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
-        Ready to Start Your Journey?
-      </h2>
-      <p class="text-xl mb-12 opacity-90">
-        Book your Premium experience today
-      </p>
-      <a href="/booking?package=premium" class="btn-modern bg-white text-black hover:bg-gray-100">
-        BOOK NOW
-      </a>
+      <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
+      <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
+      <a href="/booking" class="btn-modern bg-white text-black hover:bg-gray-100">BOOK YOUR EXPERIENCE</a>
     </div>
   </section>
 `

@@ -629,6 +629,29 @@ backdrop-filter: blur(12px);
       .home-footer > div > .border-t p { font-size: .62rem !important; }
     }
 
+
+    /* Shared compact footer on every page, including mobile. */
+    .site-footer { padding-top: 3rem; padding-bottom: 2rem; }
+    .site-footer > div { position: relative; }
+    .site-footer > div::before {
+      content: ''; position: absolute; top: -3rem; left: 1.5rem; right: 1.5rem;
+      border-top: 1px solid #1f2937;
+    }
+    @media (min-width: 1024px) {
+      .site-footer > div::before { left: 3rem; right: 3rem; }
+    }
+    @media (max-width: 767px) {
+      .site-footer { padding: 2.3rem 0 1.5rem !important; }
+      .site-footer > div::before { top: -2.3rem; }
+      .site-footer > div > .grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.35fr); gap: .8rem 1.2rem; margin-bottom: 1.7rem; }
+      .site-footer > div > .grid > div:first-child img { height: 5rem; margin-bottom: .35rem; }
+      .site-footer > div > .grid > div:first-child p { font-size: .62rem; }
+      .site-footer > div > .grid h4 { font-size: .7rem; margin-bottom: .65rem; }
+      .site-footer > div > .grid ul { font-size: .68rem; line-height: 1.45; }
+      .site-footer > div > .grid .flex > a { width: 2rem; height: 2rem; }
+      .site-footer > div > .border-t { padding-top: 1.2rem; }
+      .site-footer > div > .border-t p { font-size: .62rem; }
+    }
   </style>
 </head>
 <body>
@@ -668,47 +691,34 @@ backdrop-filter: blur(12px);
   </a>
   
   <main class="${isHome ? '' : 'inner-page-main'}">
-    ${content}
+    ${content.replaceAll(
+      '<!-- Unified homepage-style CTA -->\n  <section class="section-padding bg-black text-white">',
+      '<!-- Unified homepage-style CTA -->\n  <section class="section-padding bg-black text-white home-final-cta">'
+    )}
   </main>
   
-  <footer class="bg-black text-white py-16 ${isHome ? 'home-footer' : ''}">
+  <footer class="bg-black text-white py-12 md:py-16 site-footer">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
-      <div class="grid md:grid-cols-4 gap-12 mb-12">
-        <div class="flex flex-col items-center text-center md:items-start md:text-left">
-          <!-- White Logo Image -->
-          <img src="/logo-white.png" alt="Dear Story Logo" class="h-32 md:h-36 w-auto mb-4 opacity-90 transition hover:opacity-100" />
-          <p class="text-gray-400 text-sm leading-relaxed italic">Your Letter, Our Melody</p>
+      <div class="grid grid-cols-2 gap-5 sm:gap-10 mb-10 md:mb-12 items-start">
+        <div class="flex flex-col items-start text-left min-w-0">
+          <img src="/logo-white.png" alt="Dear Story Logo" class="h-24 sm:h-32 md:h-36 w-auto max-w-full object-contain mb-4 opacity-90 transition hover:opacity-100" />
+          <p class="text-gray-400 text-xs sm:text-sm leading-relaxed italic">Your Letter, Our Melody</p>
         </div>
-        <div>
-          <h4 class="text-sm uppercase tracking-wider mb-6 font-medium">Quick Links</h4>
-          <ul class="space-y-3 text-sm">
-            <li><a href="/" class="text-gray-400 hover:text-white transition">Home</a></li>
-            <li><a href="/experiences" class="text-gray-400 hover:text-white transition">Experiences</a></li>
-            <li><a href="/gallery" class="text-gray-400 hover:text-white transition">Gallery</a></li>
-            <li><a href="/booking" class="text-gray-400 hover:text-white transition">Book Now</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-sm uppercase tracking-wider mb-6 font-medium">Contact</h4>
-          <ul class="space-y-3 text-sm text-gray-400">
-            <li>dearmusicstudio@gmail.com</li>
+        <div class="min-w-0">
+          <h4 class="text-sm uppercase tracking-wider mb-4 font-medium">Contact</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-gray-400 break-words">
+            <li><a href="mailto:dearmusicstudio@gmail.com" class="hover:text-white transition">dearmusicstudio@gmail.com</a></li>
             <li>Seoul, South Korea</li>
           </ul>
-        </div>
-        <div>
-          <h4 class="text-sm uppercase tracking-wider mb-6 font-medium">Follow Us</h4>
-          <div class="flex space-x-4">
-            <a href="https://www.instagram.com/dearstory_studio" target="_blank" rel="noopener noreferrer" class="w-10 h-10 border border-gray-700 flex items-center justify-center hover:border-white hover:text-white transition">
-              <i class="fab fa-instagram"></i>
-            </a>
-            <a href="https://youtube.com/@dearstudio_music" target="_blank" rel="noopener noreferrer" class="w-10 h-10 border border-gray-700 flex items-center justify-center hover:border-white hover:text-white transition">
-              <i class="fab fa-youtube"></i>
-            </a>
+          <h4 class="text-sm uppercase tracking-wider mt-6 mb-4 font-medium">Follow Us</h4>
+          <div class="flex gap-3 sm:gap-4">
+            <a href="https://www.instagram.com/dearstory_studio" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="w-9 h-9 sm:w-10 sm:h-10 border border-gray-700 flex items-center justify-center hover:border-white hover:text-white transition"><i class="fab fa-instagram"></i></a>
+            <a href="https://youtube.com/@dearstudio_music" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="w-9 h-9 sm:w-10 sm:h-10 border border-gray-700 flex items-center justify-center hover:border-white hover:text-white transition"><i class="fab fa-youtube"></i></a>
           </div>
         </div>
       </div>
       <div class="border-t border-gray-800 pt-8 text-center">
-        <p class="text-gray-500 text-sm">© 2026 Dear Story. All rights reserved.</p>
+        <p class="text-gray-500 text-xs sm:text-sm">© 2026 Dear Story. All rights reserved.</p>
       </div>
     </div>
   </footer>
