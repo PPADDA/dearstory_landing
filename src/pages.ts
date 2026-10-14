@@ -26,7 +26,7 @@ export const experiencesPage = () => `
   .de-exp .comparison { background:#fff; padding:92px 24px 105px; }
   .de-exp .comparison-inner { max-width:1100px; margin:auto; }
   .de-exp .comparison-header { text-align:center; margin-bottom:40px; }
-  .de-exp .comparison-header h2 { font-size:clamp(44px,6vw,72px); margin:12px 0; }
+  .de-exp .comparison-header h2 { font-weight:600; font-size:clamp(44px,6vw,72px); margin:12px 0; }
   .de-exp .comparison-header p:last-child { font-size:12px; color:#77736e; }
   .de-exp .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .de-exp table { width:100%; border-collapse:collapse; table-layout:fixed; min-width:620px; }
@@ -66,8 +66,19 @@ export const experiencesPage = () => `
     .de-exp .card.signature { border-width:1px; }
     .de-exp .card:hover { transform:none; }
     .de-exp .comparison { padding:69px 18px 75px; }
-    .de-exp .comparison-header { margin-bottom:27px; }
-    .de-exp .comparison-header h2 { font-size:47px; }
+    .de-exp .comparison-header { margin-bottom:27px; position:relative; top:-15px; }
+    .de-exp .comparison-header .eyebrow { font-size:8px; letter-spacing:.22em; color:#89847e; }
+    .de-exp .comparison-header h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:4px 0 9px; color:#191919; }
+    .de-exp .comparison-header p:last-child { font-size:13px; line-height:1.55; color:#77736e; }
+    /* Keep feature names and all three package columns visible on mobile. */
+    .de-exp .table-scroll { overflow-x:visible; }
+    .de-exp table { min-width:0; width:100%; table-layout:fixed; }
+    .de-exp th,.de-exp td { padding:13px 3px; font-size:9px; line-height:1.35; overflow-wrap:break-word; }
+    .de-exp th:first-child,.de-exp td:first-child { width:46%; padding-left:6px; padding-right:6px; }
+    .de-exp th:not(:first-child),.de-exp td:not(:first-child) { width:18%; }
+    .de-exp thead th { font-size:10px; }
+    .de-exp .check-icon { width:16px; height:16px; stroke-width:3; }
+    .de-exp tbody tr.highlight-feature .check-icon { width:18px; height:18px; }
     /* Match the Home page CTA on mobile only. Desktop remains unchanged. */
     .de-exp .cta { padding:2.1rem 1.5rem 2.4rem; }
     .de-exp .cta .exp-cta-eyebrow { display:none; }
@@ -80,7 +91,7 @@ export const experiencesPage = () => `
   .de-exp .difference-inner { max-width:1200px; margin:0 auto; }
   .de-exp .difference-head { text-align:center; margin-bottom:50px; }
   .de-exp .difference-head .eyebrow { color:#89847e; }
-  .de-exp .difference-head h2 { font-size:clamp(38px,4vw,52px); line-height:1.08; margin:14px 0 17px; }
+  .de-exp .difference-head h2 { font-weight:600; font-size:clamp(38px,4vw,52px); line-height:1.08; margin:14px 0 17px; }
   .de-exp .difference-head .subtitle { font-size:13px; color:#77736e; }
   .de-exp .difference-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; }
   .de-exp .difference-item { min-width:0; }
@@ -93,9 +104,9 @@ export const experiencesPage = () => `
   }
   @media(max-width:767px) {
     .de-exp .difference { padding:14px 0 62px; }
-    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; }
+    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; position:relative; top:-20px; }
     .de-exp .difference-head .eyebrow { font-size:8px; letter-spacing:.22em; }
-    .de-exp .difference-head h2 { font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; }
+    .de-exp .difference-head h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:4px 0 9px; }
     .de-exp .difference-head .subtitle { font-size:13px; line-height:1.55; }
     .de-exp .difference-grid { display:flex; overflow-x:auto; overflow-y:hidden; gap:14px; padding:0 18px 15px; scroll-snap-type:x mandatory; scroll-padding-left:18px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
     .de-exp .difference-grid::-webkit-scrollbar { display:none; }
@@ -128,8 +139,7 @@ export const experiencesPage = () => `
     <div class="difference-inner">
       <div class="difference-head">
         <p class="eyebrow">MORE THAN JUST RECORDING</p>
-        <h2 class="serif" id="difference-title">The DearStory Difference</h2>
-        <p class="subtitle">Every detail, crafted for your K-pop experience</p>
+        <h2 class="serif" id="difference-title">The Dear Story Difference</h2>
       </div>
       <div class="difference-grid">
         <article class="difference-item">
@@ -157,7 +167,7 @@ export const experiencesPage = () => `
   </section>
   <section class="comparison" aria-labelledby="compare-title">
     <div class="comparison-inner">
-      <div class="comparison-header"><p class="eyebrow">FIND YOUR PERFECT FIT</p><h2 class="serif" id="compare-title">Compare Our Experiences</h2><p>See what's included in each experience.</p></div>
+      <div class="comparison-header"><p class="eyebrow">FIND YOUR PERFECT FIT</p><h2 class="serif" id="compare-title">Compare Our Experiences</h2></div>
       <div class="table-scroll" role="region" aria-label="Experience comparison table" tabindex="0">
         <table><thead><tr><th scope="col">INCLUDED</th><th scope="col">Basic</th><th scope="col">Signature</th><th scope="col">Premium</th></tr></thead>
         <tbody>
