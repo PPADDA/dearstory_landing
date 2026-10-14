@@ -66,9 +66,9 @@ export const experiencesPage = () => `
     .de-exp .card.signature { border-width:1px; }
     .de-exp .card:hover { transform:none; }
     .de-exp .comparison { padding:69px 18px 75px; }
-    .de-exp .comparison-header { margin-bottom:27px; position:relative; top:-15px; }
+    .de-exp .comparison-header { margin-bottom:27px; position:relative; top:-22px; }
     .de-exp .comparison-header .eyebrow { font-size:8px; letter-spacing:.22em; color:#89847e; }
-    .de-exp .comparison-header h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:4px 0 9px; color:#191919; }
+    .de-exp .comparison-header h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; color:#191919; }
     .de-exp .comparison-header p:last-child { font-size:13px; line-height:1.55; color:#77736e; }
     /* Keep feature names and all three package columns visible on mobile. */
     .de-exp .table-scroll { overflow-x:visible; }
@@ -104,9 +104,9 @@ export const experiencesPage = () => `
   }
   @media(max-width:767px) {
     .de-exp .difference { padding:14px 0 62px; }
-    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; position:relative; top:-20px; }
+    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; position:relative; top:-22px; }
     .de-exp .difference-head .eyebrow { font-size:8px; letter-spacing:.22em; }
-    .de-exp .difference-head h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:4px 0 9px; }
+    .de-exp .difference-head h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; }
     .de-exp .difference-head .subtitle { font-size:13px; line-height:1.55; }
     .de-exp .difference-grid { display:flex; overflow-x:auto; overflow-y:hidden; gap:14px; padding:0 18px 15px; scroll-snap-type:x mandatory; scroll-padding-left:18px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
     .de-exp .difference-grid::-webkit-scrollbar { display:none; }
@@ -558,9 +558,15 @@ export const bookingPage = (packageParam?: string) => `
       }
     });
 
-    // Restore date/time selected on the Basic detail page; revalidate with live availability.
+    // Restore package, date and time from any Experience detail page; verify availability.
     (async function prefillDetailSelection() {
       const params = new URLSearchParams(window.location.search);
+      const selectedPackage = params.get('package');
+      const packageInput = document.getElementById('package');
+      if (['basic', 'signature', 'premium'].includes(selectedPackage) && packageInput) {
+        packageInput.value = selectedPackage;
+        packageInput.dispatchEvent(new Event('change'));
+      }
       const selectedDate = params.get('date');
       const selectedTime = params.get('time');
       const dateInput = document.getElementById('booking_date');
