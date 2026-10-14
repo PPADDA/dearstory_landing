@@ -132,6 +132,11 @@ backdrop-filter: blur(12px);
     .home-nav.is-scrolled::before, .home-nav.menu-open::before { display: none; }
     @media (max-width: 768px) { .home-nav::before { background: linear-gradient(to bottom, rgba(248,244,239,0.82), rgba(248,244,239,0)); } }
 
+    /* Inner pages share the exact homepage navigation geometry. */
+    .home-nav.inner-page-nav { background: #f1f0ed; }
+    .inner-page-main { padding-top: 96px; }
+    @media (max-width: 767px) { .inner-page-main { padding-top: 82px; } }
+
     /* Slim, left-aligned homepage navigation; hero dimensions stay unchanged. */
     .home-nav .home-nav-inner { max-width: none; padding-left: clamp(24px, 5vw, 92px); padding-right: clamp(24px, 5vw, 92px); }
     .home-nav .home-nav-row { height: 96px; justify-content: flex-start; gap: clamp(30px, 4vw, 76px); transition: height 0.3s ease; }
@@ -627,19 +632,19 @@ backdrop-filter: blur(12px);
   </style>
 </head>
 <body>
-  <nav id="site-nav" class="fixed w-full top-0 z-50 ${isHome ? 'home-nav' : 'border-b border-gray-200'}" ${isHome ? '' : 'style="background: #f1f0ed;"'}>
-    <div class="${isHome ? 'home-nav-inner' : 'max-w-7xl mx-auto px-6 lg:px-12'}">
-      <div class="flex items-center ${isHome ? 'home-nav-row' : 'justify-between h-48'}">
+  <nav id="site-nav" class="fixed w-full top-0 z-50 home-nav ${isHome ? '' : 'inner-page-nav'}" >
+    <div class="home-nav-inner">
+      <div class="flex items-center home-nav-row">
         <a href="/" class="flex items-center py-2">
-          <img src="/logo.png" alt="Dear Story" class="${isHome ? 'home-logo' : 'h-44 md:h-44'} w-auto opacity-95 hover:opacity-100 transition" />
+          <img src="/logo.png" alt="Dear Story" class="home-logo w-auto opacity-95 hover:opacity-100 transition" />
         </a>
-        <div class="hidden md:flex ${isHome ? 'home-links' : 'space-x-10'}">
+        <div class="hidden md:flex home-links">
           <a href="/" class="nav-link">Home</a>
           <a href="/experiences" class="nav-link">Experiences</a>
           <a href="/gallery" class="nav-link">Gallery</a>
           <a href="/booking" class="nav-link">Book</a>
         </div>
-        <div class="md:hidden ${isHome ? 'ml-auto' : ''}">
+        <div class="md:hidden ml-auto">
           <button id="mobile-menu-btn" class="text-xl">
             <i class="fas fa-bars"></i>
           </button>
@@ -662,7 +667,7 @@ backdrop-filter: blur(12px);
     <span>Book Now</span>
   </a>
   
-  <main class="${isHome ? '' : 'mt-48'}">
+  <main class="${isHome ? '' : 'inner-page-main'}">
     ${content}
   </main>
   
@@ -1617,7 +1622,7 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">BASIC</h3>
                 <p class="text-lg">₩400,000</p>
               </div>
-              <p class="text-gray-600 mb-6">Professional vocal coaching and studio recording of your favorite K-pop songs.</p>
+              <p class="text-gray-600 mb-6">Record your favorite K-pop song.</p>
               <a href="/experience/basic" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
           </div>
@@ -1633,7 +1638,7 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">SIGNATURE</h3>
                 <p class="text-lg">₩600,000</p>
               </div>
-              <p class="text-gray-600 mb-6">Compose an original K-pop song tailored to your story and style.</p>
+              <p class="text-gray-600 mb-6">Create your own original K-pop song.</p>
               <a href="/experience/signature" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
           </div>
@@ -1648,7 +1653,7 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">PREMIUM</h3>
                 <p class="text-lg">₩700,000</p>
               </div>
-              <p class="text-gray-600 mb-6">Everything in Signature plus official release on Spotify, Apple Music, and more.</p>
+              <p class="text-gray-600 mb-6">Release your original song to the world.</p>
               <a href="/experience/premium" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
           </div>

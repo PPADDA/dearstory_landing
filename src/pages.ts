@@ -1,141 +1,179 @@
 // ==================== EXPERIENCES PAGE ====================
 export const experiencesPage = () => `
-  <!-- Hero Section -->
-  <section class="relative h-[60vh] flex items-center justify-center bg-black">
-    <div class="relative z-10 text-center text-white px-4">
-      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-90">OUR SERVICES</p>
-      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-        Choose Your Experience
-      </h1>
-    </div>
+<style>
+  .de-exp { background:#f1f0ed; color:#191919; }
+  .de-exp .eyebrow { font-size:11px; font-weight:600; letter-spacing:.25em; }
+  .de-exp .hero > .eyebrow { color:#888888; }
+  .de-exp .serif { font-family:'Cormorant Garamond',serif; font-weight:400; }
+  .de-exp .hero { padding:112px 22px 74px; text-align:center; }
+  .de-exp .hero h1 { font-size:clamp(58px,8vw,102px); line-height:1.05; margin:18px 0 14px; }
+  .de-exp .hero p:last-child { font-size:13px; color:#706d69; }
+  /* Match the homepage's OUR SERVICES cards and hover elevation. */
+  .de-exp .cards { max-width:1280px; margin:0 auto; padding:0 24px 105px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px; }
+  .de-exp .card { display:flex; flex-direction:column; min-width:0; position:relative; background:#fff; border:1px solid #f0f0f0; overflow:hidden; cursor:pointer; transition:all .4s cubic-bezier(.4,0,.2,1); }
+  .de-exp .card:hover { transform:translateY(-8px); box-shadow:0 20px 60px rgba(0,0,0,.08); }
+  .de-exp .card.signature { border:2px solid #111; }
+  .de-exp .art { background:#fff; min-height:200px; padding:48px; display:flex; align-items:center; justify-content:center; }
+  .de-exp .art i { font-size:96px; color:#1f2937; }
+  .de-exp .card-body { padding:32px; flex:1; display:flex; flex-direction:column; }
+  .de-exp .card-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:16px; }
+  .de-exp .card h2 { font-family:'Montserrat',sans-serif; font-size:24px; line-height:1.3; font-weight:300; }
+  .de-exp .price { font-size:18px; white-space:nowrap; }
+  .de-exp .summary { font-size:14px; line-height:1.65; color:#4b5563; margin:0 0 24px; flex:1; }
+  .de-exp .detail { font-size:14px; letter-spacing:.1em; text-transform:uppercase; width:max-content; }
+  .de-exp .card:hover .detail { opacity:.7; }
+  .de-exp .popular { position:absolute; top:16px; left:16px; background:#000; color:#fff; font-size:12px; letter-spacing:.1em; text-transform:uppercase; padding:4px 12px; z-index:1; }
+  .de-exp .comparison { background:#fff; padding:92px 24px 105px; }
+  .de-exp .comparison-inner { max-width:1100px; margin:auto; }
+  .de-exp .comparison-header { text-align:center; margin-bottom:40px; }
+  .de-exp .comparison-header h2 { font-size:clamp(44px,6vw,72px); margin:12px 0; }
+  .de-exp .comparison-header p:last-child { font-size:12px; color:#77736e; }
+  .de-exp .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .de-exp table { width:100%; border-collapse:collapse; table-layout:fixed; min-width:620px; }
+  .de-exp th,.de-exp td { border-bottom:1px solid #e9e6e1; padding:21px 12px; text-align:center; font-size:12px; }
+  .de-exp th:first-child,.de-exp td:first-child { text-align:left; width:37%; }
+  .de-exp thead th { font-weight:600; font-size:13px; }
+  .de-exp thead th span { display:block; font-weight:400; color:#77736e; margin-top:7px; font-size:11px; }
+  .de-exp tbody td:first-child { color:#44413d; }
+  .de-exp .yes { color:#222; }
+  .de-exp .check-icon { display:inline-block; width:23px; height:23px; vertical-align:middle; fill:none; stroke:currentColor; stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; }
+  .de-exp tbody tr.highlight-feature { background:#f5f4f1; }
+  .de-exp tbody tr.highlight-feature td:first-child { font-weight:700; color:#222; }
+  .de-exp tbody tr.highlight-feature .yes { color:#B44747; }
+  .de-exp tbody tr.highlight-feature .check-icon { width:27px; height:27px; stroke-width:3.4; }
+  .de-exp tbody tr.highlight-feature .no { color:#bbb8b3; }
+  .de-exp .no { color:#c7c3bc; }
+  .de-exp .compare-note { font-size:11px; line-height:1.8; color:#807c76; margin-top:20px; }
+  .de-exp .cta { background:#0b0b0b; color:white; text-align:center; padding:95px 22px; }
+  .de-exp .cta h2 { font-size:clamp(48px,7vw,76px); margin:12px 0 10px; }
+  .de-exp .cta p { font-size:13px; color:#b9b9b9; margin-bottom:30px; }
+  .de-exp .cta a { display:inline-block; padding:16px 30px; background:#fff; color:#111; font-size:11px; font-weight:600; letter-spacing:.12em; }
+  @media(max-width:767px) {
+    .de-exp .hero { padding:78px 20px 52px; }
+    .de-exp .hero h1 { font-size:59px; }
+    .de-exp .cards { grid-template-columns:1fr; padding:0 18px 68px; gap:12px; }
+    .de-exp .card { flex-direction:row; min-height:120px; }
+    .de-exp .art { width:34%; min-height:120px; padding:12px; flex-shrink:0; }
+    .de-exp .art i { font-size:31px; }
+    .de-exp .card-body { padding:17px 12px 16px 0; min-width:0; }
+    .de-exp .card-heading { margin-bottom:5px; align-items:baseline; gap:8px; }
+    .de-exp .card h2 { font-size:13px; font-weight:500; white-space:nowrap; }
+    .de-exp .price { font-size:13px; }
+    .de-exp .summary { font-size:10px; line-height:1.45; margin:0 0 9px; }
+    .de-exp .detail { font-size:9px; letter-spacing:.07em; }
+    .de-exp .popular { top:8px; left:8px; font-size:7px; padding:5px 7px; }
+    .de-exp .card.signature { border-width:1px; }
+    .de-exp .card:hover { transform:none; }
+    .de-exp .comparison { padding:69px 18px 75px; }
+    .de-exp .comparison-header { margin-bottom:27px; }
+    .de-exp .comparison-header h2 { font-size:47px; }
+    .de-exp .cta { padding:73px 20px; }
+  }
+  /* The DearStory Difference — inserted between packages and comparison */
+  .de-exp .difference { padding:12px 24px 108px; background:#f1f0ed; }
+  .de-exp .difference-inner { max-width:1200px; margin:0 auto; }
+  .de-exp .difference-head { text-align:center; margin-bottom:50px; }
+  .de-exp .difference-head .eyebrow { color:#89847e; }
+  .de-exp .difference-head h2 { font-size:clamp(38px,4vw,52px); line-height:1.08; margin:14px 0 17px; }
+  .de-exp .difference-head .subtitle { font-size:13px; color:#77736e; }
+  .de-exp .difference-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; }
+  .de-exp .difference-item { min-width:0; }
+  .de-exp .difference-item img { display:block; width:100%; aspect-ratio: 1 / 1; object-fit:cover; background:#e9e6e1; }
+  .de-exp .difference-item h3 { font-family:'Montserrat',sans-serif; font-size:16px; font-weight:600; line-height:1.4; margin:15px 0 8px; }
+  .de-exp .difference-item .description { font-size:12px; line-height:1.7; color:#68645f; max-width:470px; }
+  .de-exp .difference-item .availability { margin-top:13px; font-size:10px; font-weight:600; letter-spacing:.16em; color:#8a857e; }
+  @media(min-width:768px) and (max-width:1050px) {
+    .de-exp .difference-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:34px 22px; }
+  }
+  @media(max-width:767px) {
+    .de-exp .difference { padding:0 18px 74px; }
+    .de-exp .difference-head { margin-bottom:30px; }
+    .de-exp .difference-head h2 { font-size:43px; }
+    .de-exp .difference-head .subtitle { line-height:1.65; }
+    .de-exp .difference-grid { grid-template-columns:1fr; gap:42px; }
+    .de-exp .difference-item h3 { font-size:17px; margin-top:17px; }
+    .de-exp .difference-item .description { font-size:12px; }
+  }
+</style>
+<main class="de-exp">
+  <section class="hero">
+    <p class="eyebrow">OUR EXPERIENCES</p>
+    <h1 class="serif">Find Your <em>Sound.</em></h1>
+    <p>Three ways to make music your own.</p>
   </section>
-
-  <!-- Experiences Grid -->
-  <section class="section-padding bg-white">
-    <div class="max-w-7xl mx-auto">
-      <div class="grid md:grid-cols-3 gap-8">
-        <!-- Basic -->
-        <div class="modern-card group cursor-pointer" onclick="window.location.href='/experience/basic'">
-          <div class="bg-white p-12 flex items-center justify-center" style="min-height: 200px;">
-            <i class="fas fa-microphone text-8xl text-gray-800"></i>
-          </div>
-          <div class="p-8">
-            <div class="flex justify-between items-start mb-6">
-              <h3 class="text-2xl font-light">BASIC</h3>
-              <p class="text-lg">₩400,000</p>
-            </div>
-            <ul class="space-y-3 mb-8 text-sm text-gray-600">
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>1:1 Vocal Coaching</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Professional Studio Recording</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>High-Quality Audio Production</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Interpretation Support</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Lyrics in Your Preferred Language</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Photos & Videos Included</span>
-              </li>
-            </ul>
-            <a href="/experience/basic" class="text-sm uppercase tracking-wider hover:opacity-70 transition">
-              Learn More →
-            </a>
-          </div>
-        </div>
-
-        <!-- Signature (Most Popular) -->
-        <div class="modern-card group cursor-pointer border-2 border-black relative" onclick="window.location.href='/experience/signature'">
-          <span class="absolute top-4 left-4 text-xs uppercase tracking-wider bg-black text-white px-3 py-1 z-10">
-            Most Popular
-          </span>
-          <div class="bg-white p-12 flex items-center justify-center" style="min-height: 200px;">
-            <i class="fas fa-music text-8xl text-gray-800"></i>
-          </div>
-          <div class="p-8">
-            <div class="flex justify-between items-start mb-4">
-              <h3 class="text-2xl font-light">SIGNATURE</h3>
-              <p class="text-lg">₩600,000</p>
-            </div>
-            <ul class="space-y-3 mb-8 text-sm text-gray-600">
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Original Song Composition</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Personalized Lyrics & Melody</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>All Basic Package Features</span>
-              </li>
-            </ul>
-            <a href="/experience/signature" class="text-sm uppercase tracking-wider hover:opacity-70 transition">
-              Learn More →
-            </a>
-          </div>
-        </div>
-
-        <!-- Premium -->
-        <div class="modern-card group cursor-pointer" onclick="window.location.href='/experience/premium'">
-          <div class="bg-white p-12 flex items-center justify-center" style="min-height: 200px;">
-            <i class="fas fa-compact-disc text-8xl text-gray-800"></i>
-          </div>
-          <div class="p-8">
-            <div class="flex justify-between items-start mb-6">
-              <h3 class="text-2xl font-light">PREMIUM</h3>
-              <p class="text-lg">₩700,000</p>
-            </div>
-            <ul class="space-y-3 mb-8 text-sm text-gray-600">
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Official Album Release</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>Spotify, Apple Music & More</span>
-              </li>
-              <li class="flex items-start">
-                <span class="mr-3">—</span>
-                <span>All Signature Package Features</span>
-              </li>
-            </ul>
-            <a href="/experience/premium" class="text-sm uppercase tracking-wider hover:opacity-70 transition">
-              Learn More →
-            </a>
-          </div>
-        </div>
+  <section class="cards" aria-label="Choose your experience">
+    <a href="/experience/basic" class="card">
+      <div class="art"><i class="fas fa-microphone" aria-hidden="true"></i></div>
+      <div class="card-body"><div class="card-heading"><h2>BASIC</h2><p class="price">₩400,000</p></div><p class="summary">Record your favorite K-pop song.</p><span class="detail">Learn More →</span></div>
+    </a>
+    <a href="/experience/signature" class="card signature">
+      <span class="popular">Most Popular</span><div class="art"><i class="fas fa-music" aria-hidden="true"></i></div>
+      <div class="card-body"><div class="card-heading"><h2>SIGNATURE</h2><p class="price">₩600,000</p></div><p class="summary">Create your own original K-pop song.</p><span class="detail">Learn More →</span></div>
+    </a>
+    <a href="/experience/premium" class="card">
+      <div class="art"><i class="fas fa-compact-disc" aria-hidden="true"></i></div>
+      <div class="card-body"><div class="card-heading"><h2>PREMIUM</h2><p class="price">₩700,000</p></div><p class="summary">Release your original song to the world.</p><span class="detail">Learn More →</span></div>
+    </a>
+  </section>
+  <section class="difference" aria-labelledby="difference-title">
+    <div class="difference-inner">
+      <div class="difference-head">
+        <p class="eyebrow">MORE THAN JUST RECORDING</p>
+        <h2 class="serif" id="difference-title">The DearStory Difference</h2>
+        <p class="subtitle">Every detail, crafted for your K-pop experience.</p>
+      </div>
+      <div class="difference-grid">
+        <article class="difference-item">
+          <img src="/images/difference-vocal.png" alt="Professional studio production workspace with vocal pitch editing software" loading="lazy">
+          <h3>Professional Vocal Production</h3>
+          <p class="description">From pitch correction to mixing and mastering, we polish your vocals into a studio-quality recording.</p>
+          
+        </article>
+        <article class="difference-item">
+          <img src="/images/difference-nfc.png" alt="Personalized NFC music photocard held against the back of a smartphone" loading="lazy">
+          <h3>NFC Music Photocard</h3>
+          <p class="description">Your music, just one tap away. Simply tap your personalized photocard on the back of your phone to play your own music.</p>
+          
+        </article>
+        <article class="difference-item">
+          <img src="/images/difference-cover.png" alt="Three original digital album cover designs displayed in a minimalist gallery" loading="lazy">
+          <h3>Custom Album Cover Design</h3>
+          <p class="description">Your song deserves its own visual identity. Receive a custom-designed digital album cover that reflects your music and personal style.</p>
+          
+        </article>
+        <article class="difference-item">
+          <img src="/images/difference-release.png" alt="Original music playing on a smartphone with wired earphones" loading="lazy">
+          <h3>Official Music Release</h3>
+          <p class="description">Go beyond the studio and officially release your original track on music streaming platforms.</p>
+          
+        </article>
       </div>
     </div>
   </section>
-
-  <!-- CTA -->
-  <section class="section-padding bg-black text-white">
-    <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-4xl md:text-5xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
-        Ready to Begin?
-      </h2>
-      <p class="text-lg mb-10 opacity-90">
-        Book your session and start your K-pop journey today
-      </p>
-      <a href="/booking" class="btn-modern bg-white text-black hover:bg-gray-100">
-        BOOK NOW
-      </a>
+  <section class="comparison" aria-labelledby="compare-title">
+    <div class="comparison-inner">
+      <div class="comparison-header"><p class="eyebrow">FIND YOUR PERFECT FIT</p><h2 class="serif" id="compare-title">Compare Our Experiences</h2><p>See what's included in each experience.</p></div>
+      <div class="table-scroll" role="region" aria-label="Experience comparison table" tabindex="0">
+        <table><thead><tr><th scope="col">INCLUDED</th><th scope="col">Basic</th><th scope="col">Signature</th><th scope="col">Premium</th></tr></thead>
+        <tbody>
+          <tr class="highlight-feature"><td>Original Song Composition</td><td class="no">—</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr class="highlight-feature"><td>Custom Album Cover Design</td><td class="no">—</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr class="highlight-feature"><td>Personalized Lyrics &amp; Melody</td><td class="no">—</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr class="highlight-feature"><td>Official Music Release</td><td class="no">—</td><td class="no">—</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>1:1 Vocal Coaching</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>Professional Studio Recording</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>Pitch Correction &amp; Vocal Tuning</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>Mixing &amp; Mastering</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>Photos &amp; Videos</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>NFC Music Photocard</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+          <tr><td>DearStory Interpretation Support</td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td><td class="yes"><svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></td></tr>
+        </tbody></table>
+      </div>
+      <p class="compare-note">For full details about each experience, select “Learn More” above.</p>
     </div>
   </section>
+  <section class="cta"><p class="eyebrow">YOUR STORY STARTS HERE</p><h2 class="serif">Ready to Begin?</h2><p>Turn your story into music.</p><a href="/booking">BOOK YOUR EXPERIENCE &nbsp; ↗</a></section>
+</main>
 `;
 
 // ==================== GALLERY PAGE ====================
@@ -452,6 +490,33 @@ export const bookingPage = (packageParam?: string) => `
         timeSelect.disabled = false;
       }
     });
+
+    // Restore date/time selected on the Basic detail page; revalidate with live availability.
+    (async function prefillDetailSelection() {
+      const params = new URLSearchParams(window.location.search);
+      const selectedDate = params.get('date');
+      const selectedTime = params.get('time');
+      const dateInput = document.getElementById('booking_date');
+      const timeInput = document.getElementById('booking_time');
+      if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || selectedDate < dateInput.min) return;
+      dateInput.value = selectedDate;
+      if (!selectedTime) { dateInput.dispatchEvent(new Event('change')); return; }
+      try {
+        const response = await axios.get('/api/available-times?date=' + encodeURIComponent(selectedDate));
+        const available = response.data.available || [];
+        if (!available.includes(selectedTime)) return;
+        // Populate independently to avoid racing the date change handler.
+        timeInput.innerHTML = '<option value="">Select time</option>';
+        available.forEach(time => {
+          const option = document.createElement('option');
+          option.value = time;
+          option.textContent = timeLabels[time] || time;
+          timeInput.appendChild(option);
+        });
+        timeInput.disabled = false;
+        timeInput.value = selectedTime;
+      } catch (error) { console.error('Unable to preselect booking time', error); }
+    })();
 
     // Price calculation
     const prices = {
@@ -2115,105 +2180,138 @@ export const adminPage = () => `
 // Placeholder functions for detail pages (keeping existing structure)
 // ==================== BASIC DETAIL PAGE ====================
 export const basicDetailPage = () => `
-  <!-- Hero Section -->
-  <section class="relative h-[40vh] flex items-center justify-center bg-black">
-    <div class="relative z-10 text-center text-white px-4">
-      <h1 class="text-4xl md:text-6xl font-light mb-4" style="font-family: 'Cormorant Garamond', serif;">
-        [BASIC]
-      </h1>
-      <div class="w-24 h-px bg-white mx-auto mb-6"></div>
-      <h2 class="text-3xl md:text-5xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-        Cover Song<br>Recording
-      </h2>
+  <!-- Basic Hero: compact portrait left, booking right -->
+  <section class="bg-[#f1f0ed] text-[#222] px-5 py-8 md:py-10">
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[290px_minmax(0,1fr)] items-start gap-7 md:gap-12">
+      <div class="w-full max-w-[290px] mx-auto md:mx-0">
+        <img src="/images/basic.jpg" alt="Recording a K-pop song in the DearStory studio" class="block w-full h-auto" loading="eager" />
+      </div>
+      <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
+        <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Basic</p>
+        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Cover Song Recording</h1>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">Record your favorite K-pop song with professional vocal coaching and studio production.</p>
+        <div class="flex items-center flex-wrap gap-x-5 gap-y-1 border-t border-gray-300 pt-4 mb-4">
+          <span class="text-xl font-semibold" style="text-decoration:none!important;">₩400,000</span>
+          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2 hours</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label for="basic-date" class="block text-[11px] tracking-widest text-gray-600 mb-1">DATE</label>
+            <input id="basic-date" type="date" class="w-full min-w-0 bg-white border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:border-black" aria-label="Preferred date" />
+          </div>
+          <div>
+            <label for="basic-time" class="block text-[11px] tracking-widest text-gray-600 mb-1">TIME</label>
+            <select id="basic-time" class="w-full min-w-0 bg-white border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:border-black" disabled aria-label="Preferred time">
+              <option value="">Select date first</option>
+            </select>
+          </div>
+        </div>
+        <p id="basic-availability-message" class="text-xs text-gray-500 mb-3" role="status" aria-live="polite"></p>
+        <button type="button" id="basic-continue" class="bg-black text-white px-6 py-3 text-xs tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>CONTINUE TO BOOKING →</button>
+      </div>
+    </div>
+  </section>
+  <script>
+    (function () {
+      const dateInput = document.getElementById('basic-date');
+      const timeInput = document.getElementById('basic-time');
+      const message = document.getElementById('basic-availability-message');
+      const button = document.getElementById('basic-continue');
+      if (!dateInput || !timeInput || !button) return;
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 3);
+      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+      dateInput.min = localDate(minDate);
+      let requestCounter = 0;
+      dateInput.addEventListener('change', async function () {
+        const date = dateInput.value;
+        const requestId = ++requestCounter;
+        timeInput.disabled = true;
+        timeInput.innerHTML = '<option value="">Select date first</option>';
+        button.disabled = true;
+        message.textContent = '';
+        if (!date || date < dateInput.min) return;
+        timeInput.innerHTML = '<option value="">Loading...</option>';
+        try {
+          const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
+          if (!response.ok) throw new Error('Availability request failed');
+          const data = await response.json();
+          if (requestId !== requestCounter) return;
+          const available = Array.isArray(data.available) ? data.available : [];
+          timeInput.innerHTML = '';
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = available.length ? 'Select time' : 'No available times';
+          timeInput.appendChild(placeholder);
+          available.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = time;
+            timeInput.appendChild(option);
+          });
+          timeInput.disabled = !available.length;
+          if (!available.length) message.textContent = 'Please choose another date.';
+        } catch (err) {
+          if (requestId !== requestCounter) return;
+          timeInput.innerHTML = '<option value="">Unable to load times</option>';
+          message.textContent = 'Please try another date or refresh the page.';
+        }
+      });
+      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
+      button.addEventListener('click', () => {
+        if (!dateInput.value || !timeInput.value) return;
+        const params = new URLSearchParams({package:'basic', date:dateInput.value, time:timeInput.value});
+        window.location.href = '/booking?' + params.toString();
+      });
+    })();
+  </script>
+
+  <!-- Compact horizontal process on desktop, 2-column on mobile -->
+  <section class="bg-white px-5 py-8 md:py-10">
+    <div class="max-w-6xl mx-auto">
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">THE PROCESS</p>
+      <h2 class="text-4xl md:text-5xl text-center mb-8" style="font-family:'Cormorant Garamond',serif;">Your Experience</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10">
+        <div class="text-center">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">01</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-music text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">PREPARATION</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Choose your favorite K-pop song and preferred lyric language.</p>
+        </div>
+        <div class="text-center">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">02</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-microphone text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">VOCAL COACHING</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Practice pronunciation, expression and technique with 1:1 coaching.</p>
+        </div>
+        <div class="text-center">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">03</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-headphones text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">STUDIO RECORDING</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Record your vocals with professional vocal directing.</p>
+        </div>
+        <div class="text-center">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">04</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-compact-disc text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">PRODUCTION</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Receive your tuned, mixed and mastered track, plus photos and videos, via email within 7 days.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Process Timeline -->
-  <section class="section-padding bg-white">
+  <!-- Basic inclusions: keep Signature/Premium-only benefits out of this list -->
+  <section class="bg-white px-5 py-12 md:py-16">
     <div class="max-w-5xl mx-auto">
-      
-      <!-- Vertical Line -->
-      <div class="relative">
-        <div class="absolute left-1/2 transform -translate-x-1/2 w-px bg-gray-300 h-full"></div>
-        
-        <!-- Step 01 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">PREPARATION</h3>
-              <p class="text-sm text-gray-600">Choose your favorite K-pop song and language.</p>
-              <p class="text-sm text-gray-600">Lyrics can be in Korean pronunciation or translated.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-music text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">01</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 02 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">02</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-microphone text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">VOCAL COACHING</h3>
-              <p class="text-sm text-gray-600">Practice pronunciation, emotion, and melody</p>
-              <p class="text-sm text-gray-600">with professional K-Pop vocalists.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 03 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">STUDIO RECORDING</h3>
-              <p class="text-sm text-gray-600">Record like a real artist in a professional studio</p>
-              <p class="text-sm text-gray-600">with 1:1 vocal directing.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-headphones text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">03</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 04 -->
-        <div class="relative mb-16">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">04</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-compact-disc text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">PRODUCTION</h3>
-              <p class="text-sm text-gray-600">Your track is tuned, mixed and mastered,</p>
-              <p class="text-sm text-gray-600">then delivered via email with photos and videos.</p>
-            </div>
-          </div>
-        </div>
-
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">EVERYTHING YOU NEED</p>
+      <h2 class="text-4xl md:text-5xl text-center mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 max-w-4xl mx-auto">
+        ${['1:1 Vocal Coaching','Professional Studio Recording','Pitch Correction & Vocal Tuning','Mixing & Mastering','Photos & Videos','NFC Music Photocard','Interpretation Support'].map(item => `
+          <div class="flex items-start gap-4 text-sm md:text-base text-gray-800">
+            <svg class="w-5 h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+            <span>${item}</span>
+          </div>`).join('')}
       </div>
-
     </div>
   </section>
 
@@ -2234,123 +2332,144 @@ export const basicDetailPage = () => `
 `
 // ==================== SIGNATURE DETAIL PAGE ====================
 export const signatureDetailPage = () => `
-  <!-- Hero Section -->
-  <section class="relative h-[40vh] flex items-center justify-center bg-black">
-    <div class="relative z-10 text-center text-white px-4">
-      <h1 class="text-4xl md:text-6xl font-light mb-4" style="font-family: 'Cormorant Garamond', serif;">
-        [SIGNATURE]
-      </h1>
-      <div class="w-24 h-px bg-white mx-auto mb-6"></div>
-      <h2 class="text-3xl md:text-5xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-        Create your Own<br>K-Pop Song
-      </h2>
+  <!-- Basic Hero: compact portrait left, booking right -->
+  <section class="bg-[#f1f0ed] text-[#222] px-5 py-8 md:py-10">
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[290px_minmax(0,1fr)] items-start gap-7 md:gap-12">
+      <div class="w-full max-w-[290px] mx-auto md:mx-0">
+        <img src="/images/signature.jpg" alt="Recording a K-pop song in the DearStory studio" class="block w-full h-auto" loading="eager" />
+      </div>
+      <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
+        <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Signature</p>
+        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Create Your <br>Own K-pop Song</h1>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">Create your own original K-pop song with personalized music production, vocal coaching and professional recording.</p>
+        <div class="flex items-center flex-wrap gap-x-5 gap-y-1 border-t border-gray-300 pt-4 mb-4">
+          <span class="text-xl font-semibold" style="text-decoration:none!important;">₩600,000</span>
+          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2.5 hours</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label for="signature-date" class="block text-[11px] tracking-widest text-gray-600 mb-1">DATE</label>
+            <input id="signature-date" type="date" class="w-full min-w-0 bg-white border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:border-black" aria-label="Preferred date" />
+          </div>
+          <div>
+            <label for="signature-time" class="block text-[11px] tracking-widest text-gray-600 mb-1">TIME</label>
+            <select id="signature-time" class="w-full min-w-0 bg-white border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:border-black" disabled aria-label="Preferred time">
+              <option value="">Select date first</option>
+            </select>
+          </div>
+        </div>
+        <p id="signature-availability-message" class="text-xs text-gray-500 mb-3" role="status" aria-live="polite"></p>
+        <button type="button" id="signature-continue" class="bg-black text-white px-6 py-3 text-xs tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>CONTINUE TO BOOKING →</button>
+      </div>
+    </div>
+  </section>
+  <script>
+    (function () {
+      const dateInput = document.getElementById('signature-date');
+      const timeInput = document.getElementById('signature-time');
+      const message = document.getElementById('signature-availability-message');
+      const button = document.getElementById('signature-continue');
+      if (!dateInput || !timeInput || !button) return;
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 3);
+      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+      dateInput.min = localDate(minDate);
+      let requestCounter = 0;
+      dateInput.addEventListener('change', async function () {
+        const date = dateInput.value;
+        const requestId = ++requestCounter;
+        timeInput.disabled = true;
+        timeInput.innerHTML = '<option value="">Select date first</option>';
+        button.disabled = true;
+        message.textContent = '';
+        if (!date || date < dateInput.min) return;
+        timeInput.innerHTML = '<option value="">Loading...</option>';
+        try {
+          const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
+          if (!response.ok) throw new Error('Availability request failed');
+          const data = await response.json();
+          if (requestId !== requestCounter) return;
+          const available = Array.isArray(data.available) ? data.available : [];
+          timeInput.innerHTML = '';
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = available.length ? 'Select time' : 'No available times';
+          timeInput.appendChild(placeholder);
+          available.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = time;
+            timeInput.appendChild(option);
+          });
+          timeInput.disabled = !available.length;
+          if (!available.length) message.textContent = 'Please choose another date.';
+        } catch (err) {
+          if (requestId !== requestCounter) return;
+          timeInput.innerHTML = '<option value="">Unable to load times</option>';
+          message.textContent = 'Please try another date or refresh the page.';
+        }
+      });
+      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
+      button.addEventListener('click', () => {
+        if (!dateInput.value || !timeInput.value) return;
+        const params = new URLSearchParams({package:'signature', date:dateInput.value, time:timeInput.value});
+        window.location.href = '/booking?' + params.toString();
+      });
+    })();
+  </script>
+
+  <!-- Signature experience process: 5 stages, horizontal on desktop -->
+  <section class="bg-white px-5 py-8 md:py-10">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">THE PROCESS</p>
+      <h2 class="text-4xl md:text-5xl text-center mb-8" style="font-family:'Cormorant Garamond',serif;">Your Experience</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-10">
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">01</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-clipboard-list text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">PREPARATION</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Share your story, preferred mood, and song style.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">02</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-sliders-h text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">DEMO REVIEW</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Refine your demo, key, lyrics, and melody.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">03</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-microphone text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">VOCAL COACHING</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Practice pronunciation, expression and technique with 1:1 coaching.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">04</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-headphones text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">STUDIO RECORDING</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Record your vocals with professional vocal directing.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">05</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-compact-disc text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">PRODUCTION</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Receive your tuned, mixed and mastered track, plus photos and videos, via email within 7 days.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Process Timeline -->
-  <section class="section-padding bg-white">
+  <!-- Signature package inclusions -->
+  <section class="bg-white px-5 py-12 md:py-16">
     <div class="max-w-5xl mx-auto">
-      
-      <!-- Vertical Line -->
-      <div class="relative">
-        <div class="absolute left-1/2 transform -translate-x-1/2 w-px bg-gray-300 h-full"></div>
-        
-        <!-- Step 01 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">PREPARATION</h3>
-              <p class="text-sm text-gray-600">Share your story, preferred mood, and song style</p>
-              <p class="text-sm text-gray-600">to create your perfect custom track.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-clipboard-list text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">01</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 02 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">02</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-sliders-h text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">DEMO REVIEW</h3>
-              <p class="text-sm text-gray-600">Listen to your demo and</p>
-              <p class="text-sm text-gray-600">refine the key, lyrics, and melody together.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 03 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">VOCAL COACHING</h3>
-              <p class="text-sm text-gray-600">Practice pronunciation, emotion, and expression</p>
-              <p class="text-sm text-gray-600">with professional K-Pop vocalists.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-microphone text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">03</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 04 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">04</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-headphones text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">STUDIO RECORDING</h3>
-              <p class="text-sm text-gray-600">Record your K-Pop song with 1:1 professional directing.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 05 -->
-        <div class="relative mb-16">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">PRODUCTION</h3>
-              <p class="text-sm text-gray-600">Your track is tuned, mixed and mastered,</p>
-              <p class="text-sm text-gray-600">then delivered via email with photos and videos.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-compact-disc text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">05</span>
-            </div>
-          </div>
-        </div>
-
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">EVERYTHING YOU NEED</p>
+      <h2 class="text-4xl md:text-5xl text-center mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 max-w-4xl mx-auto">
+        ${['1:1 Vocal Coaching','Professional Studio Recording','Pitch Correction & Vocal Tuning','Mixing & Mastering','Photos & Videos','NFC Music Photocard','Interpretation Support','Original K-pop Song Production','Personalized Lyrics & Melody','Custom Digital Album Cover Design'].map(item => `
+          <div class="flex items-start gap-4 text-sm md:text-base text-gray-800">
+            <svg class="w-5 h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+            <span>${item}</span>
+          </div>`).join('')}
       </div>
-
     </div>
   </section>
 
@@ -2358,7 +2477,7 @@ export const signatureDetailPage = () => `
   <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
-        Ready to Create Your Song?
+        Ready to Start Your Journey?
       </h2>
       <p class="text-xl mb-12 opacity-90">
         Book your Signature experience today
@@ -2371,143 +2490,150 @@ export const signatureDetailPage = () => `
 `
 // ==================== PREMIUM DETAIL PAGE ====================
 export const premiumDetailPage = () => `
-  <!-- Hero Section -->
-  <section class="relative h-[40vh] flex items-center justify-center bg-black">
-    <div class="relative z-10 text-center text-white px-4">
-      <h1 class="text-4xl md:text-6xl font-light mb-4" style="font-family: 'Cormorant Garamond', serif;">
-        [PREMIUM]
-      </h1>
-      <div class="w-24 h-px bg-white mx-auto mb-6"></div>
-      <h2 class="text-3xl md:text-5xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-        Your Song<br>+ Album Release
-      </h2>
+  <!-- Basic Hero: compact portrait left, booking right -->
+  <section class="bg-[#f1f0ed] text-[#222] px-5 py-8 md:py-10">
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[290px_minmax(0,1fr)] items-start gap-7 md:gap-12">
+      <div class="w-full max-w-[290px] mx-auto md:mx-0">
+        <img src="/images/premium.png" alt="Recording a K-pop song in the DearStory studio" class="block w-full h-auto" loading="eager" />
+      </div>
+      <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
+        <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Premium</p>
+        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Your Song + Album Release</h1>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">Create and record your original K-pop song, complete with custom digital artwork and an official music release.</p>
+        <div class="flex items-center flex-wrap gap-x-5 gap-y-1 border-t border-gray-300 pt-4 mb-4">
+          <span class="text-xl font-semibold" style="text-decoration:none!important;">₩700,000</span>
+          <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2.5 hours</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label for="premium-date" class="block text-[11px] tracking-widest text-gray-600 mb-1">DATE</label>
+            <input id="premium-date" type="date" class="w-full min-w-0 bg-white border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:border-black" aria-label="Preferred date" />
+          </div>
+          <div>
+            <label for="premium-time" class="block text-[11px] tracking-widest text-gray-600 mb-1">TIME</label>
+            <select id="premium-time" class="w-full min-w-0 bg-white border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:border-black" disabled aria-label="Preferred time">
+              <option value="">Select date first</option>
+            </select>
+          </div>
+        </div>
+        <p id="premium-availability-message" class="text-xs text-gray-500 mb-3" role="status" aria-live="polite"></p>
+        <button type="button" id="premium-continue" class="bg-black text-white px-6 py-3 text-xs tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>CONTINUE TO BOOKING →</button>
+      </div>
+    </div>
+  </section>
+  <script>
+    (function () {
+      const dateInput = document.getElementById('premium-date');
+      const timeInput = document.getElementById('premium-time');
+      const message = document.getElementById('premium-availability-message');
+      const button = document.getElementById('premium-continue');
+      if (!dateInput || !timeInput || !button) return;
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 3);
+      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+      dateInput.min = localDate(minDate);
+      let requestCounter = 0;
+      dateInput.addEventListener('change', async function () {
+        const date = dateInput.value;
+        const requestId = ++requestCounter;
+        timeInput.disabled = true;
+        timeInput.innerHTML = '<option value="">Select date first</option>';
+        button.disabled = true;
+        message.textContent = '';
+        if (!date || date < dateInput.min) return;
+        timeInput.innerHTML = '<option value="">Loading...</option>';
+        try {
+          const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
+          if (!response.ok) throw new Error('Availability request failed');
+          const data = await response.json();
+          if (requestId !== requestCounter) return;
+          const available = Array.isArray(data.available) ? data.available : [];
+          timeInput.innerHTML = '';
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = available.length ? 'Select time' : 'No available times';
+          timeInput.appendChild(placeholder);
+          available.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = time;
+            timeInput.appendChild(option);
+          });
+          timeInput.disabled = !available.length;
+          if (!available.length) message.textContent = 'Please choose another date.';
+        } catch (err) {
+          if (requestId !== requestCounter) return;
+          timeInput.innerHTML = '<option value="">Unable to load times</option>';
+          message.textContent = 'Please try another date or refresh the page.';
+        }
+      });
+      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
+      button.addEventListener('click', () => {
+        if (!dateInput.value || !timeInput.value) return;
+        const params = new URLSearchParams({package:'premium', date:dateInput.value, time:timeInput.value});
+        window.location.href = '/booking?' + params.toString();
+      });
+    })();
+  </script>
+
+  <!-- Premium experience process: 6 stages, horizontal on desktop -->
+  <section class="bg-white px-5 py-8 md:py-10">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">THE PROCESS</p>
+      <h2 class="text-4xl md:text-5xl text-center mb-8" style="font-family:'Cormorant Garamond',serif;">Your Experience</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-x-4 gap-y-10">
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">01</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-clipboard-list text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">PREPARATION</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Share your story, preferred mood, and song style.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">02</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-sliders-h text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">DEMO REVIEW</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Refine your demo, key, lyrics, and melody.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">03</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-microphone text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">VOCAL COACHING</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Practice pronunciation, expression and technique with 1:1 coaching.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">04</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-headphones text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">STUDIO RECORDING</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Record your vocals with professional vocal directing.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">05</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-compact-disc text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">PRODUCTION</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Receive your tuned, mixed and mastered track, plus photos and videos, via email within 7 days.</p>
+        </div>
+        <div class="text-center min-w-0">
+          <span class="block text-gray-400 mb-3" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">06</span>
+          <div class="w-16 h-16 mx-auto rounded-full border border-gray-300 flex items-center justify-center mb-5"><i class="fas fa-globe text-xl text-gray-800" aria-hidden="true"></i></div>
+          <h3 class="text-xs md:text-sm font-bold tracking-wide mb-2">ALBUM RELEASE</h3>
+          <p class="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[230px] mx-auto">Release your song on major streaming platforms.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Process Timeline -->
-  <section class="section-padding bg-white">
+  <!-- Premium package inclusions -->
+  <section class="bg-white px-5 py-12 md:py-16">
     <div class="max-w-5xl mx-auto">
-      
-      <!-- Vertical Line -->
-      <div class="relative">
-        <div class="absolute left-1/2 transform -translate-x-1/2 w-px bg-gray-300 h-full"></div>
-        
-        <!-- Step 01 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">PREPARATION</h3>
-              <p class="text-sm text-gray-600">Share your story, preferred mood, and song style</p>
-              <p class="text-sm text-gray-600">to create your perfect custom track.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-clipboard-list text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">01</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 02 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">02</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-sliders-h text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">DEMO REVIEW</h3>
-              <p class="text-sm text-gray-600">Listen to your demo and</p>
-              <p class="text-sm text-gray-600">refine the key, lyrics, and melody together.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 03 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">VOCAL COACHING</h3>
-              <p class="text-sm text-gray-600">Practice pronunciation, emotion, and expression</p>
-              <p class="text-sm text-gray-600">with professional K-Pop vocalists.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-microphone text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">03</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 04 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">04</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-headphones text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">STUDIO RECORDING</h3>
-              <p class="text-sm text-gray-600">Record your K-Pop song with</p>
-              <p class="text-sm text-gray-600">1:1 professional directing.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 05 -->
-        <div class="relative mb-32">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">PRODUCTION</h3>
-              <p class="text-sm text-gray-600">Your track is tuned, mixed and mastered,</p>
-              <p class="text-sm text-gray-600">then delivered via email with photos and videos.</p>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-compact-disc text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">05</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 06 -->
-        <div class="relative mb-16">
-          <div class="flex items-center justify-between">
-            <div class="w-[45%] text-right pr-8">
-              <span class="text-6xl font-light text-gray-300" style="font-family: 'Cormorant Garamond', serif;">06</span>
-            </div>
-            <div class="relative z-10">
-              <div class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                <i class="fas fa-globe text-2xl text-gray-800"></i>
-              </div>
-            </div>
-            <div class="w-[45%] pl-8">
-              <h3 class="text-2xl font-bold mb-2" style="font-family: 'Montserrat', sans-serif;">ALBUM RELEASE</h3>
-              <p class="text-sm text-gray-600">Your song is officially released on major streaming platforms</p>
-              <p class="text-sm text-gray-600">including Spotify, Apple Music, and YouTube Music.</p>
-            </div>
-          </div>
-        </div>
-
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">EVERYTHING YOU NEED</p>
+      <h2 class="text-4xl md:text-5xl text-center mb-10" style="font-family:'Cormorant Garamond',serif;">What's Included</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 max-w-4xl mx-auto">
+        ${['1:1 Vocal Coaching','Professional Studio Recording','Pitch Correction & Vocal Tuning','Mixing & Mastering','Photos & Videos','NFC Music Photocard','Interpretation Support','Original K-pop Song Production','Personalized Lyrics & Melody','Custom Digital Album Cover Design','Official Music Release'].map(item => `
+          <div class="flex items-start gap-4 text-sm md:text-base text-gray-800">
+            <svg class="w-5 h-5 shrink-0 mt-0.5" style="color:#B44747" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+            <span>${item}</span>
+          </div>`).join('')}
       </div>
-
     </div>
   </section>
 
@@ -2515,7 +2641,7 @@ export const premiumDetailPage = () => `
   <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">
-        Ready to Release Your Music?
+        Ready to Start Your Journey?
       </h2>
       <p class="text-xl mb-12 opacity-90">
         Book your Premium experience today
