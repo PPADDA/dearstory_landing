@@ -52,7 +52,7 @@ export const experiencesPage = () => `
     .de-exp .hero { padding:27px 20px 27px; }
     .de-exp .hero > .eyebrow { font-size:9px; letter-spacing:.06em; }
     .de-exp .hero h1 { font-size:clamp(30px, 7vw, 38px); white-space:nowrap; letter-spacing:-0.025em; margin:8px 0 0; }
-    .de-exp .cards { grid-template-columns:1fr; padding:24px 18px 68px; gap:12px; }
+    .de-exp .cards { grid-template-columns:1fr; padding:42px 18px 68px; gap:12px; }
     .de-exp .card { flex-direction:row; min-height:120px; }
     .de-exp .art { width:34%; min-height:120px; padding:12px; flex-shrink:0; }
     .de-exp .art i { font-size:31px; }
@@ -115,6 +115,88 @@ export const experiencesPage = () => `
     .de-exp .difference-item .description { font-size:12px; }
     .de-exp .difference-item img { aspect-ratio:1 / 1; }
   }
+  /* Match homepage section heading typography and spacing. */
+  .de-exp .difference-head .eyebrow,
+  .de-exp .comparison-header .eyebrow { color:#888; font-weight:300; letter-spacing:3px; margin:0 0 12px; }
+  .de-exp .difference-head h2,
+  .de-exp .comparison-header h2 { font-weight:400; letter-spacing:-.02em; margin:0; line-height:1.15; }
+  @media(max-width:767px) {
+    .de-exp .difference-head .eyebrow,
+    .de-exp .comparison-header .eyebrow { font-size:8px; font-weight:300; letter-spacing:1.3px; margin:0 0 12px; }
+    .de-exp .difference-head h2,
+    .de-exp .comparison-header h2 { font-size:clamp(20px,5.45vw,26px); font-weight:400; letter-spacing:-.02em; line-height:1.15; margin:0; }
+  }
+
+  /* Match the original homepage Your Journey, Your Song. typography. */
+  .de-exp .difference-head .eyebrow,
+  .de-exp .comparison-header .eyebrow {
+    font-family:'Montserrat',sans-serif !important;
+    font-size:16px !important; font-weight:300 !important;
+    letter-spacing:3px !important; line-height:1.4 !important;
+    color:#888 !important; margin:0 0 16px !important;
+    text-align:center;
+  }
+  .de-exp .difference-head h2,
+  .de-exp .comparison-header h2 {
+    font-family:'Cormorant Garamond',serif !important;
+    font-size:clamp(2.5rem,5vw,4rem) !important;
+    font-weight:300 !important; letter-spacing:2px !important;
+    line-height:1.12 !important; color:#191919 !important;
+    margin:0 !important; text-align:center;
+  }
+  @media(max-width:767px) {
+    .de-exp .difference-head .eyebrow,
+    .de-exp .comparison-header .eyebrow {
+      font-size:8px !important; letter-spacing:1.3px !important;
+      margin-bottom:.45rem !important;
+    }
+    .de-exp .difference-head h2,
+    .de-exp .comparison-header h2 {
+      font-size:26px !important; font-weight:400 !important;
+      letter-spacing:-.02em !important; line-height:1.15 !important;
+      white-space:normal !important;
+    }
+  }
+
+  /* Same values as homepage .story-experience (Your Journey, Your Song.). */
+  .de-exp .difference-head .eyebrow,
+  .de-exp .comparison-header .eyebrow {
+    font-family:'Montserrat',sans-serif !important;
+    font-size:16px !important; font-weight:300 !important;
+    letter-spacing:3px !important; line-height:1.4 !important;
+    color:#888 !important; margin:0 0 16px !important;
+    text-align:center !important;
+  }
+  .de-exp .difference-head h2,
+  .de-exp .comparison-header h2 {
+    font-family:'Cormorant Garamond',serif !important;
+    font-size:clamp(2.5rem,5vw,4rem) !important;
+    font-weight:300 !important; letter-spacing:2px !important;
+    line-height:1.12 !important; color:#191919 !important;
+    text-align:center !important; margin:0 !important;
+  }
+  @media(max-width:767px) {
+    .de-exp .difference-head .eyebrow,
+    .de-exp .comparison-header .eyebrow {
+      font-size:8px !important; letter-spacing:1.3px !important;
+      margin-bottom:7px !important;
+    }
+    .de-exp .difference-head h2,
+    .de-exp .comparison-header h2 {
+      font-size:26px !important; font-weight:400 !important;
+      letter-spacing:-.02em !important; line-height:1.15 !important;
+      white-space:normal !important;
+    }
+    .de-exp .difference-head {
+  position: relative;
+  top: -25px !important;
+  transform: none !important;
+}
+
+.de-exp .comparison-header {
+  top: 0 !important;
+  transform: none !important;
+}
 </style>
 <main class="de-exp">
   <section class="hero">

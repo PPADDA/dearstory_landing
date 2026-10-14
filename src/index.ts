@@ -673,7 +673,63 @@ backdrop-filter: blur(12px);
       .site-footer > div > .border-t { padding-top: 1.2rem; }
       .site-footer > div > .border-t p { font-size: .62rem; }
     }
-  </style>
+  
+    /* Use Your Journey, Your Song. as the unchanged reference. */
+    .home-services .section-subtitle {
+      font-family:'Montserrat',sans-serif !important;
+      font-size:16px !important; font-weight:300 !important;
+      letter-spacing:3px !important; color:#888 !important;
+      margin-bottom:16px !important;
+    }
+    .home-services .section-title {
+      font-family:'Cormorant Garamond',serif !important;
+      font-size:clamp(2.5rem,5vw,4rem) !important;
+      font-weight:300 !important; letter-spacing:2px !important;
+      line-height:1.12 !important; color:#191919 !important;
+    }
+    @media(max-width:767px) {
+      .home-services .section-subtitle {
+        font-size:8px !important; letter-spacing:1.3px !important;
+        margin-bottom:.45rem !important;
+      }
+      .home-services .section-title {
+        font-size:26px !important; font-weight:400 !important;
+        letter-spacing:-.02em !important; line-height:1.15 !important;
+        white-space:normal !important;
+      }
+    }
+
+    /* Four section headings: exact Your Journey reference typography. */
+    .story-experience .section-subtitle,
+    .home-services .section-subtitle {
+      font-family:'Montserrat',sans-serif !important;
+      font-size:16px !important; font-weight:300 !important;
+      letter-spacing:3px !important; line-height:1.4 !important;
+      color:#888 !important; margin:0 0 16px !important;
+      text-align:center !important;
+    }
+    .story-experience .section-title,
+    .home-services .section-title {
+      font-family:'Cormorant Garamond',serif !important;
+      font-size:clamp(2.5rem,5vw,4rem) !important;
+      font-weight:300 !important; letter-spacing:2px !important;
+      line-height:1.12 !important; color:#191919 !important;
+      text-align:center !important;
+    }
+    @media(max-width:767px) {
+      .story-experience .section-subtitle,
+      .home-services .section-subtitle {
+        font-size:8px !important; letter-spacing:1.3px !important;
+        margin-bottom:7px !important;
+      }
+      .story-experience .section-title,
+      .home-services .section-title {
+        font-size:26px !important; font-weight:400 !important;
+        letter-spacing:-.02em !important; line-height:1.15 !important;
+        white-space:normal !important;
+      }
+    }
+</style>
 </head>
 <body>
   <nav id="site-nav" class="fixed w-full top-0 z-50 home-nav ${isHome ? '' : 'inner-page-nav'}" >
