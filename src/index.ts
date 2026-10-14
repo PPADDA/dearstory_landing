@@ -1599,7 +1599,7 @@ app.get('/', (c) => {
           <p class="hero-subtitle">Your Letter, Our Melody.</p>
           <h1 class="hero-title">Create Your Own<br>K-Pop Song.</h1>
           <p class="hero-description">Turn your story into music<br class="hero-mobile-break">with a professional producer.</p>
-          <a href="/experiences" class="hero-cta">EXPLORE EXPERIENCES &nearr;</a>
+          <a href="/experiences" class="hero-cta">EXPLORE EXPERIENCES <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-left:3px"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         </div>
       </div>
     </section>

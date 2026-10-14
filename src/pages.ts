@@ -212,6 +212,7 @@ export const galleryPage = () => `
     .gallery-progress::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 9999px; background: #111; cursor: grab; }
     .gallery-cover-button { position:absolute; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:transparent; cursor:pointer; }
     .gallery-cover-icon { width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,.88); display:flex; align-items:center; justify-content:center; color:#111; box-shadow:0 3px 16px rgba(0,0,0,.12); transition:transform .2s, opacity .2s; }
+    .gallery-cover-icon svg { width:23px; height:23px; display:block; }
     .gallery-cover-button:hover .gallery-cover-icon { transform:scale(1.07); }
     @media(max-width:639px) {
       #gallery-container { display:flex; flex-direction:column; gap:18px; }
@@ -220,7 +221,7 @@ export const galleryPage = () => `
       .gallery-track .gallery-track-info { min-width:0; }
       .gallery-track .gallery-track-title { font-size:21px; line-height:1.2; margin:0 0 12px; }
       .gallery-cover-icon { width:31px; height:31px; box-shadow:none; }
-      .gallery-cover-icon span { font-size:13px; }
+      .gallery-cover-icon svg { width:15px; height:15px; }
     }
   </style>
 
@@ -252,8 +253,8 @@ export const galleryPage = () => `
       if (!button) return;
       const icon = button.querySelector('.gallery-cover-icon');
       if (icon) icon.innerHTML = playing
-        ? '<span class="text-2xl leading-none">Ⅱ</span>'
-        : '<span class="text-2xl leading-none">▶</span>';
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="7" y="5" width="3.5" height="14" rx=".6" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx=".6" fill="currentColor"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5L19 12 8 18.5Z" fill="currentColor"/></svg>';
       button.setAttribute('aria-label', (playing ? 'Pause ' : 'Play ') + (button.closest('article')?.querySelector('h3')?.textContent || 'audio'));
       button.setAttribute('aria-pressed', String(playing));
     }
@@ -294,7 +295,7 @@ export const galleryPage = () => `
           '<article class="group gallery-track">' +
             '<div class="gallery-cover aspect-square bg-gray-100 overflow-hidden mb-5 relative">' +
               '<img src="' + galleryEscape(item.thumbnail_url) + '" alt="' + galleryEscape(item.title) + '" class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]">' +
-              '<button id="gallery-play-' + item.id + '" type="button" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play ' + galleryEscape(item.title) + '" class="gallery-cover-button"><span class="gallery-cover-icon"><span class="text-2xl leading-none">▶</span></span></button>' +
+              '<button id="gallery-play-' + item.id + '" type="button" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play ' + galleryEscape(item.title) + '" class="gallery-cover-button"><span class="gallery-cover-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5L19 12 8 18.5Z" fill="currentColor"/></svg></span></button>' +
               '<audio id="gallery-audio-' + item.id + '" class="gallery-audio hidden" preload="metadata" src="' + galleryEscape(item.file_url) + '" onloadedmetadata="updateGalleryProgress(' + item.id + ')" ontimeupdate="updateGalleryProgress(' + item.id + ')" onplay="setGalleryButton(' + item.id + ', true)" onpause="setGalleryButton(' + item.id + ', false)" onended="setGalleryButton(' + item.id + ', false); updateGalleryProgress(' + item.id + ')"></audio>' +
             '</div>' +
             '<div class="gallery-track-info">' +
