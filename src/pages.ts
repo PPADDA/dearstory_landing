@@ -340,6 +340,8 @@ export const bookingPage = (packageParam?: string) => `
     .de-shared-hero .de-shared-eyebrow { font-size:9px; letter-spacing:.06em; }
     .de-shared-hero .de-shared-title { font-size:clamp(30px,7vw,38px); letter-spacing:-.025em; margin-top:8px; }
   }
+  /* Booking page already has its own submit button. */
+  .floating-book-btn { display:none !important; }
   /* Compact booking form on phones only; desktop and form behavior stay unchanged. */
   @media (max-width:767px) {
     .de-booking-section { padding:28px 20px 44px !important; }
@@ -523,7 +525,7 @@ export const bookingPage = (packageParam?: string) => `
       return new Date(Date.UTC(y, m - 1, d + 3)).toISOString().slice(0, 10);
     };
     bookingDateInput.min = minBookingDate();
-    const validBookingDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') && value >= minBookingDate();
+    const validBookingDate = value => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value || '') && value >= minBookingDate();
 
     // Time labels
     const timeLabels = {
@@ -781,21 +783,6 @@ export const bookingPage = (packageParam?: string) => `
 
     updatePrice();
 
-    // The global floating BOOK NOW shortcut is redundant on the booking form.
-    // Hide only the fixed-position shortcut, never the actual form submit button.
-    function hideBookingShortcut() {
-      document.querySelectorAll('a, button').forEach(el => {
-        if (el.textContent.trim().replace(/\s+/g, ' ').toUpperCase() !== 'BOOK NOW') return;
-        if (el.closest('#booking-form')) return;
-        const style = window.getComputedStyle(el);
-        const parentStyle = el.parentElement ? window.getComputedStyle(el.parentElement) : null;
-        if (style.position === 'fixed' || (parentStyle && parentStyle.position === 'fixed')) {
-          el.style.setProperty('display', 'none', 'important');
-        }
-      });
-    }
-    hideBookingShortcut();
-    document.addEventListener('DOMContentLoaded', hideBookingShortcut, {once:true});
   </script>
 `;
 
