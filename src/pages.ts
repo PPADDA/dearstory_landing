@@ -509,9 +509,18 @@ export const bookingPage = (packageParam?: string) => `
 
   <script>
     // Set minimum date (3 days from now)
-    const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 3);
-    document.getElementById('booking_date').min = minDate.toISOString().split('T')[0];
+    const bookingDateInput = document.getElementById('booking_date');
+    // Use Korea calendar dates, not UTC (which can be one day behind in Korea).
+    const koreaToday = () => new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date());
+    const minBookingDate = () => {
+      const [y, m, d] = koreaToday().split('-').map(Number);
+      const min = new Date(Date.UTC(y, m - 1, d + 3));
+      return min.toISOString().slice(0, 10);
+    };
+    bookingDateInput.min = minBookingDate();
+    const validBookingDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && value >= minBookingDate();
 
     // Time labels
     const timeLabels = {
@@ -526,8 +535,12 @@ export const bookingPage = (packageParam?: string) => `
       const date = this.value;
       const timeSelect = document.getElementById('booking_time');
 
-      if (!date) {
-        timeSelect.innerHTML = '<option value="">Select a date first</option>';
+      bookingDateInput.min = minBookingDate();
+      if (!validBookingDate(date)) {
+        this.value = '';
+        timeSelect.innerHTML = '<option value="">Select a valid date first</option>';
+        timeSelect.disabled = true;
+        if (date) alert('Please select a date at least 3 days from today (Korea time).');
         return;
       }
 
@@ -571,14 +584,16 @@ export const bookingPage = (packageParam?: string) => `
       const selectedTime = params.get('time');
       const dateInput = document.getElementById('booking_date');
       const timeInput = document.getElementById('booking_time');
-      if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || selectedDate < dateInput.min) return;
+      if (!validBookingDate(selectedDate)) return;
       dateInput.value = selectedDate;
+      // Use the existing date-change loader, then select the requested time once it finishes.
+      // A single loader prevents two competing availability requests.
       if (!selectedTime) { dateInput.dispatchEvent(new Event('change')); return; }
       try {
+        timeInput.disabled = true;
+        timeInput.innerHTML = '<option value="">Loading...</option>';
         const response = await axios.get('/api/available-times?date=' + encodeURIComponent(selectedDate));
-        const available = response.data.available || [];
-        if (!available.includes(selectedTime)) return;
-        // Populate independently to avoid racing the date change handler.
+        const available = Array.isArray(response.data.available) ? response.data.available : [];
         timeInput.innerHTML = '<option value="">Select time</option>';
         available.forEach(time => {
           const option = document.createElement('option');
@@ -586,9 +601,12 @@ export const bookingPage = (packageParam?: string) => `
           option.textContent = timeLabels[time] || time;
           timeInput.appendChild(option);
         });
-        timeInput.disabled = false;
-        timeInput.value = selectedTime;
-      } catch (error) { console.error('Unable to preselect booking time', error); }
+        timeInput.disabled = !available.length;
+        if (available.includes(selectedTime)) timeInput.value = selectedTime;
+      } catch (error) {
+        timeInput.innerHTML = '<option value="">Unable to load times</option>';
+        console.error('Unable to preselect booking time', error);
+      }
     })();
 
     // Price calculation
@@ -709,6 +727,16 @@ export const bookingPage = (packageParam?: string) => `
     // Form submission
     document.getElementById('booking-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      bookingDateInput.min = minBookingDate();
+      if (!validBookingDate(bookingDateInput.value)) {
+        alert('Please select a date at least 3 days from today (Korea time).');
+        bookingDateInput.focus();
+        return;
+      }
+      if (!document.getElementById('booking_time').value) {
+        alert('Please select an available time.');
+        return;
+      }
 
       const messengers = getMessengerData();
       if (messengers.length === 0) {
@@ -2332,7 +2360,10 @@ export const basicDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
-        if (!dateInput.value || !timeInput.value) return;
+        if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
+          message.textContent = 'Please select a date at least 3 days from today and an available time.';
+          return;
+        }
         const params = new URLSearchParams({package:'basic', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
@@ -2478,7 +2509,10 @@ export const signatureDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
-        if (!dateInput.value || !timeInput.value) return;
+        if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
+          message.textContent = 'Please select a date at least 3 days from today and an available time.';
+          return;
+        }
         const params = new URLSearchParams({package:'signature', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
@@ -2630,7 +2664,10 @@ export const premiumDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
-        if (!dateInput.value || !timeInput.value) return;
+        if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
+          message.textContent = 'Please select a date at least 3 days from today and an available time.';
+          return;
+        }
         const params = new URLSearchParams({package:'premium', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
