@@ -3,13 +3,13 @@ export const experiencesPage = () => `
 <style>
   .de-exp { background:#f1f0ed; color:#191919; }
   .de-exp .eyebrow { font-size:11px; font-weight:600; letter-spacing:.25em; }
-  .de-exp .hero > .eyebrow { color:#888888; }
+  .de-exp .hero > .eyebrow { color:#aaaaaa; font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:400; }
   .de-exp .serif { font-family:'Cormorant Garamond',serif; font-weight:400; }
-  .de-exp .hero { padding:112px 22px 74px; text-align:center; }
-  .de-exp .hero h1 { font-size:clamp(58px,8vw,102px); line-height:1.05; margin:18px 0 14px; }
+  .de-exp .hero { padding:72px 22px 70px; text-align:center; background:#0b0b0b; color:#fff; }
+  .de-exp .hero h1 { font-size:clamp(36px,4vw,54px); line-height:1.05; margin:10px 0 0; font-weight:400; }
   .de-exp .hero p:last-child { font-size:13px; color:#706d69; }
   /* Match the homepage's OUR SERVICES cards and hover elevation. */
-  .de-exp .cards { max-width:1280px; margin:0 auto; padding:0 24px 105px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px; }
+  .de-exp .cards { max-width:1280px; margin:0 auto; padding:40px 24px 105px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px; }
   .de-exp .card { display:flex; flex-direction:column; min-width:0; position:relative; background:#fff; border:1px solid #f0f0f0; overflow:hidden; cursor:pointer; transition:all .4s cubic-bezier(.4,0,.2,1); }
   .de-exp .card:hover { transform:translateY(-8px); box-shadow:0 20px 60px rgba(0,0,0,.08); }
   .de-exp .card.signature { border:2px solid #111; }
@@ -49,10 +49,10 @@ export const experiencesPage = () => `
   .de-exp .cta p { font-size:13px; color:#b9b9b9; margin-bottom:30px; }
   .de-exp .cta a { display:inline-block; padding:16px 30px; background:#fff; color:#111; font-size:11px; font-weight:600; letter-spacing:.12em; }
   @media(max-width:767px) {
-    .de-exp .hero { padding:28px 20px 25px; }
-    .de-exp .hero > .eyebrow { font-size:8px; letter-spacing:.22em; }
-    .de-exp .hero h1 { font-size:clamp(25px, 7vw, 34px); white-space:nowrap; letter-spacing:-0.025em; margin:10px 0 9px; }
-    .de-exp .cards { grid-template-columns:1fr; padding:0 18px 68px; gap:12px; }
+    .de-exp .hero { padding:27px 20px 27px; }
+    .de-exp .hero > .eyebrow { font-size:9px; letter-spacing:.06em; }
+    .de-exp .hero h1 { font-size:clamp(30px, 7vw, 38px); white-space:nowrap; letter-spacing:-0.025em; margin:8px 0 0; }
+    .de-exp .cards { grid-template-columns:1fr; padding:24px 18px 68px; gap:12px; }
     .de-exp .card { flex-direction:row; min-height:120px; }
     .de-exp .art { width:34%; min-height:120px; padding:12px; flex-shrink:0; }
     .de-exp .art i { font-size:31px; }
@@ -67,25 +67,13 @@ export const experiencesPage = () => `
     .de-exp .card:hover { transform:none; }
     .de-exp .comparison { padding:69px 18px 75px; }
     .de-exp .comparison-header { margin-bottom:27px; }
-    .de-exp .comparison-header .eyebrow { font-size:8px; letter-spacing:.22em; color:#89847e; }
-    .de-exp .comparison-header h2 { font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; color:#191919; }
-    .de-exp .comparison-header p:last-child { font-size:13px; line-height:1.55; color:#77736e; }
-    /* Show all three packages at once on mobile, without horizontal scrolling. */
-    .de-exp .table-scroll { overflow-x:visible; }
-    .de-exp table { min-width:0; width:100%; table-layout:fixed; }
-    .de-exp th,.de-exp td { padding:13px 3px; font-size:9px; line-height:1.35; overflow-wrap:break-word; }
-    .de-exp th:first-child,.de-exp td:first-child { width:46%; padding-left:6px; padding-right:6px; }
-    .de-exp th:not(:first-child),.de-exp td:not(:first-child) { width:18%; }
-    .de-exp thead th { font-size:10px; }
-    .de-exp .check-icon { width:16px; height:16px; stroke-width:3; }
-    .de-exp tbody tr.highlight-feature .check-icon { width:18px; height:18px; }
-
-    /* Match the homepage final CTA on mobile; keep desktop and comparison untouched. */
+    .de-exp .comparison-header h2 { font-size:47px; }
+    /* Match the Home page CTA on mobile only. Desktop remains unchanged. */
     .de-exp .cta { padding:2.1rem 1.5rem 2.4rem; }
     .de-exp .cta .exp-cta-eyebrow { display:none; }
     .de-exp .cta h2 { font-size:2rem; line-height:1.12; margin:0 0 .65rem; }
     .de-exp .cta p:not(.eyebrow) { font-size:.82rem; line-height:1.5; margin:0 0 1.4rem; color:#fff; opacity:.9; }
-    .de-exp .cta a { padding:.8rem 1.25rem; font-size:.66rem; letter-spacing:1.1px; font-weight:400; }
+    .de-exp .cta a { display:inline-block; padding:.8rem 1.25rem; font-size:.66rem; letter-spacing:1.1px; font-weight:400; }
   }
   /* The DearStory Difference — inserted between packages and comparison */
   .de-exp .difference { padding:12px 24px 108px; background:#f1f0ed; }
@@ -119,9 +107,8 @@ export const experiencesPage = () => `
 </style>
 <main class="de-exp">
   <section class="hero">
-    <p class="eyebrow">OUR EXPERIENCES</p>
-    <h1 class="serif">Find Your <em>Sound.</em></h1>
-    <p>Three ways to make music your own.</p>
+    <p class="eyebrow">FIND YOUR SOUND</p>
+    <h1 class="serif">EXPERIENCES</h1>
   </section>
   <section class="cards" aria-label="Choose your experience">
     <a href="/experience/basic" class="card">
@@ -142,7 +129,7 @@ export const experiencesPage = () => `
       <div class="difference-head">
         <p class="eyebrow">MORE THAN JUST RECORDING</p>
         <h2 class="serif" id="difference-title">The DearStory Difference</h2>
-        <p class="subtitle">Every detail, crafted for your K-pop experience.</p>
+        <p class="subtitle">Every detail, crafted for your K-pop experience</p>
       </div>
       <div class="difference-grid">
         <article class="difference-item">
@@ -153,7 +140,7 @@ export const experiencesPage = () => `
         <article class="difference-item">
           <img src="/images/difference-nfc.png" alt="Personalized NFC music photocard held against the back of a smartphone" loading="lazy">
           <h3>NFC Music Photocard</h3>
-          <p class="description">Your music, just one tap away. <br>Simply tap your personalized photocard on the back of your phone to play your own music.</p>
+          <p class="description">Your music, just one tap away. Simply tap your personalized photocard on the back of your phone to play your own music.</p>
         </article>
         <article class="difference-item">
           <img src="/images/difference-cover.png" alt="Three original digital album cover designs displayed in a minimalist gallery" loading="lazy">
@@ -196,11 +183,19 @@ export const experiencesPage = () => `
 
 // ==================== GALLERY PAGE ====================
 export const galleryPage = () => `
-  <section class="relative h-[48vh] flex items-center justify-center bg-black">
-    <div class="relative z-10 text-center text-white px-4">
-      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-70">DEARSTORY MUSIC</p>
-      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">Our Work</h1>
-    </div>
+<style>
+  .de-shared-hero { background:#0b0b0b; color:#fff; text-align:center; padding:72px 22px 70px; }
+  .de-shared-hero .de-shared-eyebrow { color:#aaa; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:400; letter-spacing:.08em; text-transform:uppercase; margin:0; }
+  .de-shared-hero .de-shared-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,4vw,54px); line-height:1.05; font-weight:400; margin:10px 0 0; }
+  @media(max-width:767px) {
+    .de-shared-hero { padding:27px 20px; }
+    .de-shared-hero .de-shared-eyebrow { font-size:9px; letter-spacing:.06em; }
+    .de-shared-hero .de-shared-title { font-size:clamp(30px,7vw,38px); letter-spacing:-.025em; margin-top:8px; }
+  }
+</style>
+  <section class="de-shared-hero">
+    <p class="de-shared-eyebrow">DEARSTORY MUSIC</p>
+    <h1 class="de-shared-title">Our Work</h1>
   </section>
 
   <section class="section-padding bg-white">
@@ -215,6 +210,18 @@ export const galleryPage = () => `
     .gallery-progress { -webkit-appearance: none; appearance: none; height: 2px; background: linear-gradient(to right, #111 0%, #111 var(--progress, 0%), #d1d5db var(--progress, 0%), #d1d5db 100%); cursor: pointer; }
     .gallery-progress::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 9999px; background: #111; cursor: grab; }
     .gallery-progress::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 9999px; background: #111; cursor: grab; }
+    .gallery-cover-button { position:absolute; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:transparent; cursor:pointer; }
+    .gallery-cover-icon { width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,.88); display:flex; align-items:center; justify-content:center; color:#111; box-shadow:0 3px 16px rgba(0,0,0,.12); transition:transform .2s, opacity .2s; }
+    .gallery-cover-button:hover .gallery-cover-icon { transform:scale(1.07); }
+    @media(max-width:639px) {
+      #gallery-container { display:flex; flex-direction:column; gap:18px; }
+      #gallery-container article.gallery-track { display:grid; grid-template-columns:76px minmax(0,1fr); align-items:center; gap:15px; }
+      .gallery-track .gallery-cover { width:76px; height:76px; margin:0; }
+      .gallery-track .gallery-track-info { min-width:0; }
+      .gallery-track .gallery-track-title { font-size:21px; line-height:1.2; margin:0 0 12px; }
+      .gallery-cover-icon { width:31px; height:31px; box-shadow:none; }
+      .gallery-cover-icon span { font-size:13px; }
+    }
   </style>
 
   <script>
@@ -243,10 +250,12 @@ export const galleryPage = () => `
     function setGalleryButton(id, playing) {
       const button = document.getElementById('gallery-play-' + id);
       if (!button) return;
-      button.innerHTML = playing
+      const icon = button.querySelector('.gallery-cover-icon');
+      if (icon) icon.innerHTML = playing
         ? '<span class="text-2xl leading-none">Ⅱ</span>'
-        : '<span class="text-2xl leading-none ml-1">▶</span>';
-      button.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+        : '<span class="text-2xl leading-none">▶</span>';
+      button.setAttribute('aria-label', (playing ? 'Pause ' : 'Play ') + (button.closest('article')?.querySelector('h3')?.textContent || 'audio'));
+      button.setAttribute('aria-pressed', String(playing));
     }
 
     function updateGalleryProgress(id) {
@@ -282,19 +291,19 @@ export const galleryPage = () => `
         }
 
         container.innerHTML = items.map(item =>
-          '<article class="group">' +
-            '<div class="aspect-square bg-gray-100 overflow-hidden mb-5 relative">' +
+          '<article class="group gallery-track">' +
+            '<div class="gallery-cover aspect-square bg-gray-100 overflow-hidden mb-5 relative">' +
               '<img src="' + galleryEscape(item.thumbnail_url) + '" alt="' + galleryEscape(item.title) + '" class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]">' +
-              '<div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition">' +
-                '<button id="gallery-play-' + item.id + '" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play" class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/90 text-black flex items-center justify-center shadow-lg backdrop-blur-sm transition hover:scale-105"><span class="text-2xl leading-none ml-1">▶</span></button>' +
-              '</div>' +
+              '<button id="gallery-play-' + item.id + '" type="button" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play ' + galleryEscape(item.title) + '" class="gallery-cover-button"><span class="gallery-cover-icon"><span class="text-2xl leading-none">▶</span></span></button>' +
               '<audio id="gallery-audio-' + item.id + '" class="gallery-audio hidden" preload="metadata" src="' + galleryEscape(item.file_url) + '" onloadedmetadata="updateGalleryProgress(' + item.id + ')" ontimeupdate="updateGalleryProgress(' + item.id + ')" onplay="setGalleryButton(' + item.id + ', true)" onpause="setGalleryButton(' + item.id + ', false)" onended="setGalleryButton(' + item.id + ', false); updateGalleryProgress(' + item.id + ')"></audio>' +
             '</div>' +
-            '<h3 class="text-2xl font-light mb-3" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
+            '<div class="gallery-track-info">' +
+            '<h3 class="gallery-track-title text-2xl font-light mb-3" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
             '<div class="flex items-center gap-3 text-[11px] tracking-wide text-gray-500">' +
               '<span id="gallery-current-' + item.id + '" class="w-8 tabular-nums">0:00</span>' +
               '<input id="gallery-progress-' + item.id + '" type="range" min="0" max="0" value="0" step="0.01" oninput="seekGalleryAudio(' + item.id + ', this.value)" aria-label="Audio progress" class="gallery-progress flex-1">' +
               '<span id="gallery-duration-' + item.id + '" class="w-8 text-right tabular-nums">0:00</span>' +
+            '</div>' +
             '</div>' +
           '</article>'
         ).join('');
@@ -311,13 +320,19 @@ export const galleryPage = () => `
 // ==================== BOOKING PAGE ====================
 export const bookingPage = (packageParam?: string) => `
   <!-- Hero Section -->
-  <section class="relative h-[50vh] flex items-center justify-center bg-black">
-    <div class="relative z-10 text-center text-white px-4">
-      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-90">RESERVATION</p>
-      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">
-        Book Your Session
-      </h1>
-    </div>
+<style>
+  .de-shared-hero { background:#0b0b0b; color:#fff; text-align:center; padding:72px 22px 70px; }
+  .de-shared-hero .de-shared-eyebrow { color:#aaa; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:400; letter-spacing:.08em; text-transform:uppercase; margin:0; }
+  .de-shared-hero .de-shared-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,4vw,54px); line-height:1.05; font-weight:400; margin:10px 0 0; }
+  @media(max-width:767px) {
+    .de-shared-hero { padding:27px 20px; }
+    .de-shared-hero .de-shared-eyebrow { font-size:9px; letter-spacing:.06em; }
+    .de-shared-hero .de-shared-title { font-size:clamp(30px,7vw,38px); letter-spacing:-.025em; margin-top:8px; }
+  }
+</style>
+  <section class="de-shared-hero">
+    <p class="de-shared-eyebrow">RESERVATION</p>
+    <h1 class="de-shared-title">Book Your Session</h1>
   </section>
 
   <!-- Booking Form -->
@@ -2334,7 +2349,7 @@ export const basicDetailPage = () => `
   </section>
 
   <!-- Unified homepage-style CTA -->
-  <section class="section-padding bg-black text-white home-final-cta">
+  <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
       <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
@@ -2486,7 +2501,7 @@ export const signatureDetailPage = () => `
   </section>
 
   <!-- Unified homepage-style CTA -->
-  <section class="section-padding bg-black text-white home-final-cta">
+  <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
       <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
@@ -2644,7 +2659,7 @@ export const premiumDetailPage = () => `
   </section>
 
   <!-- Unified homepage-style CTA -->
-  <section class="section-padding bg-black text-white home-final-cta">
+  <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
       <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
