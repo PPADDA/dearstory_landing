@@ -593,6 +593,27 @@ backdrop-filter: blur(12px);
       .story-experience { padding-bottom: 1.8rem !important; }
       .home-services { padding-top: 1.6rem !important; }
 
+      /* iOS Safari: keep date and time controls inside their equal-width grid columns. */
+      #basic-date, #signature-date, #premium-date,
+      #basic-time, #signature-time, #premium-time {
+        display: block !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 44px !important;
+        padding: 0 8px !important;
+        font-size: 12px !important;
+        border-radius: 0 !important;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      #basic-date::-webkit-date-and-time-value,
+      #signature-date::-webkit-date-and-time-value,
+      #premium-date::-webkit-date-and-time-value { min-width: 0; text-align: left; }
+      #basic-date::-webkit-calendar-picker-indicator,
+      #signature-date::-webkit-calendar-picker-indicator,
+      #premium-date::-webkit-calendar-picker-indicator { margin: 0; flex-shrink: 0; }
       .home-final-cta { padding: 2.1rem 1.5rem 2.4rem !important; }
       .home-final-cta h2 { font-size: 2rem !important; line-height: 1.12 !important; margin-bottom: .65rem !important; }
       .home-final-cta p { font-size: .82rem !important; line-height: 1.5 !important; margin-bottom: 1.4rem !important; }

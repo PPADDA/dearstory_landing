@@ -2329,7 +2329,7 @@ export const basicDetailPage = () => `
   </section>
 
   <!-- Unified homepage-style CTA -->
-  <section class="section-padding bg-black text-white">
+  <section class="section-padding bg-black text-white home-final-cta">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
       <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
@@ -2481,7 +2481,7 @@ export const signatureDetailPage = () => `
   </section>
 
   <!-- Unified homepage-style CTA -->
-  <section class="section-padding bg-black text-white">
+  <section class="section-padding bg-black text-white home-final-cta">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
       <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
@@ -2639,7 +2639,7 @@ export const premiumDetailPage = () => `
   </section>
 
   <!-- Unified homepage-style CTA -->
-  <section class="section-padding bg-black text-white">
+  <section class="section-padding bg-black text-white home-final-cta">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl md:text-6xl font-light mb-6" style="font-family: 'Cormorant Garamond', serif;">Ready to Begin?</h2>
       <p class="text-xl mb-12 opacity-90">Start your K-pop journey today</p>
