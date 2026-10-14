@@ -153,7 +153,7 @@ export const experiencesPage = () => `
         <article class="difference-item">
           <img src="/images/difference-nfc.png" alt="Personalized NFC music photocard held against the back of a smartphone" loading="lazy">
           <h3>NFC Music Photocard</h3>
-          <p class="description">Your music, just one tap away. Simply tap your personalized photocard on the back of your phone to play your own music.</p>
+          <p class="description">Your music, just one tap away. <br>Simply tap your personalized photocard on the back of your phone to play your own music.</p>
         </article>
         <article class="difference-item">
           <img src="/images/difference-cover.png" alt="Three original digital album cover designs displayed in a minimalist gallery" loading="lazy">
