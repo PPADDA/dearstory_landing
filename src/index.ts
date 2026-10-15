@@ -1441,6 +1441,18 @@ app.post('/api/gallery', async (c) => {
   }
 })
 
+// Reorder gallery items. Body: { ids: [3, 8, 1] }
+app.patch('/api/gallery/reorder', async (c) => {
+  const { env } = c
+  const body = await c.req.json() as { ids?: number[] }
+  if (!Array.isArray(body.ids)) return c.json({ error: 'ids array is required' }, 400)
+  const statements = body.ids.map((id, index) =>
+    env.DB.prepare(`UPDATE gallery_items SET display_order = ? WHERE id = ?`).bind(index, id)
+  )
+  if (statements.length) await env.DB.batch(statements)
+  return c.json({ success: true })
+})
+
 // Edit a gallery track. Title is required; album art and audio are optional replacements.
 app.patch('/api/gallery/:id', async (c) => {
   const { env } = c
@@ -1506,18 +1518,6 @@ app.patch('/api/gallery/:id/visibility', async (c) => {
   const body = await c.req.json() as { is_visible?: boolean }
   await env.DB.prepare(`UPDATE gallery_items SET is_visible = ? WHERE id = ?`)
     .bind(body.is_visible ? 1 : 0, id).run()
-  return c.json({ success: true })
-})
-
-// Reorder gallery items. Body: { ids: [3, 8, 1] }
-app.patch('/api/gallery/reorder', async (c) => {
-  const { env } = c
-  const body = await c.req.json() as { ids?: number[] }
-  if (!Array.isArray(body.ids)) return c.json({ error: 'ids array is required' }, 400)
-  const statements = body.ids.map((id, index) =>
-    env.DB.prepare(`UPDATE gallery_items SET display_order = ? WHERE id = ?`).bind(index, id)
-  )
-  if (statements.length) await env.DB.batch(statements)
   return c.json({ success: true })
 })
 

@@ -1927,7 +1927,8 @@ export const adminPage = () => `
         await axios.patch('/api/gallery/reorder', { ids: reordered.map(item => item.id) });
         await loadAdminGallery();
       } catch (error) {
-        alert('Could not change display order.');
+        console.error('Gallery reorder failed:', error);
+        alert(error.response?.data?.error || 'Could not change display order.');
       }
     }
 
