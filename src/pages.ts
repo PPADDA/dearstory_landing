@@ -232,7 +232,7 @@ export const experiencesPage = () => `
         <article class="difference-item">
           <img src="/images/difference-nfc.png" alt="Personalized NFC music photocard held against the back of a smartphone" loading="lazy">
           <h3>NFC Music Photocard</h3>
-          <p class="description">Your music, just one tap away. Simply tap your personalized photocard on the back of your phone to play your own music.</p>
+          <p class="description">Your music, just one tap away. <br>Simply tap your personalized photocard on the back of your phone to play your own music.</p>
         </article>
         <article class="difference-item">
           <img src="/images/difference-cover.png" alt="Three original digital album cover designs displayed in a minimalist gallery" loading="lazy">
@@ -2538,7 +2538,7 @@ export const signatureDetailPage = () => `
       </div>
       <div class="w-full max-w-[430px] mx-auto md:mx-0 md:pt-4">
         <p class="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2" style="font-family:'Montserrat',sans-serif;">Signature</p>
-        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Create Your Own K-pop Song</h1>
+        <h1 class="text-2xl md:text-3xl font-semibold leading-tight tracking-[-0.02em] mb-4" style="font-family:'Montserrat',sans-serif;">Create Your <br>Own K-pop Song</h1>
         <p class="text-gray-600 text-sm leading-relaxed mb-5">Create your own original K-pop song with personalized music production, vocal coaching and professional recording.</p>
         <div class="grid grid-cols-2 gap-3 items-center border-t border-gray-300 pt-4 mb-4">
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩600,000</span>
