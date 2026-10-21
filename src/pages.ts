@@ -3,9 +3,9 @@ export const experiencesPage = () => `
 <style>
   .de-exp { background:#f1f0ed; color:#191919; }
   .de-exp .eyebrow { font-size:11px; font-weight:600; letter-spacing:.25em; }
-  .de-exp .hero > .eyebrow { color:#aaaaaa; font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:400; }
+  .de-exp .hero > .eyebrow { color:#aaaaaa; font-size:10px; letter-spacing:.08em; text-transform:none; font-weight:400; }
   .de-exp .serif { font-family:'Cormorant Garamond',serif; font-weight:400; }
-  .de-exp .hero { padding:72px 22px 70px; text-align:center; background:#0b0b0b; color:#fff; }
+  .de-exp .hero { padding:44px 22px 42px; text-align:center; background:#0b0b0b; color:#fff; }
   .de-exp .hero h1 { font-size:clamp(36px,4vw,54px); line-height:1.05; margin:10px 0 0; font-weight:400; }
   .de-exp .hero p:last-child { font-size:13px; color:#706d69; }
   /* Match the homepage's OUR SERVICES cards and hover elevation. */
@@ -26,7 +26,7 @@ export const experiencesPage = () => `
   .de-exp .comparison { background:#fff; padding:92px 24px 105px; }
   .de-exp .comparison-inner { max-width:1100px; margin:auto; }
   .de-exp .comparison-header { text-align:center; margin-bottom:40px; }
-  .de-exp .comparison-header h2 { font-weight:600; font-size:clamp(44px,6vw,72px); margin:12px 0; }
+  .de-exp .comparison-header h2 { font-size:clamp(44px,6vw,72px); margin:12px 0; }
   .de-exp .comparison-header p:last-child { font-size:12px; color:#77736e; }
   .de-exp .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .de-exp table { width:100%; border-collapse:collapse; table-layout:fixed; min-width:620px; }
@@ -52,7 +52,7 @@ export const experiencesPage = () => `
     .de-exp .hero { padding:27px 20px 27px; }
     .de-exp .hero > .eyebrow { font-size:9px; letter-spacing:.06em; }
     .de-exp .hero h1 { font-size:clamp(30px, 7vw, 38px); white-space:nowrap; letter-spacing:-0.025em; margin:8px 0 0; }
-    .de-exp .cards { grid-template-columns:1fr; padding:42px 18px 68px; gap:12px; }
+    .de-exp .cards { grid-template-columns:1fr; padding:24px 18px 68px; gap:12px; }
     .de-exp .card { flex-direction:row; min-height:120px; }
     .de-exp .art { width:34%; min-height:120px; padding:12px; flex-shrink:0; }
     .de-exp .art i { font-size:31px; }
@@ -66,19 +66,8 @@ export const experiencesPage = () => `
     .de-exp .card.signature { border-width:1px; }
     .de-exp .card:hover { transform:none; }
     .de-exp .comparison { padding:69px 18px 75px; }
-    .de-exp .comparison-header { margin-bottom:27px; position:relative; top:-22px; }
-    .de-exp .comparison-header .eyebrow { font-size:8px; letter-spacing:.22em; color:#89847e; }
-    .de-exp .comparison-header h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; color:#191919; }
-    .de-exp .comparison-header p:last-child { font-size:13px; line-height:1.55; color:#77736e; }
-    /* Keep feature names and all three package columns visible on mobile. */
-    .de-exp .table-scroll { overflow-x:visible; }
-    .de-exp table { min-width:0; width:100%; table-layout:fixed; }
-    .de-exp th,.de-exp td { padding:13px 3px; font-size:9px; line-height:1.35; overflow-wrap:break-word; }
-    .de-exp th:first-child,.de-exp td:first-child { width:46%; padding-left:6px; padding-right:6px; }
-    .de-exp th:not(:first-child),.de-exp td:not(:first-child) { width:18%; }
-    .de-exp thead th { font-size:10px; }
-    .de-exp .check-icon { width:16px; height:16px; stroke-width:3; }
-    .de-exp tbody tr.highlight-feature .check-icon { width:18px; height:18px; }
+    .de-exp .comparison-header { margin-bottom:27px; }
+    .de-exp .comparison-header h2 { font-size:47px; }
     /* Match the Home page CTA on mobile only. Desktop remains unchanged. */
     .de-exp .cta { padding:2.1rem 1.5rem 2.4rem; }
     .de-exp .cta .exp-cta-eyebrow { display:none; }
@@ -91,7 +80,7 @@ export const experiencesPage = () => `
   .de-exp .difference-inner { max-width:1200px; margin:0 auto; }
   .de-exp .difference-head { text-align:center; margin-bottom:50px; }
   .de-exp .difference-head .eyebrow { color:#89847e; }
-  .de-exp .difference-head h2 { font-weight:600; font-size:clamp(38px,4vw,52px); line-height:1.08; margin:14px 0 17px; }
+  .de-exp .difference-head h2 { font-size:clamp(38px,4vw,52px); line-height:1.08; margin:14px 0 17px; }
   .de-exp .difference-head .subtitle { font-size:13px; color:#77736e; }
   .de-exp .difference-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; }
   .de-exp .difference-item { min-width:0; }
@@ -104,9 +93,9 @@ export const experiencesPage = () => `
   }
   @media(max-width:767px) {
     .de-exp .difference { padding:14px 0 62px; }
-    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; position:relative; top:-22px; }
+    .de-exp .difference-head { padding:0 18px; margin-bottom:25px; }
     .de-exp .difference-head .eyebrow { font-size:8px; letter-spacing:.22em; }
-    .de-exp .difference-head h2 { font-weight:600; font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; }
+    .de-exp .difference-head h2 { font-size:clamp(20px,5.45vw,28px); white-space:nowrap; letter-spacing:-.035em; line-height:1.1; margin:10px 0 9px; }
     .de-exp .difference-head .subtitle { font-size:13px; line-height:1.55; }
     .de-exp .difference-grid { display:flex; overflow-x:auto; overflow-y:hidden; gap:14px; padding:0 18px 15px; scroll-snap-type:x mandatory; scroll-padding-left:18px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
     .de-exp .difference-grid::-webkit-scrollbar { display:none; }
@@ -115,113 +104,32 @@ export const experiencesPage = () => `
     .de-exp .difference-item .description { font-size:12px; }
     .de-exp .difference-item img { aspect-ratio:1 / 1; }
   }
-  /* Match homepage section heading typography and spacing. */
-  .de-exp .difference-head .eyebrow,
-  .de-exp .comparison-header .eyebrow { color:#888; font-weight:300; letter-spacing:3px; margin:0 0 12px; }
-  .de-exp .difference-head h2,
-  .de-exp .comparison-header h2 { font-weight:400; letter-spacing:-.02em; margin:0; line-height:1.15; }
-  @media(max-width:767px) {
-    .de-exp .difference-head .eyebrow,
-    .de-exp .comparison-header .eyebrow { font-size:8px; font-weight:300; letter-spacing:1.3px; margin:0 0 12px; }
-    .de-exp .difference-head h2,
-    .de-exp .comparison-header h2 { font-size:clamp(20px,5.45vw,26px); font-weight:400; letter-spacing:-.02em; line-height:1.15; margin:0; }
-  }
-
-  /* Match the original homepage Your Journey, Your Song. typography. */
-  .de-exp .difference-head .eyebrow,
-  .de-exp .comparison-header .eyebrow {
-    font-family:'Montserrat',sans-serif !important;
-    font-size:16px !important; font-weight:300 !important;
-    letter-spacing:3px !important; line-height:1.4 !important;
-    color:#888 !important; margin:0 0 16px !important;
-    text-align:center;
-  }
-  .de-exp .difference-head h2,
-  .de-exp .comparison-header h2 {
-    font-family:'Cormorant Garamond',serif !important;
-    font-size:clamp(2.5rem,5vw,4rem) !important;
-    font-weight:300 !important; letter-spacing:2px !important;
-    line-height:1.12 !important; color:#191919 !important;
-    margin:0 !important; text-align:center;
-  }
-  @media(max-width:767px) {
-    .de-exp .difference-head .eyebrow,
-    .de-exp .comparison-header .eyebrow {
-      font-size:8px !important; letter-spacing:1.3px !important;
-      margin-bottom:.45rem !important;
-    }
-    .de-exp .difference-head h2,
-    .de-exp .comparison-header h2 {
-      font-size:26px !important; font-weight:400 !important;
-      letter-spacing:-.02em !important; line-height:1.15 !important;
-      white-space:normal !important;
-    }
-  }
-
-  /* Same values as homepage .story-experience (Your Journey, Your Song.). */
-  .de-exp .difference-head .eyebrow,
-  .de-exp .comparison-header .eyebrow {
-    font-family:'Montserrat',sans-serif !important;
-    font-size:16px !important; font-weight:300 !important;
-    letter-spacing:3px !important; line-height:1.4 !important;
-    color:#888 !important; margin:0 0 16px !important;
-    text-align:center !important;
-  }
-  .de-exp .difference-head h2,
-  .de-exp .comparison-header h2 {
-    font-family:'Cormorant Garamond',serif !important;
-    font-size:clamp(2.5rem,5vw,4rem) !important;
-    font-weight:300 !important; letter-spacing:2px !important;
-    line-height:1.12 !important; color:#191919 !important;
-    text-align:center !important; margin:0 !important;
-  }
-  @media(max-width:767px) {
-    .de-exp .difference-head .eyebrow,
-    .de-exp .comparison-header .eyebrow {
-      font-size:8px !important; letter-spacing:1.3px !important;
-      margin-bottom:7px !important;
-    }
-    .de-exp .difference-head h2,
-    .de-exp .comparison-header h2 {
-      font-size:26px !important; font-weight:400 !important;
-      letter-spacing:-.02em !important; line-height:1.15 !important;
-      white-space:normal !important;
-    }
-    .de-exp .difference-head {
-  position: relative;
-  top: -25px !important;
-  transform: none !important;
-}
-
-.de-exp .comparison-header {
-  top: 0 !important;
-  transform: none !important;
-}
 </style>
 <main class="de-exp">
   <section class="hero">
-    <p class="eyebrow">FIND YOUR SOUND</p>
+    <p class="eyebrow">Find Your Sound.</p>
     <h1 class="serif">EXPERIENCES</h1>
   </section>
   <section class="cards" aria-label="Choose your experience">
     <a href="/experience/basic" class="card">
       <div class="art"><i class="fas fa-microphone" aria-hidden="true"></i></div>
-      <div class="card-body"><div class="card-heading"><h2>BASIC</h2><p class="price">₩400,000</p></div><p class="summary">Record your favorite K-pop song.</p><span class="detail">Learn More →</span></div>
+      <div class="card-body"><div class="card-heading"><h2>BASIC</h2><p class="price">₩400,000</p></div><p class="text-gray-500 text-xs mb-2">Includes 1 participant · +₩100,000 per additional participant</p><p class="summary">Record your favorite K-pop song.</p><span class="detail">Learn More →</span></div>
     </a>
     <a href="/experience/signature" class="card signature">
       <span class="popular">Most Popular</span><div class="art"><i class="fas fa-music" aria-hidden="true"></i></div>
-      <div class="card-body"><div class="card-heading"><h2>SIGNATURE</h2><p class="price">₩600,000</p></div><p class="summary">Create your own original K-pop song.</p><span class="detail">Learn More →</span></div>
+      <div class="card-body"><div class="card-heading"><h2>SIGNATURE</h2><p class="price">₩600,000</p></div><p class="text-gray-500 text-xs mb-2">Includes 1 participant · +₩150,000 per additional participant</p><p class="summary">Create your own original K-pop song.</p><span class="detail">Learn More →</span></div>
     </a>
     <a href="/experience/premium" class="card">
       <div class="art"><i class="fas fa-compact-disc" aria-hidden="true"></i></div>
-      <div class="card-body"><div class="card-heading"><h2>PREMIUM</h2><p class="price">₩700,000</p></div><p class="summary">Release your original song to the world.</p><span class="detail">Learn More →</span></div>
+      <div class="card-body"><div class="card-heading"><h2>PREMIUM</h2><p class="price">₩700,000</p></div><p class="text-gray-500 text-xs mb-2">Includes 1 participant · +₩150,000 per additional participant</p><p class="summary">Release your original song to the world.</p><span class="detail">Learn More →</span></div>
     </a>
   </section>
   <section class="difference" aria-labelledby="difference-title">
     <div class="difference-inner">
       <div class="difference-head">
         <p class="eyebrow">MORE THAN JUST RECORDING</p>
-        <h2 class="serif" id="difference-title">The Dear Story Difference</h2>
+        <h2 class="serif" id="difference-title">The DearStory Difference</h2>
+        <p class="subtitle">Every detail, crafted for your K-pop experience.</p>
       </div>
       <div class="difference-grid">
         <article class="difference-item">
@@ -232,7 +140,7 @@ export const experiencesPage = () => `
         <article class="difference-item">
           <img src="/images/difference-nfc.png" alt="Personalized NFC music photocard held against the back of a smartphone" loading="lazy">
           <h3>NFC Music Photocard</h3>
-          <p class="description">Your music, just one tap away. <br>Simply tap your personalized photocard on the back of your phone to play your own music.</p>
+          <p class="description">Your music, just one tap away. Simply tap your personalized photocard on the back of your phone to play your own music.</p>
         </article>
         <article class="difference-item">
           <img src="/images/difference-cover.png" alt="Three original digital album cover designs displayed in a minimalist gallery" loading="lazy">
@@ -249,7 +157,7 @@ export const experiencesPage = () => `
   </section>
   <section class="comparison" aria-labelledby="compare-title">
     <div class="comparison-inner">
-      <div class="comparison-header"><p class="eyebrow">FIND YOUR PERFECT FIT</p><h2 class="serif" id="compare-title">Compare Our Experiences</h2></div>
+      <div class="comparison-header"><p class="eyebrow">FIND YOUR PERFECT FIT</p><h2 class="serif" id="compare-title">Compare Our Experiences</h2><p>See what's included in each experience.</p></div>
       <div class="table-scroll" role="region" aria-label="Experience comparison table" tabindex="0">
         <table><thead><tr><th scope="col">INCLUDED</th><th scope="col">Basic</th><th scope="col">Signature</th><th scope="col">Premium</th></tr></thead>
         <tbody>
@@ -275,19 +183,11 @@ export const experiencesPage = () => `
 
 // ==================== GALLERY PAGE ====================
 export const galleryPage = () => `
-<style>
-  .de-shared-hero { background:#0b0b0b; color:#fff; text-align:center; padding:72px 22px 70px; }
-  .de-shared-hero .de-shared-eyebrow { color:#aaa; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:400; letter-spacing:.08em; text-transform:uppercase; margin:0; }
-  .de-shared-hero .de-shared-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,4vw,54px); line-height:1.05; font-weight:400; margin:10px 0 0; }
-  @media(max-width:767px) {
-    .de-shared-hero { padding:27px 20px; }
-    .de-shared-hero .de-shared-eyebrow { font-size:9px; letter-spacing:.06em; }
-    .de-shared-hero .de-shared-title { font-size:clamp(30px,7vw,38px); letter-spacing:-.025em; margin-top:8px; }
-  }
-</style>
-  <section class="de-shared-hero">
-    <p class="de-shared-eyebrow">DEARSTORY MUSIC</p>
-    <h1 class="de-shared-title">Our Work</h1>
+  <section class="relative h-[48vh] flex items-center justify-center bg-black">
+    <div class="relative z-10 text-center text-white px-4">
+      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-70">DEARSTORY MUSIC</p>
+      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">Our Work</h1>
+    </div>
   </section>
 
   <section class="section-padding bg-white">
@@ -302,19 +202,6 @@ export const galleryPage = () => `
     .gallery-progress { -webkit-appearance: none; appearance: none; height: 2px; background: linear-gradient(to right, #111 0%, #111 var(--progress, 0%), #d1d5db var(--progress, 0%), #d1d5db 100%); cursor: pointer; }
     .gallery-progress::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 9999px; background: #111; cursor: grab; }
     .gallery-progress::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 9999px; background: #111; cursor: grab; }
-    .gallery-cover-button { position:absolute; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:transparent; cursor:pointer; }
-    .gallery-cover-icon { width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,.88); display:flex; align-items:center; justify-content:center; color:#111; box-shadow:0 3px 16px rgba(0,0,0,.12); transition:transform .2s, opacity .2s; }
-    .gallery-cover-icon svg { width:23px; height:23px; display:block; }
-    .gallery-cover-button:hover .gallery-cover-icon { transform:scale(1.07); }
-    @media(max-width:639px) {
-      #gallery-container { display:flex; flex-direction:column; gap:18px; }
-      #gallery-container article.gallery-track { display:grid; grid-template-columns:76px minmax(0,1fr); align-items:center; gap:15px; }
-      .gallery-track .gallery-cover { width:76px; height:76px; margin:0; }
-      .gallery-track .gallery-track-info { min-width:0; }
-      .gallery-track .gallery-track-title { font-size:21px; line-height:1.2; margin:0 0 12px; }
-      .gallery-cover-icon { width:31px; height:31px; box-shadow:none; }
-      .gallery-cover-icon svg { width:15px; height:15px; }
-    }
   </style>
 
   <script>
@@ -343,12 +230,10 @@ export const galleryPage = () => `
     function setGalleryButton(id, playing) {
       const button = document.getElementById('gallery-play-' + id);
       if (!button) return;
-      const icon = button.querySelector('.gallery-cover-icon');
-      if (icon) icon.innerHTML = playing
-        ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="7" y="5" width="3.5" height="14" rx=".6" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx=".6" fill="currentColor"/></svg>'
-        : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5L19 12 8 18.5Z" fill="currentColor"/></svg>';
-      button.setAttribute('aria-label', (playing ? 'Pause ' : 'Play ') + (button.closest('article')?.querySelector('h3')?.textContent || 'audio'));
-      button.setAttribute('aria-pressed', String(playing));
+      button.innerHTML = playing
+        ? '<span class="text-2xl leading-none">Ⅱ</span>'
+        : '<span class="text-2xl leading-none ml-1">▶</span>';
+      button.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     }
 
     function updateGalleryProgress(id) {
@@ -384,19 +269,19 @@ export const galleryPage = () => `
         }
 
         container.innerHTML = items.map(item =>
-          '<article class="group gallery-track">' +
-            '<div class="gallery-cover aspect-square bg-gray-100 overflow-hidden mb-5 relative">' +
+          '<article class="group">' +
+            '<div class="aspect-square bg-gray-100 overflow-hidden mb-5 relative">' +
               '<img src="' + galleryEscape(item.thumbnail_url) + '" alt="' + galleryEscape(item.title) + '" class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]">' +
-              '<button id="gallery-play-' + item.id + '" type="button" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play ' + galleryEscape(item.title) + '" class="gallery-cover-button"><span class="gallery-cover-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5L19 12 8 18.5Z" fill="currentColor"/></svg></span></button>' +
+              '<div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition">' +
+                '<button id="gallery-play-' + item.id + '" onclick="toggleGalleryAudio(' + item.id + ')" aria-label="Play" class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/90 text-black flex items-center justify-center shadow-lg backdrop-blur-sm transition hover:scale-105"><span class="text-2xl leading-none ml-1">▶</span></button>' +
+              '</div>' +
               '<audio id="gallery-audio-' + item.id + '" class="gallery-audio hidden" preload="metadata" src="' + galleryEscape(item.file_url) + '" onloadedmetadata="updateGalleryProgress(' + item.id + ')" ontimeupdate="updateGalleryProgress(' + item.id + ')" onplay="setGalleryButton(' + item.id + ', true)" onpause="setGalleryButton(' + item.id + ', false)" onended="setGalleryButton(' + item.id + ', false); updateGalleryProgress(' + item.id + ')"></audio>' +
             '</div>' +
-            '<div class="gallery-track-info">' +
-            '<h3 class="gallery-track-title text-2xl font-light mb-3" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
+            '<h3 class="text-2xl font-light mb-3" style="font-family: Cormorant Garamond, serif;">' + galleryEscape(item.title) + '</h3>' +
             '<div class="flex items-center gap-3 text-[11px] tracking-wide text-gray-500">' +
               '<span id="gallery-current-' + item.id + '" class="w-8 tabular-nums">0:00</span>' +
               '<input id="gallery-progress-' + item.id + '" type="range" min="0" max="0" value="0" step="0.01" oninput="seekGalleryAudio(' + item.id + ', this.value)" aria-label="Audio progress" class="gallery-progress flex-1">' +
               '<span id="gallery-duration-' + item.id + '" class="w-8 text-right tabular-nums">0:00</span>' +
-            '</div>' +
             '</div>' +
           '</article>'
         ).join('');
@@ -413,48 +298,17 @@ export const galleryPage = () => `
 // ==================== BOOKING PAGE ====================
 export const bookingPage = (packageParam?: string) => `
   <!-- Hero Section -->
-<style>
-  .de-shared-hero { background:#0b0b0b; color:#fff; text-align:center; padding:72px 22px 70px; }
-  .de-shared-hero .de-shared-eyebrow { color:#aaa; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:400; letter-spacing:.08em; text-transform:uppercase; margin:0; }
-  .de-shared-hero .de-shared-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,4vw,54px); line-height:1.05; font-weight:400; margin:10px 0 0; }
-  @media(max-width:767px) {
-    .de-shared-hero { padding:27px 20px; }
-    .de-shared-hero .de-shared-eyebrow { font-size:9px; letter-spacing:.06em; }
-    .de-shared-hero .de-shared-title { font-size:clamp(30px,7vw,38px); letter-spacing:-.025em; margin-top:8px; }
-  }
-  /* Booking page already has its own submit button. */
-  .floating-book-btn { display:none !important; }
-  /* Compact booking form on phones only; desktop and form behavior stay unchanged. */
-  @media (max-width:767px) {
-    .de-booking-section { padding:28px 20px 44px !important; }
-    .de-booking-section #booking-form { display:flex; flex-direction:column; gap:20px; }
-    .de-booking-section #booking-form > * { margin-top:0 !important; margin-bottom:0 !important; }
-    .de-booking-section #booking-form label { font-size:11px !important; line-height:1.4; letter-spacing:1px; margin-bottom:8px !important; font-weight:500; }
-    .de-booking-section #booking-form input:not([type=checkbox]),
-    .de-booking-section #booking-form select { box-sizing:border-box; min-width:0; width:100%; height:46px; min-height:46px; padding:0 12px !important; font-size:14px !important; line-height:1.35; border-radius:0; }
-    .de-booking-section #booking-form input[type=date] { -webkit-appearance:none; appearance:none; max-width:100%; }
-    .de-booking-section #booking-form textarea { padding:12px !important; font-size:14px !important; min-height:88px; }
-    .de-booking-section #booking-form .grid { gap:20px !important; }
-    .de-booking-section #booking-form .bg-gray-50.p-8 { padding:17px 12px !important; }
-    .de-booking-section #booking-form .bg-gray-50.p-8 > p:first-child { font-size:11px !important; margin-bottom:5px !important; letter-spacing:1px; }
-    .de-booking-section #booking-form .bg-gray-50.p-8 > p.text-4xl { font-size:28px !important; line-height:1.15; }
-    .de-booking-section #booking-form .border-t.pt-8 { padding-top:0 !important; }
-    .de-booking-section #booking-form .messenger-entry { gap:8px !important; }
-    .de-booking-section #booking-form .messenger-select { width:38% !important; flex-shrink:0; }
-    .de-booking-section #booking-form .messenger-id { flex:1; min-width:0; }
-    .de-booking-section #booking-form .messenger-remove { width:36px !important; height:46px !important; }
-    .de-booking-section #booking-form #add-messenger-btn { font-size:11px !important; }
-    .de-booking-section #booking-form button[type=submit] { padding:14px 12px !important; font-size:12px !important; }
-    .de-booking-section #booking-form > p.text-center { font-size:11px !important; line-height:1.5; }
-  }
-</style>
-  <section class="de-shared-hero">
-    <p class="de-shared-eyebrow">RESERVATION</p>
-    <h1 class="de-shared-title">Book Your Session</h1>
+  <section class="relative h-[50vh] flex items-center justify-center bg-black">
+    <div class="relative z-10 text-center text-white px-4">
+      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-90">RESERVATION</p>
+      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">
+        Book Your Session
+      </h1>
+    </div>
   </section>
 
   <!-- Booking Form -->
-  <section class="section-padding bg-white de-booking-section">
+  <section class="section-padding bg-white">
     <div class="max-w-3xl mx-auto">
       <form id="booking-form" class="space-y-8">
         <!-- Package Selection -->
@@ -476,6 +330,7 @@ export const bookingPage = (packageParam?: string) => `
             <option value="3">3 People</option>
             <option value="4">4 People</option>
           </select>
+          <p id="participant-price-note" class="text-xs text-gray-600 leading-relaxed mt-3">The base price includes 1 participant. Additional participants: KRW 100,000 per person for Basic, or KRW 150,000 per person for Signature and Premium. All participants will sing and record one song together.</p>
         </div>
 
         <!-- Price Display -->
@@ -593,21 +448,9 @@ export const bookingPage = (packageParam?: string) => `
 
   <script>
     // Set minimum date (3 days from now)
-    const bookingDateInput = document.getElementById('booking_date');
-    // Use Korea calendar dates, not UTC (which can be one day behind in Korea).
-    const koreaToday = () => {
-      const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
-      }).formatToParts(new Date());
-      const part = type => parts.find(item => item.type === type).value;
-      return part('year') + '-' + part('month') + '-' + part('day');
-    };
-    const minBookingDate = () => {
-      const [y, m, d] = koreaToday().split('-').map(Number);
-      return new Date(Date.UTC(y, m - 1, d + 3)).toISOString().slice(0, 10);
-    };
-    bookingDateInput.min = minBookingDate();
-    const validBookingDate = value => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value || '') && value >= minBookingDate();
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 3);
+    document.getElementById('booking_date').min = minDate.toISOString().split('T')[0];
 
     // Time labels
     const timeLabels = {
@@ -622,12 +465,8 @@ export const bookingPage = (packageParam?: string) => `
       const date = this.value;
       const timeSelect = document.getElementById('booking_time');
 
-      bookingDateInput.min = minBookingDate();
-      if (!validBookingDate(date)) {
-        this.value = '';
-        timeSelect.innerHTML = '<option value="">Select a valid date first</option>';
-        timeSelect.disabled = true;
-        if (date) alert('Please select a date at least 3 days from today (Korea time).');
+      if (!date) {
+        timeSelect.innerHTML = '<option value="">Select a date first</option>';
         return;
       }
 
@@ -658,29 +497,21 @@ export const bookingPage = (packageParam?: string) => `
       }
     });
 
-    // Restore package, date and time from any Experience detail page; verify availability.
+    // Restore date/time selected on the Basic detail page; revalidate with live availability.
     (async function prefillDetailSelection() {
       const params = new URLSearchParams(window.location.search);
-      const selectedPackage = params.get('package');
-      const packageInput = document.getElementById('package');
-      if (['basic', 'signature', 'premium'].includes(selectedPackage) && packageInput) {
-        packageInput.value = selectedPackage;
-        packageInput.dispatchEvent(new Event('change'));
-      }
       const selectedDate = params.get('date');
       const selectedTime = params.get('time');
       const dateInput = document.getElementById('booking_date');
       const timeInput = document.getElementById('booking_time');
-      if (!validBookingDate(selectedDate)) return;
+      if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || selectedDate < dateInput.min) return;
       dateInput.value = selectedDate;
-      // Use the existing date-change loader, then select the requested time once it finishes.
-      // A single loader prevents two competing availability requests.
       if (!selectedTime) { dateInput.dispatchEvent(new Event('change')); return; }
       try {
-        timeInput.disabled = true;
-        timeInput.innerHTML = '<option value="">Loading...</option>';
         const response = await axios.get('/api/available-times?date=' + encodeURIComponent(selectedDate));
-        const available = Array.isArray(response.data.available) ? response.data.available : [];
+        const available = response.data.available || [];
+        if (!available.includes(selectedTime)) return;
+        // Populate independently to avoid racing the date change handler.
         timeInput.innerHTML = '<option value="">Select time</option>';
         available.forEach(time => {
           const option = document.createElement('option');
@@ -688,13 +519,9 @@ export const bookingPage = (packageParam?: string) => `
           option.textContent = timeLabels[time] || time;
           timeInput.appendChild(option);
         });
-        timeInput.disabled = !available.length;
-        const matchingTime = available.find(time => String(time).slice(0,5) === selectedTime.slice(0,5));
-        if (matchingTime) timeInput.value = matchingTime;
-      } catch (error) {
-        timeInput.innerHTML = '<option value="">Unable to load times</option>';
-        console.error('Unable to preselect booking time', error);
-      }
+        timeInput.disabled = false;
+        timeInput.value = selectedTime;
+      } catch (error) { console.error('Unable to preselect booking time', error); }
     })();
 
     // Price calculation
@@ -815,16 +642,6 @@ export const bookingPage = (packageParam?: string) => `
     // Form submission
     document.getElementById('booking-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      bookingDateInput.min = minBookingDate();
-      if (!validBookingDate(bookingDateInput.value)) {
-        alert('Please select a date at least 3 days from today (Korea time).');
-        bookingDateInput.focus();
-        return;
-      }
-      if (!document.getElementById('booking_time').value) {
-        alert('Please select an available time.');
-        return;
-      }
 
       const messengers = getMessengerData();
       if (messengers.length === 0) {
@@ -864,7 +681,6 @@ export const bookingPage = (packageParam?: string) => `
     });
 
     updatePrice();
-
   </script>
 `;
 
@@ -1927,8 +1743,7 @@ export const adminPage = () => `
         await axios.patch('/api/gallery/reorder', { ids: reordered.map(item => item.id) });
         await loadAdminGallery();
       } catch (error) {
-        console.error('Gallery reorder failed:', error);
-        alert(error.response?.data?.error || 'Could not change display order.');
+        alert('Could not change display order.');
       }
     }
 
@@ -2385,6 +2200,7 @@ export const basicDetailPage = () => `
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩400,000</span>
           <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2 hours</span>
         </div>
+        <p class="text-xs text-gray-600 leading-relaxed mb-4">The base price includes 1 participant. Additional participants: KRW 100,000 per person. All participants will sing and record one song together.</p>
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label for="basic-date" class="block text-[11px] tracking-widest text-gray-600 mb-1">DATE</label>
@@ -2409,12 +2225,10 @@ export const basicDetailPage = () => `
       const message = document.getElementById('basic-availability-message');
       const button = document.getElementById('basic-continue');
       if (!dateInput || !timeInput || !button) return;
-      const koreaMinDate = () => {
-        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-        const part = type => parts.find(item => item.type === type).value;
-        return new Date(Date.UTC(Number(part('year')), Number(part('month'))-1, Number(part('day'))+3)).toISOString().slice(0,10);
-      };
-      dateInput.min = koreaMinDate();
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 3);
+      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+      dateInput.min = localDate(minDate);
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2423,14 +2237,7 @@ export const basicDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        dateInput.min = koreaMinDate();
-        if (!date || date < dateInput.min) {
-          if (date) {
-            dateInput.value = '';
-            message.textContent = 'Please choose a date at least 3 days from today (Korea time).';
-          }
-          return;
-        }
+        if (!date || date < dateInput.min) return;
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2459,11 +2266,7 @@ export const basicDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
-        dateInput.min = koreaMinDate();
-        if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
-          message.textContent = 'Please select a date at least 3 days from today and an available time.';
-          return;
-        }
+        if (!dateInput.value || !timeInput.value) return;
         const params = new URLSearchParams({package:'basic', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
@@ -2544,6 +2347,7 @@ export const signatureDetailPage = () => `
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩600,000</span>
           <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2–2.5 hours</span>
         </div>
+        <p class="text-xs text-gray-600 leading-relaxed mb-4">The base price includes 1 participant. Additional participants: KRW 150,000 per person. All participants will sing and record one song together.</p>
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label for="signature-date" class="block text-[11px] tracking-widest text-gray-600 mb-1">DATE</label>
@@ -2568,12 +2372,10 @@ export const signatureDetailPage = () => `
       const message = document.getElementById('signature-availability-message');
       const button = document.getElementById('signature-continue');
       if (!dateInput || !timeInput || !button) return;
-      const koreaMinDate = () => {
-        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-        const part = type => parts.find(item => item.type === type).value;
-        return new Date(Date.UTC(Number(part('year')), Number(part('month'))-1, Number(part('day'))+3)).toISOString().slice(0,10);
-      };
-      dateInput.min = koreaMinDate();
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 3);
+      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+      dateInput.min = localDate(minDate);
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2582,14 +2384,7 @@ export const signatureDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        dateInput.min = koreaMinDate();
-        if (!date || date < dateInput.min) {
-          if (date) {
-            dateInput.value = '';
-            message.textContent = 'Please choose a date at least 3 days from today (Korea time).';
-          }
-          return;
-        }
+        if (!date || date < dateInput.min) return;
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2618,11 +2413,7 @@ export const signatureDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
-        dateInput.min = koreaMinDate();
-        if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
-          message.textContent = 'Please select a date at least 3 days from today and an available time.';
-          return;
-        }
+        if (!dateInput.value || !timeInput.value) return;
         const params = new URLSearchParams({package:'signature', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
@@ -2709,6 +2500,7 @@ export const premiumDetailPage = () => `
           <span class="text-xl font-semibold" style="text-decoration:none!important;">₩700,000</span>
           <span class="text-xs text-gray-600"><i class="far fa-clock mr-1" aria-hidden="true"></i>Approx. 2–2.5 hours</span>
         </div>
+        <p class="text-xs text-gray-600 leading-relaxed mb-4">The base price includes 1 participant. Additional participants: KRW 150,000 per person. All participants will sing and record one song together.</p>
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label for="premium-date" class="block text-[11px] tracking-widest text-gray-600 mb-1">DATE</label>
@@ -2733,12 +2525,10 @@ export const premiumDetailPage = () => `
       const message = document.getElementById('premium-availability-message');
       const button = document.getElementById('premium-continue');
       if (!dateInput || !timeInput || !button) return;
-      const koreaMinDate = () => {
-        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-        const part = type => parts.find(item => item.type === type).value;
-        return new Date(Date.UTC(Number(part('year')), Number(part('month'))-1, Number(part('day'))+3)).toISOString().slice(0,10);
-      };
-      dateInput.min = koreaMinDate();
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 3);
+      const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+      dateInput.min = localDate(minDate);
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2747,14 +2537,7 @@ export const premiumDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        dateInput.min = koreaMinDate();
-        if (!date || date < dateInput.min) {
-          if (date) {
-            dateInput.value = '';
-            message.textContent = 'Please choose a date at least 3 days from today (Korea time).';
-          }
-          return;
-        }
+        if (!date || date < dateInput.min) return;
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2783,11 +2566,7 @@ export const premiumDetailPage = () => `
       });
       timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
       button.addEventListener('click', () => {
-        dateInput.min = koreaMinDate();
-        if (!dateInput.value || dateInput.value < dateInput.min || !timeInput.value) {
-          message.textContent = 'Please select a date at least 3 days from today and an available time.';
-          return;
-        }
+        if (!dateInput.value || !timeInput.value) return;
         const params = new URLSearchParams({package:'premium', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });

@@ -795,6 +795,7 @@ backdrop-filter: blur(12px);
         </div>
       </div>
       <div class="border-t border-gray-800 pt-8 text-center">
+        <p class="text-gray-400 text-xs sm:text-sm mb-2">Business Name: 디어뮤직스튜디오 <span class="mx-2">|</span> Business Registration No.: 118-62-00712</p>
         <p class="text-gray-500 text-xs sm:text-sm">© 2026 Dear Story. All rights reserved.</p>
       </div>
     </div>
@@ -1709,6 +1710,7 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">BASIC</h3>
                 <p class="text-lg">₩400,000</p>
               </div>
+              <p class="text-gray-500 text-xs leading-relaxed mb-2">Includes 1 participant · +₩100,000 per additional participant</p>
               <p class="text-gray-600 mb-6">Record your favorite K-pop song.</p>
               <a href="/experience/basic" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
@@ -1725,6 +1727,7 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">SIGNATURE</h3>
                 <p class="text-lg">₩600,000</p>
               </div>
+              <p class="text-gray-500 text-xs leading-relaxed mb-2">Includes 1 participant · +₩150,000 per additional participant</p>
               <p class="text-gray-600 mb-6">Create your own original K-pop song.</p>
               <a href="/experience/signature" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
@@ -1740,6 +1743,7 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">PREMIUM</h3>
                 <p class="text-lg">₩700,000</p>
               </div>
+              <p class="text-gray-500 text-xs leading-relaxed mb-2">Includes 1 participant · +₩150,000 per additional participant</p>
               <p class="text-gray-600 mb-6">Release your original song to the world.</p>
               <a href="/experience/premium" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
