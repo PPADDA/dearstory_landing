@@ -1710,7 +1710,6 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">BASIC</h3>
                 <p class="text-lg">₩400,000</p>
               </div>
-              <p class="text-gray-500 text-xs leading-relaxed mb-2">Includes 1 participant · +₩100,000 per additional participant</p>
               <p class="text-gray-600 mb-6">Record your favorite K-pop song.</p>
               <a href="/experience/basic" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
@@ -1727,7 +1726,6 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">SIGNATURE</h3>
                 <p class="text-lg">₩600,000</p>
               </div>
-              <p class="text-gray-500 text-xs leading-relaxed mb-2">Includes 1 participant · +₩150,000 per additional participant</p>
               <p class="text-gray-600 mb-6">Create your own original K-pop song.</p>
               <a href="/experience/signature" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>
@@ -1743,7 +1741,6 @@ app.get('/', (c) => {
                 <h3 class="text-2xl font-light">PREMIUM</h3>
                 <p class="text-lg">₩700,000</p>
               </div>
-              <p class="text-gray-500 text-xs leading-relaxed mb-2">Includes 1 participant · +₩150,000 per additional participant</p>
               <p class="text-gray-600 mb-6">Release your original song to the world.</p>
               <a href="/experience/premium" class="text-sm uppercase tracking-wider hover:opacity-70 transition">Learn More →</a>
             </div>

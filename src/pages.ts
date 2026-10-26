@@ -68,6 +68,19 @@ export const experiencesPage = () => `
     .de-exp .comparison { padding:69px 18px 75px; }
     .de-exp .comparison-header { margin-bottom:27px; }
     .de-exp .comparison-header h2 { font-size:47px; }
+    /* Compact comparison: show all three packages without horizontal scrolling. */
+    .de-exp .comparison { padding:34px 10px 42px; }
+    .de-exp .comparison-header { margin-bottom:14px; }
+    .de-exp .comparison-header .eyebrow { font-size:8px; letter-spacing:.13em; }
+    .de-exp .comparison-header h2 { font-size:clamp(26px,7.3vw,35px); line-height:1.05; margin:7px 0; }
+    .de-exp .comparison-header p:last-child { font-size:10px; }
+    .de-exp .table-scroll { overflow-x:visible; }
+    .de-exp table { min-width:0; width:100%; table-layout:fixed; }
+    .de-exp th,.de-exp td { padding:9px 3px; font-size:9px; line-height:1.25; overflow-wrap:break-word; }
+    .de-exp th:first-child,.de-exp td:first-child { width:43%; padding-left:5px; }
+    .de-exp thead th { font-size:9px; white-space:nowrap; }
+    .de-exp .check-icon,.de-exp tbody tr.highlight-feature .check-icon { width:15px; height:15px; stroke-width:3; }
+    .de-exp .compare-note { font-size:9px; margin-top:11px; line-height:1.5; }
     /* Match the Home page CTA on mobile only. Desktop remains unchanged. */
     .de-exp .cta { padding:2.1rem 1.5rem 2.4rem; }
     .de-exp .cta .exp-cta-eyebrow { display:none; }
@@ -113,15 +126,15 @@ export const experiencesPage = () => `
   <section class="cards" aria-label="Choose your experience">
     <a href="/experience/basic" class="card">
       <div class="art"><i class="fas fa-microphone" aria-hidden="true"></i></div>
-      <div class="card-body"><div class="card-heading"><h2>BASIC</h2><p class="price">₩400,000</p></div><p class="text-gray-500 text-xs mb-2">Includes 1 participant · +₩100,000 per additional participant</p><p class="summary">Record your favorite K-pop song.</p><span class="detail">Learn More →</span></div>
+      <div class="card-body"><div class="card-heading"><h2>BASIC</h2><p class="price">₩400,000</p></div><p class="summary">Record your favorite K-pop song.</p><span class="detail">Learn More →</span></div>
     </a>
     <a href="/experience/signature" class="card signature">
       <span class="popular">Most Popular</span><div class="art"><i class="fas fa-music" aria-hidden="true"></i></div>
-      <div class="card-body"><div class="card-heading"><h2>SIGNATURE</h2><p class="price">₩600,000</p></div><p class="text-gray-500 text-xs mb-2">Includes 1 participant · +₩150,000 per additional participant</p><p class="summary">Create your own original K-pop song.</p><span class="detail">Learn More →</span></div>
+      <div class="card-body"><div class="card-heading"><h2>SIGNATURE</h2><p class="price">₩600,000</p></div><p class="summary">Create your own original K-pop song.</p><span class="detail">Learn More →</span></div>
     </a>
     <a href="/experience/premium" class="card">
       <div class="art"><i class="fas fa-compact-disc" aria-hidden="true"></i></div>
-      <div class="card-body"><div class="card-heading"><h2>PREMIUM</h2><p class="price">₩700,000</p></div><p class="text-gray-500 text-xs mb-2">Includes 1 participant · +₩150,000 per additional participant</p><p class="summary">Release your original song to the world.</p><span class="detail">Learn More →</span></div>
+      <div class="card-body"><div class="card-heading"><h2>PREMIUM</h2><p class="price">₩700,000</p></div><p class="summary">Release your original song to the world.</p><span class="detail">Learn More →</span></div>
     </a>
   </section>
   <section class="difference" aria-labelledby="difference-title">
