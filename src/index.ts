@@ -796,6 +796,7 @@ backdrop-filter: blur(12px);
       </div>
       <div class="border-t border-gray-800 pt-8 text-center">
         <p class="text-gray-400 text-xs sm:text-sm mb-2">Business Name: 디어뮤직스튜디오 <span class="mx-2">|</span> Business Registration No.: 118-62-00712</p>
+        <p class="mb-3"><a href="/cancellation-policy" class="text-gray-400 hover:text-white underline underline-offset-4 text-xs sm:text-sm">Cancellation &amp; Refund Policy</a></p>
         <p class="text-gray-500 text-xs sm:text-sm">© 2026 Dear Story. All rights reserved.</p>
       </div>
     </div>
@@ -1792,6 +1793,33 @@ app.get('/experience/premium', (c) => {
 // Gallery page
 app.get('/gallery', (c) => {
   return c.html(layout('Gallery - Dear Story', galleryPage()))
+})
+
+// Cancellation and refund policy — public URL for customers and payment provider review.
+app.get('/cancellation-policy', (c) => {
+  const content = `
+    <section class="bg-[#f6f5f2] text-[#181818] py-16 md:py-24 px-6">
+      <div class="max-w-3xl mx-auto">
+        <p class="text-xs uppercase tracking-[.22em] text-gray-500 mb-4">Dear Story · Booking Information</p>
+        <h1 class="font-serif text-4xl md:text-5xl mb-4" style="font-family:'Cormorant Garamond',serif">Cancellation &amp; Refund Policy</h1>
+        <p class="text-sm text-gray-500 mb-10">예약 취소 및 환불 규정</p>
+        <div class="bg-white border border-gray-200 p-7 md:p-10 space-y-7 text-sm leading-7">
+          <div><h2 class="font-semibold text-base mb-2">1. Advance Booking</h2><p>Reservations must be made at least 3 days before the experience date.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">2. Cancellations &amp; Refunds</h2><p>Because sessions are prepared and scheduled in advance, confirmed reservations are generally non-refundable. Exceptions apply where cancellation or refund rights are required under applicable law. Please contact us before cancelling so we can review your request.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">3. Changes to Reservations</h2><p>Date or time changes are subject to studio availability and prior approval. Changes are not guaranteed.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">4. Cancellation by Dear Story</h2><p>If Dear Story cannot provide the booked experience, you will receive a full refund of the amount paid.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">5. Contact</h2><p>For cancellation, changes or refund inquiries, please email <a class="underline" href="mailto:dearmusicstudio@gmail.com">dearmusicstudio@gmail.com</a> with your booking details.</p></div>
+          <hr class="border-gray-200" />
+          <div><h2 class="font-semibold text-base mb-2">1. 사전 예약</h2><p>모든 체험은 체험일 최소 3일 전까지 예약해야 합니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">2. 취소 및 환불</h2><p>체험 일정과 준비가 사전에 확정되는 서비스 특성상, 확정된 예약은 원칙적으로 환불이 제한됩니다. 단, 관계 법령에 따라 취소 또는 환불이 인정되는 경우에는 해당 법령을 따릅니다. 취소를 원하시면 먼저 문의해 주시기 바랍니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">3. 일정 변경</h2><p>날짜 및 시간 변경은 스튜디오 예약 가능 여부와 사전 승인에 따라 결정되며, 변경이 보장되지는 않습니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">4. 디어스토리 사정으로 인한 취소</h2><p>디어스토리의 사정으로 예약된 체험을 제공할 수 없는 경우 결제 금액을 전액 환불합니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">5. 문의</h2><p>취소·변경·환불 문의는 예약 정보와 함께 <a class="underline" href="mailto:dearmusicstudio@gmail.com">dearmusicstudio@gmail.com</a>으로 보내주세요.</p></div>
+        </div>
+        <a href="/booking" class="inline-block mt-9 text-sm underline underline-offset-4">Back to Booking →</a>
+      </div>
+    </section>`
+  return c.html(layout('Cancellation & Refund Policy - Dear Story', content))
 })
 
 // Booking page

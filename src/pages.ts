@@ -447,6 +447,8 @@ export const bookingPage = (packageParam?: string) => `
                     class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm"></textarea>
         </div>
 
+        <p class="text-sm leading-6 text-gray-600">Please review our <a href="/cancellation-policy" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-black">Cancellation &amp; Refund Policy</a> before submitting your booking request.</p>
+
         <!-- Submit -->
         <button type="submit" class="w-full btn-modern py-5">
           SUBMIT BOOKING REQUEST
