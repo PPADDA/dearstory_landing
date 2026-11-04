@@ -795,8 +795,12 @@ backdrop-filter: blur(12px);
         </div>
       </div>
       <div class="border-t border-gray-800 pt-8 text-center">
-        <p class="text-gray-400 text-xs sm:text-sm mb-2">Business Name: 디어뮤직스튜디오 <span class="mx-2">|</span> Business Registration No.: 118-62-00712</p>
-        <p class="mb-3"><a href="/cancellation-policy" class="text-gray-400 hover:text-white underline underline-offset-4 text-xs sm:text-sm">Cancellation &amp; Refund Policy</a></p>
+        <div class="text-gray-400 text-xs sm:text-sm leading-relaxed mb-3 space-y-1">
+          <p>Business Name: 디어뮤직스튜디오 <span class="mx-2">|</span> Representative: 김연욱</p>
+          <p>Business Registration No.: 118-62-00712 <span class="mx-2">|</span> Phone: <a href="tel:+821022813775" class="hover:text-white transition">010-2281-3775</a></p>
+          <p>Business Address: 서울특별시 마포구 신촌로26길 6, 3층(노고산동)</p>
+        </div>
+        <p class="mb-3"><a href="/cancellation-policy" class="text-gray-400 hover:text-white underline underline-offset-4 text-xs sm:text-sm">Booking &amp; Usage Policy</a></p>
         <p class="text-gray-500 text-xs sm:text-sm">© 2026 Dear Story. All rights reserved.</p>
       </div>
     </div>
@@ -1795,31 +1799,33 @@ app.get('/gallery', (c) => {
   return c.html(layout('Gallery - Dear Story', galleryPage()))
 })
 
-// Cancellation and refund policy — public URL for customers and payment provider review.
+// Public booking, cancellation and music usage policy.
 app.get('/cancellation-policy', (c) => {
   const content = `
     <section class="bg-[#f6f5f2] text-[#181818] py-16 md:py-24 px-6">
       <div class="max-w-3xl mx-auto">
         <p class="text-xs uppercase tracking-[.22em] text-gray-500 mb-4">Dear Story · Booking Information</p>
-        <h1 class="font-serif text-4xl md:text-5xl mb-4" style="font-family:'Cormorant Garamond',serif">Cancellation &amp; Refund Policy</h1>
-        <p class="text-sm text-gray-500 mb-10">예약 취소 및 환불 규정</p>
-        <div class="bg-white border border-gray-200 p-7 md:p-10 space-y-7 text-sm leading-7">
-          <div><h2 class="font-semibold text-base mb-2">1. Advance Booking</h2><p>Reservations must be made at least 3 days before the experience date.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">2. Cancellations &amp; Refunds</h2><p>Because sessions are prepared and scheduled in advance, confirmed reservations are generally non-refundable. Exceptions apply where cancellation or refund rights are required under applicable law. Please contact us before cancelling so we can review your request.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">3. Changes to Reservations</h2><p>Date or time changes are subject to studio availability and prior approval. Changes are not guaranteed.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">4. Cancellation by Dear Story</h2><p>If Dear Story cannot provide the booked experience, you will receive a full refund of the amount paid.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">5. Contact</h2><p>For cancellation, changes or refund inquiries, please email <a class="underline" href="mailto:dearmusicstudio@gmail.com">dearmusicstudio@gmail.com</a> with your booking details.</p></div>
+        <h1 class="font-serif text-4xl md:text-5xl mb-4" style="font-family:'Cormorant Garamond',serif">Booking &amp; Usage Policy</h1>
+        <p class="text-sm text-gray-500 mb-10">예약 및 이용 정책</p>
+        <div class="bg-white border border-gray-200 p-7 md:p-10 space-y-8 text-sm leading-7">
+          <div><h2 class="font-semibold text-base mb-2">1. Booking &amp; Service Delivery</h2><p>Reservations must be made at least 3 days before the experience. The in-studio session lasts approximately 150 minutes on the reserved date. Completed audio files are delivered by email within 7 days after the experience, following vocal tuning, mixing and mastering.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">2. Reservation Changes</h2><p>Each reservation may be rescheduled only once, provided the change is requested at least 8 days before the originally scheduled experience date. Changes are subject to available studio dates and times. Changes requested within 7 days of the experience are not accepted.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">3. Cancellations &amp; Refunds</h2><p>Because sessions and custom music preparation are arranged in advance, confirmed reservations are generally non-refundable. Any cancellation or refund rights required by applicable law remain unaffected. If Dear Story is unable to provide the booked experience, the payment will be fully refunded.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">4. Music Rights &amp; Exclusive Use</h2><p>Custom songs are written, composed and arranged by the founder of Dear Story. Copyright remains with the creator. The customer receives an exclusive, worldwide, ongoing license to use their completed song, including personal listening, social media sharing, commercial use and independent music distribution. Dear Story will not sell or provide the same song to another customer. This license includes permissions necessary for distribution through music platforms.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">5. Credits &amp; Marketing</h2><p>When officially releasing the song, the customer must credit <strong>Dear Story</strong> for lyrics, composition and arrangement, reflecting the actual creative contributions. Dear Story will use the customer's song or recording for advertising, portfolios or other marketing only with the customer's prior permission. The Premium package offers optional assistance with official music distribution; customers may also release their music independently.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">6. Contact</h2><p>For booking changes, refunds or music usage inquiries, please email <a class="underline" href="mailto:dearmusicstudio@gmail.com">dearmusicstudio@gmail.com</a> with your booking details.</p></div>
           <hr class="border-gray-200" />
-          <div><h2 class="font-semibold text-base mb-2">1. 사전 예약</h2><p>모든 체험은 체험일 최소 3일 전까지 예약해야 합니다.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">2. 취소 및 환불</h2><p>체험 일정과 준비가 사전에 확정되는 서비스 특성상, 확정된 예약은 원칙적으로 환불이 제한됩니다. 단, 관계 법령에 따라 취소 또는 환불이 인정되는 경우에는 해당 법령을 따릅니다. 취소를 원하시면 먼저 문의해 주시기 바랍니다.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">3. 일정 변경</h2><p>날짜 및 시간 변경은 스튜디오 예약 가능 여부와 사전 승인에 따라 결정되며, 변경이 보장되지는 않습니다.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">4. 디어스토리 사정으로 인한 취소</h2><p>디어스토리의 사정으로 예약된 체험을 제공할 수 없는 경우 결제 금액을 전액 환불합니다.</p></div>
-          <div><h2 class="font-semibold text-base mb-2">5. 문의</h2><p>취소·변경·환불 문의는 예약 정보와 함께 <a class="underline" href="mailto:dearmusicstudio@gmail.com">dearmusicstudio@gmail.com</a>으로 보내주세요.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">1. 예약 및 서비스 제공</h2><p>모든 체험은 체험일 최소 3일 전까지 예약해야 합니다. 스튜디오 체험은 예약일에 약 150분간 진행되며, 보컬 튠·믹싱·마스터링을 거친 완성 음원은 체험일로부터 7일 이내에 이메일로 전달됩니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">2. 예약 일정 변경</h2><p>예약 일정은 최초 체험일 최소 8일 전까지 요청한 경우에 한하여 1회 변경할 수 있습니다. 변경은 스튜디오의 예약 가능한 날짜와 시간에 한해 진행됩니다. 체험일 7일 전부터는 일정 변경이 불가합니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">3. 취소 및 환불</h2><p>체험 일정과 맞춤 음악 제작이 사전에 준비되는 서비스 특성상, 확정된 예약은 원칙적으로 환불이 제한됩니다. 단, 관계 법령에 따른 취소·환불 권리는 제한되지 않습니다. 디어스토리의 사정으로 예약된 체험을 제공할 수 없는 경우 결제 금액을 전액 환불합니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">4. 저작권 및 독점적 이용</h2><p>맞춤형 음악은 디어스토리 대표가 직접 작사·작곡·편곡하며, 저작권은 창작자에게 귀속됩니다. 고객은 완성된 곡에 대해 지역 및 기간 제한 없이 독점적으로 이용할 권한을 제공받으며, 개인 감상, SNS 공유, 상업적 활용 및 직접 음원 발매가 가능합니다. 디어스토리는 동일한 곡을 다른 고객에게 판매하거나 제공하지 않습니다. 음원 유통 플랫폼을 통한 발매에 필요한 이용 권한도 포함됩니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">5. 크레딧 및 마케팅 활용</h2><p>고객이 음원을 정식 발매하는 경우, 실제 창작 기여에 따라 작사·작곡·편곡 크레딧에 <strong>Dear Story</strong>를 표기해야 합니다. 디어스토리는 고객의 사전 동의 없이 해당 음원이나 녹음물을 광고·포트폴리오 등 마케팅 목적으로 사용하지 않습니다. PREMIUM은 음원 유통 및 발매 대행을 제공하는 선택형 서비스이며, 고객은 직접 발매할 수도 있습니다.</p></div>
+          <div><h2 class="font-semibold text-base mb-2">6. 문의</h2><p>예약 변경, 환불 및 음원 이용 문의는 예약 정보와 함께 <a class="underline" href="mailto:dearmusicstudio@gmail.com">dearmusicstudio@gmail.com</a>으로 보내주세요.</p></div>
         </div>
         <a href="/booking" class="inline-block mt-9 text-sm underline underline-offset-4">Back to Booking →</a>
       </div>
     </section>`
-  return c.html(layout('Cancellation & Refund Policy - Dear Story', content))
+  return c.html(layout('Booking & Usage Policy - Dear Story', content))
 })
 
 // Booking page

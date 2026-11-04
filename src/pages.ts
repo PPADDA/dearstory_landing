@@ -447,7 +447,7 @@ export const bookingPage = (packageParam?: string) => `
                     class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm"></textarea>
         </div>
 
-        <p class="text-sm leading-6 text-gray-600">Please review our <a href="/cancellation-policy" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-black">Cancellation &amp; Refund Policy</a> before submitting your booking request.</p>
+        <p class="text-sm leading-6 text-gray-600">Please review our <a href="/cancellation-policy" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-black">Booking &amp; Usage Policy</a> before submitting your booking request.</p>
 
         <!-- Submit -->
         <button type="submit" class="w-full btn-modern py-5">
@@ -2337,6 +2337,36 @@ export const basicDetailPage = () => `
     </div>
   </section>
 
+
+
+
+  <!-- Package-specific booking and usage information -->
+  <section class="bg-[#FAF9F7] px-5 py-12 md:py-16" aria-labelledby="booking-usage-basic">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">BEFORE YOU BOOK</p>
+      <h2 id="booking-usage-basic" class="text-3xl md:text-5xl text-center mb-7 md:mb-10" style="font-family:'Cormorant Garamond',serif;">Booking &amp; Usage Information</h2>
+      <div class="border-t border-gray-200">
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Final Delivery</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Your finished recording is emailed within 7 days after the experience, following vocal tuning, mixing and mastering.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Booking Changes</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">One date change is allowed at least 8 days before the experience, subject to availability.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Cancellations & Refunds</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Bookings are generally non-refundable after confirmation, except where required by applicable law.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Cover Song Rights</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">This is a recording of an existing song. Sharing or commercially distributing the cover may require permission from the original rights holders. Dear Story does not grant rights to the original lyrics or composition.</p>
+        </div>
+      </div>
+      <div class="text-center mt-7"><a href="/cancellation-policy" class="inline-flex items-center gap-2 text-xs md:text-sm tracking-wide text-gray-800 underline underline-offset-4 hover:text-[#B44747]">View Full Booking &amp; Usage Policy <span aria-hidden="true">↗</span></a></div>
+    </div>
+  </section>
+
   <!-- Unified homepage-style CTA -->
   <section class="section-padding bg-black text-white">
     <div class="max-w-4xl mx-auto text-center">
@@ -2487,6 +2517,33 @@ export const signatureDetailPage = () => `
             <span>${item}</span>
           </div>`).join('')}
       </div>
+    </div>
+  </section>
+
+  <!-- Package-specific booking and usage information -->
+  <section class="bg-[#FAF9F7] px-5 py-12 md:py-16" aria-labelledby="booking-usage-signature">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">BEFORE YOU BOOK</p>
+      <h2 id="booking-usage-signature" class="text-3xl md:text-5xl text-center mb-7 md:mb-10" style="font-family:'Cormorant Garamond',serif;">Booking &amp; Usage Information</h2>
+      <div class="border-t border-gray-200">
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Final Delivery</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Your finished recording is emailed within 7 days after the experience, following vocal tuning, mixing and mastering.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Booking Changes</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">One date change is allowed at least 8 days before the experience, subject to availability.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Cancellations & Refunds</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Bookings are generally non-refundable after confirmation, except where required by applicable law.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Exclusive Music Usage</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Your original song is created exclusively for you. You may share, commercially use and independently release it. Copyright remains with the creator; credit Dear Story for lyrics, composition and arrangement when officially releasing it. We never provide the same song to other customers or use it for marketing without your prior consent.</p>
+        </div>
+      </div>
+      <div class="text-center mt-7"><a href="/cancellation-policy" class="inline-flex items-center gap-2 text-xs md:text-sm tracking-wide text-gray-800 underline underline-offset-4 hover:text-[#B44747]">View Full Booking &amp; Usage Policy <span aria-hidden="true">↗</span></a></div>
     </div>
   </section>
 
@@ -2646,6 +2703,33 @@ export const premiumDetailPage = () => `
             <span>${item}</span>
           </div>`).join('')}
       </div>
+    </div>
+  </section>
+
+  <!-- Package-specific booking and usage information -->
+  <section class="bg-[#FAF9F7] px-5 py-12 md:py-16" aria-labelledby="booking-usage-premium">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-xs tracking-[0.2em] text-gray-500 text-center mb-3">BEFORE YOU BOOK</p>
+      <h2 id="booking-usage-premium" class="text-3xl md:text-5xl text-center mb-7 md:mb-10" style="font-family:'Cormorant Garamond',serif;">Booking &amp; Usage Information</h2>
+      <div class="border-t border-gray-200">
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Final Delivery</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Your finished recording is emailed within 7 days after the experience, following vocal tuning, mixing and mastering.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Booking Changes</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">One date change is allowed at least 8 days before the experience, subject to availability.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Cancellations & Refunds</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Bookings are generally non-refundable after confirmation, except where required by applicable law.</p>
+        </div>
+        <div class="py-4 md:py-5 border-b border-gray-200 last:border-b-0 md:grid md:grid-cols-[190px_1fr] md:gap-8">
+          <h3 class="text-xs md:text-sm font-semibold tracking-wide text-gray-900 mb-2 md:mb-0">Exclusive Music Usage & Release</h3>
+          <p class="text-xs md:text-sm leading-6 text-gray-600">Your original song is exclusively yours to use, share and commercially release, while copyright remains with the creator. Dear Story handles official distribution as part of this package, with release timing arranged separately and Dear Story credited for lyrics, composition and arrangement. We never provide the song to other customers or use it for marketing without your prior consent.</p>
+        </div>
+      </div>
+      <div class="text-center mt-7"><a href="/cancellation-policy" class="inline-flex items-center gap-2 text-xs md:text-sm tracking-wide text-gray-800 underline underline-offset-4 hover:text-[#B44747]">View Full Booking &amp; Usage Policy <span aria-hidden="true">↗</span></a></div>
     </div>
   </section>
 
