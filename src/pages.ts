@@ -447,10 +447,15 @@ export const bookingPage = (packageParam?: string) => `
                     class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm"></textarea>
         </div>
 
-        <p class="text-sm leading-6 text-gray-600">Please review our <a href="/cancellation-policy" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-black">Booking &amp; Usage Policy</a> before submitting your booking request.</p>
+        <!-- Required booking and usage policy agreement -->
+        <label for="booking-policy-agree" class="flex items-start gap-3 cursor-pointer text-sm leading-6 text-gray-600">
+          <input type="checkbox" id="booking-policy-agree" name="booking_policy_agree" required
+                 class="mt-1.5 h-4 w-4 shrink-0 accent-black cursor-pointer">
+          <span>I have read and agree to the <a href="/cancellation-policy" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-black hover:opacity-70">Booking &amp; Usage Policy</a>, including the cancellation, refund, and rescheduling terms. <span aria-hidden="true">*</span></span>
+        </label>
 
         <!-- Submit -->
-        <button type="submit" class="w-full btn-modern py-5">
+        <button type="submit" id="booking-submit-button" disabled class="w-full btn-modern py-5 disabled:opacity-40 disabled:cursor-not-allowed">
           SUBMIT BOOKING REQUEST
         </button>
 
@@ -654,9 +659,20 @@ export const bookingPage = (packageParam?: string) => `
       return messengers;
     }
 
+    // Require explicit agreement before allowing the booking request.
+    const bookingPolicyAgree = document.getElementById('booking-policy-agree');
+    const bookingSubmitButton = document.getElementById('booking-submit-button');
+    bookingPolicyAgree.addEventListener('change', () => {
+      bookingSubmitButton.disabled = !bookingPolicyAgree.checked;
+    });
+
     // Form submission
     document.getElementById('booking-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!bookingPolicyAgree.checked) {
+        bookingPolicyAgree.focus();
+        return;
+      }
 
       const messengers = getMessengerData();
       if (messengers.length === 0) {
