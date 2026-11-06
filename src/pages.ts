@@ -467,10 +467,13 @@ export const bookingPage = (packageParam?: string) => `
   </section>
 
   <script>
-    // Set minimum date (3 days from now)
-    const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 3);
-    document.getElementById('booking_date').min = minDate.toISOString().split('T')[0];
+    // Limit booking dates to 3 days ahead through one calendar year from today.
+    const today = new Date();
+    const minDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3);
+    const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+    const formatBookingDate = d => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+    document.getElementById('booking_date').min = formatBookingDate(minDate);
+    document.getElementById('booking_date').max = formatBookingDate(maxDate);
 
     // Time labels
     const timeLabels = {
@@ -485,7 +488,8 @@ export const bookingPage = (packageParam?: string) => `
       const date = this.value;
       const timeSelect = document.getElementById('booking_time');
 
-      if (!date) {
+      if (!date || date < this.min || date > this.max) {
+        this.value = '';
         timeSelect.innerHTML = '<option value="">Select a date first</option>';
         return;
       }
@@ -524,7 +528,7 @@ export const bookingPage = (packageParam?: string) => `
       const selectedTime = params.get('time');
       const dateInput = document.getElementById('booking_date');
       const timeInput = document.getElementById('booking_time');
-      if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || selectedDate < dateInput.min) return;
+      if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || selectedDate < dateInput.min || selectedDate > dateInput.max) return;
       dateInput.value = selectedDate;
       if (!selectedTime) { dateInput.dispatchEvent(new Event('change')); return; }
       try {
@@ -2260,6 +2264,8 @@ export const basicDetailPage = () => `
       minDate.setDate(minDate.getDate() + 3);
       const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
       dateInput.min = localDate(minDate);
+      const today = new Date();
+      dateInput.max = localDate(new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()));
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2268,7 +2274,7 @@ export const basicDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        if (!date || date < dateInput.min) return;
+        if (!date || date < dateInput.min || date > dateInput.max) return;
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2295,9 +2301,9 @@ export const basicDetailPage = () => `
           message.textContent = 'Please try another date or refresh the page.';
         }
       });
-      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
+      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || dateInput.value < dateInput.min || dateInput.value > dateInput.max || !timeInput.value; });
       button.addEventListener('click', () => {
-        if (!dateInput.value || !timeInput.value) return;
+        if (!dateInput.value || dateInput.value < dateInput.min || dateInput.value > dateInput.max || !timeInput.value) return;
         const params = new URLSearchParams({package:'basic', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
@@ -2437,6 +2443,8 @@ export const signatureDetailPage = () => `
       minDate.setDate(minDate.getDate() + 3);
       const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
       dateInput.min = localDate(minDate);
+      const today = new Date();
+      dateInput.max = localDate(new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()));
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2445,7 +2453,7 @@ export const signatureDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        if (!date || date < dateInput.min) return;
+        if (!date || date < dateInput.min || date > dateInput.max) return;
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2472,9 +2480,9 @@ export const signatureDetailPage = () => `
           message.textContent = 'Please try another date or refresh the page.';
         }
       });
-      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
+      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || dateInput.value < dateInput.min || dateInput.value > dateInput.max || !timeInput.value; });
       button.addEventListener('click', () => {
-        if (!dateInput.value || !timeInput.value) return;
+        if (!dateInput.value || dateInput.value < dateInput.min || dateInput.value > dateInput.max || !timeInput.value) return;
         const params = new URLSearchParams({package:'signature', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });
@@ -2617,6 +2625,8 @@ export const premiumDetailPage = () => `
       minDate.setDate(minDate.getDate() + 3);
       const localDate = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
       dateInput.min = localDate(minDate);
+      const today = new Date();
+      dateInput.max = localDate(new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()));
       let requestCounter = 0;
       dateInput.addEventListener('change', async function () {
         const date = dateInput.value;
@@ -2625,7 +2635,7 @@ export const premiumDetailPage = () => `
         timeInput.innerHTML = '<option value="">Select date first</option>';
         button.disabled = true;
         message.textContent = '';
-        if (!date || date < dateInput.min) return;
+        if (!date || date < dateInput.min || date > dateInput.max) return;
         timeInput.innerHTML = '<option value="">Loading...</option>';
         try {
           const response = await fetch('/api/available-times?date=' + encodeURIComponent(date));
@@ -2652,9 +2662,9 @@ export const premiumDetailPage = () => `
           message.textContent = 'Please try another date or refresh the page.';
         }
       });
-      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || !timeInput.value; });
+      timeInput.addEventListener('change', () => { button.disabled = !dateInput.value || dateInput.value < dateInput.min || dateInput.value > dateInput.max || !timeInput.value; });
       button.addEventListener('click', () => {
-        if (!dateInput.value || !timeInput.value) return;
+        if (!dateInput.value || dateInput.value < dateInput.min || dateInput.value > dateInput.max || !timeInput.value) return;
         const params = new URLSearchParams({package:'premium', date:dateInput.value, time:timeInput.value});
         window.location.href = '/booking?' + params.toString();
       });

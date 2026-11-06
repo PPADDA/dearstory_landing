@@ -915,8 +915,12 @@ app.post('/api/bookings', async (c) => {
   const now = new Date()
   const minDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3)
   const bookingDate = new Date(data.booking_date + 'T00:00:00')
-  if (bookingDate < minDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data.booking_date || '') || Number.isNaN(bookingDate.getTime()) || bookingDate < minDate) {
     return c.json({ error: 'Bookings must be made at least 3 days in advance' }, 400)
+  }
+  const maxDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+  if (bookingDate > maxDate) {
+    return c.json({ error: 'Bookings can only be made within one year from today' }, 400)
   }
 
   // Validate the requested start time (10:00-21:00, on the hour)
