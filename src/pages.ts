@@ -720,7 +720,7 @@ export const bookingPage = (packageParam?: string) => `
 `;
 
 // ==================== PAYMENT PAGE ====================
-export const paymentPage = (bookingId: string) => `
+export const paymentPage = (bookingId: string, tossClientKey: string) => `
   <section class="section-padding" style="background: #f9f9f9; min-height: 80vh;">
     <div class="max-w-2xl mx-auto">
       <div class="text-center mb-10">
@@ -814,7 +814,7 @@ export const paymentPage = (bookingId: string) => `
   <script src="https://www.paypal.com/sdk/js?client-id=BAA1pPgZ9MocU387qFjGhDvDSWRcJ8tmMhNUACphk9gx8snOoSaeU9Zbo_s3ANNsuUqg46qNINoHYsvGVg&currency=USD&components=buttons"></script>
   <script>
     const bookingId = '${bookingId}';
-    const tossClientKey = 'test_ck_ma60RZblrqj70jRdxXQW8wzYWBn1';
+    const tossClientKey = ${JSON.stringify(tossClientKey)};
     let bookingData = null;
     let paypalRendered = false;
     let tossPayment = null;

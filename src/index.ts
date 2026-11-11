@@ -4,6 +4,7 @@ import { cors } from 'hono/cors'
 type Bindings = {
   DB: D1Database;
   TOSS_SECRET_KEY: string;
+  TOSS_CLIENT_KEY: string;
   DISCORD_WEBHOOK_URL: string;
   GALLERY_BUCKET: R2Bucket;
 }
@@ -1841,7 +1842,7 @@ app.get('/booking', (c) => {
 // Payment page
 app.get('/payment/:id', (c) => {
   const id = c.req.param('id')
-  return c.html(layout('Payment - Dear Story', paymentPage(id)))
+  return c.html(layout('Payment - Dear Story', paymentPage(id, c.env.TOSS_CLIENT_KEY || '')))
 })
 
 // Admin page
