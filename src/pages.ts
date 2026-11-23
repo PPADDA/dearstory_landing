@@ -196,10 +196,10 @@ export const experiencesPage = () => `
 
 // ==================== GALLERY PAGE ====================
 export const galleryPage = () => `
-  <section class="relative h-[48vh] flex items-center justify-center bg-black">
+  <section class="flex items-center justify-center bg-black" style="padding:44px 22px 42px; min-height:0;">
     <div class="relative z-10 text-center text-white px-4">
-      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-70">DEARSTORY MUSIC</p>
-      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">Our Work</h1>
+      <p class="text-[10px] tracking-[0.08em] mb-[10px] opacity-70">DEARSTORY MUSIC</p>
+      <h1 class="font-light" style="font-family: 'Cormorant Garamond', serif; font-size:clamp(36px,4vw,54px); line-height:1.05; margin:0;">Our Work</h1>
     </div>
   </section>
 
@@ -311,10 +311,10 @@ export const galleryPage = () => `
 // ==================== BOOKING PAGE ====================
 export const bookingPage = (packageParam?: string) => `
   <!-- Hero Section -->
-  <section class="relative h-[50vh] flex items-center justify-center bg-black">
+  <section class="flex items-center justify-center bg-black" style="padding:44px 22px 42px; min-height:0;">
     <div class="relative z-10 text-center text-white px-4">
-      <p class="text-sm uppercase tracking-[0.3em] mb-4 opacity-90">RESERVATION</p>
-      <h1 class="text-5xl md:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif;">
+      <p class="text-[10px] tracking-[0.08em] mb-[10px] opacity-90">RESERVATION</p>
+      <h1 class="font-light" style="font-family: 'Cormorant Garamond', serif; font-size:clamp(36px,4vw,54px); line-height:1.05; margin:0;">
         Book Your Session
       </h1>
     </div>
