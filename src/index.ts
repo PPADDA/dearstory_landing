@@ -877,6 +877,104 @@ async function sendBookingNotification(env: Bindings, booking: any, provider: st
 
 // ========== API ROUTES ==========
 
+
+// Booking products are persisted in D1. Core products keep their existing pricing.
+const CORE_PRODUCTS = [
+  { slug: 'basic', name: 'Basic - Cover Song Recording', price_krw: 400000, extra_krw: 100000, price_usd: 310, extra_usd: 80, sort_order: 0 },
+  { slug: 'signature', name: 'Signature - Create Your Own K-pop Song', price_krw: 600000, extra_krw: 150000, price_usd: 470, extra_usd: 120, sort_order: 1 },
+  { slug: 'premium', name: 'Premium - Your Song + Album Release', price_krw: 700000, extra_krw: 150000, price_usd: 540, extra_usd: 120, sort_order: 2 }
+]
+// Event prices are entered in KRW only. USD is calculated on the server.
+// Cache the public exchange rate for one hour; fail closed if it cannot be obtained.
+let eventUsdRateCache: { krwPerUsd: number; expires: number } | null = null
+async function krwPerUsd(): Promise<number> {
+  if (eventUsdRateCache && eventUsdRateCache.expires > Date.now()) return eventUsdRateCache.krwPerUsd
+  try {
+    const response = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(4000) })
+    if (!response.ok) throw new Error('Exchange rate request failed')
+    const data = await response.json() as any
+    const rate = Number(data?.rates?.KRW)
+    if (!Number.isFinite(rate) || rate < 500 || rate > 3000) throw new Error('Invalid KRW exchange rate')
+    eventUsdRateCache = { krwPerUsd: rate, expires: Date.now() + 60 * 60 * 1000 }
+    return rate
+  } catch (error) {
+    // A previously retrieved rate is safer than an arbitrary invented fallback.
+    if (eventUsdRateCache) return eventUsdRateCache.krwPerUsd
+    throw new Error('USD exchange rate temporarily unavailable')
+  }
+}
+async function eventUsdPrices(priceKrw: number, extraKrw: number) {
+  const rate = await krwPerUsd()
+  return [Math.round(priceKrw / rate * 100) / 100, Math.round(extraKrw / rate * 100) / 100]
+}
+async function withEventUsdPrices(products: any[]) {
+  if (!products.some(p => !p.is_core)) return products
+  const rate = await krwPerUsd()
+  return products.map(p => p.is_core ? p : {
+    ...p,
+    price_usd: Math.round(Number(p.price_krw) / rate * 100) / 100,
+    extra_usd: Math.round(Number(p.extra_krw) / rate * 100) / 100
+  })
+}
+async function bookingProducts(db: D1Database) {
+  const saved = (await db.prepare('SELECT * FROM booking_products ORDER BY sort_order, id').all()).results as any[]
+  return [...CORE_PRODUCTS.map(p => ({ ...p, is_visible: 1, start_date: null, end_date: null, ...saved.find(s => s.slug === p.slug), is_core: 1 })), ...saved.filter(p => !CORE_PRODUCTS.some(c => c.slug === p.slug)).map(p => ({ ...p, is_core: 0 }))]
+}
+function adminProductsAuthorized(c: any) {
+  try {
+    const token = String(c.req.header('X-Admin-Token') || '')
+    const decoded = atob(token)
+    const prefix = 'dkdldb0!!!:' // Existing admin login credential format.
+    const issued = Number(decoded.slice(prefix.length))
+    return decoded.startsWith(prefix) && Number.isFinite(issued) && issued <= Date.now() && Date.now() - issued < 24 * 60 * 60 * 1000
+  } catch { return false }
+}
+app.get('/api/booking-products', async c => {
+  let all: any[]
+  try { all = await withEventUsdPrices(await bookingProducts(c.env.DB)) }
+  catch { return c.json({ error: 'USD exchange rate temporarily unavailable' }, 503) }
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
+  return c.json(all.filter(p => Number(p.is_visible) === 1 && (!p.end_date || p.end_date >= today)))
+})
+app.get('/api/admin/booking-products', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({ error: 'Unauthorized' }, 401)
+  return c.json(await bookingProducts(c.env.DB))
+})
+app.post('/api/admin/booking-products', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const d = await c.req.json() as any
+  const slug = String(d.slug || '').trim().toLowerCase()
+  const name = String(d.name || '').trim()
+  if (!/^[a-z0-9-]{3,50}$/.test(slug) || !name || name.length > 100 || CORE_PRODUCTS.some(p => p.slug === slug)) return c.json({ error: 'Invalid event product' }, 400)
+  const krw = ['price_krw', 'extra_krw'].map(k => Number(d[k]))
+  const nums = [...krw, 0, 0]
+  if (nums.some(n => !Number.isFinite(n) || n < 0)) return c.json({ error: 'Invalid prices' }, 400)
+  if (d.start_date && d.end_date && d.start_date > d.end_date) return c.json({ error: 'Invalid date range' }, 400)
+  // Database USD columns remain for backward compatibility; prices are derived in public API and checkout.
+  try {
+    await c.env.DB.prepare('INSERT INTO booking_products (slug,name,price_krw,extra_krw,price_usd,extra_usd,is_visible,sort_order,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)')
+      .bind(slug,name,...nums,d.is_visible ? 1 : 0,Number(d.sort_order || 10),d.start_date || null,d.end_date || null).run()
+    return c.json({ success: true })
+  } catch { return c.json({ error: 'Product slug already exists' }, 409) }
+})
+app.patch('/api/admin/booking-products/:slug', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const slug = c.req.param('slug')
+  const d = await c.req.json() as any
+  const core = CORE_PRODUCTS.find(p => p.slug === slug)
+  const existing = (await bookingProducts(c.env.DB)).find(p => p.slug === slug)
+  if (!existing) return c.json({ error: 'Not found' }, 404)
+  const name = core ? core.name : String(d.name ?? existing.name).trim()
+  const values = core ? [core.price_krw,core.extra_krw,core.price_usd,core.extra_usd] : [Number(d.price_krw ?? existing.price_krw), Number(d.extra_krw ?? existing.extra_krw), 0, 0]
+  if (!name || name.length > 100 || values.some(n => !Number.isFinite(n) || n < 0)) return c.json({ error: 'Invalid product' }, 400)
+  const start = d.start_date ?? existing.start_date ?? null
+  const end = d.end_date ?? existing.end_date ?? null
+  if (start && end && start > end) return c.json({ error: 'Invalid date range' }, 400)
+  await c.env.DB.prepare('INSERT INTO booking_products (slug,name,price_krw,extra_krw,price_usd,extra_usd,is_visible,sort_order,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(slug) DO UPDATE SET name=excluded.name,price_krw=excluded.price_krw,extra_krw=excluded.extra_krw,price_usd=excluded.price_usd,extra_usd=excluded.extra_usd,is_visible=excluded.is_visible,sort_order=excluded.sort_order,start_date=excluded.start_date,end_date=excluded.end_date')
+    .bind(slug,name,...values,d.is_visible === undefined ? Number(existing.is_visible) : (d.is_visible ? 1 : 0),Number(d.sort_order ?? existing.sort_order),start || null,end || null).run()
+  return c.json({ success: true })
+})
+
 // Get all bookings (admin)
 app.get('/api/bookings', async (c) => {
   const { env } = c
@@ -891,26 +989,24 @@ app.post('/api/bookings', async (c) => {
   const { env } = c
   const data = await c.req.json()
 
-  // Calculate price based on package and number of people
-  const pricesKRW: Record<string, { base: number, additional: number }> = {
-    basic: { base: 400000, additional: 100000 },
-    signature: { base: 600000, additional: 150000 },
-    premium: { base: 700000, additional: 150000 }
+  const product = (await bookingProducts(env.DB)).find(p => p.slug === data.package_type)
+  const numPeople = Number(data.num_people)
+  const todayKST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
+  if (!product || Number(product.is_visible) !== 1 || (product.end_date && product.end_date < todayKST)) return c.json({ error: 'This product is unavailable' }, 400)
+  if (!Number.isInteger(numPeople) || numPeople < 1 || numPeople > 4) return c.json({ error: 'Invalid number of participants' }, 400)
+  if (product.start_date && data.booking_date < product.start_date || product.end_date && data.booking_date > product.end_date) return c.json({ error: 'This event is not available on the selected date' }, 400)
+  const totalPrice = Number(product.price_krw) + Number(product.extra_krw) * (numPeople - 1)
+  let totalPriceUSD: number
+  if (product.is_core) {
+    totalPriceUSD = Number(product.price_usd) + Number(product.extra_usd) * (numPeople - 1)
+  } else {
+    try {
+      const rate = await krwPerUsd()
+      totalPriceUSD = Math.round(totalPrice / rate * 100) / 100
+    } catch {
+      return c.json({ error: 'USD exchange rate is temporarily unavailable. Please try again shortly.' }, 503)
+    }
   }
-  const pricesUSD: Record<string, { base: number, additional: number }> = {
-    basic: { base: 310, additional: 80 },
-    signature: { base: 470, additional: 120 },
-    premium: { base: 540, additional: 120 }
-  }
-
-  const krw = pricesKRW[data.package_type]
-  const usd = pricesUSD[data.package_type]
-  if (!krw || !usd) {
-    return c.json({ error: 'Invalid package type' }, 400)
-  }
-
-  const totalPrice = krw.base + (krw.additional * (data.num_people - 1))
-  const totalPriceUSD = usd.base + (usd.additional * (data.num_people - 1))
 
   // Check if booking date is at least 3 days from now
   const now = new Date()

@@ -328,9 +328,7 @@ export const bookingPage = (packageParam?: string) => `
         <div>
           <label class="block text-sm uppercase tracking-wider mb-3">Package *</label>
           <select id="package" name="package" required class="w-full p-4 border border-gray-300 focus:border-black focus:outline-none text-sm">
-            <option value="basic" ${packageParam === 'basic' ? 'selected' : ''}>Basic - Cover Song Recording</option>
-            <option value="signature" ${packageParam === 'signature' ? 'selected' : ''}>Signature - Create Your Own K-pop Song</option>
-            <option value="premium" ${packageParam === 'premium' ? 'selected' : ''}>Premium - Your Song + Album Release</option>
+            <option value="">Loading experiences...</option>
           </select>
         </div>
 
@@ -548,22 +546,47 @@ export const bookingPage = (packageParam?: string) => `
       } catch (error) { console.error('Unable to preselect booking time', error); }
     })();
 
-    // Price calculation
-    const prices = {
-      basic: { 1: 400000, 2: 500000, 3: 600000, 4: 700000 },
-      signature: { 1: 600000, 2: 750000, 3: 900000, 4: 1050000 },
-      premium: { 1: 700000, 2: 850000, 3: 1000000, 4: 1150000 }
-    };
-
-    function updatePrice() {
-      const packageType = document.getElementById('package').value;
-      const numPeople = parseInt(document.getElementById('num_people').value);
-      const price = prices[packageType][numPeople];
-      document.getElementById('total-price').textContent = price.toLocaleString();
+    // Load the products and pricing controlled in Admin.
+    const prices = {};
+    const preselectedProduct = '${packageParam || 'basic'}';
+    async function loadBookingProducts() {
+      const select = document.getElementById('package');
+      try {
+        const response = await axios.get('/api/booking-products');
+        const products = response.data;
+        select.innerHTML = '';
+        products.forEach(p => {
+          prices[p.slug] = p;
+          const option = document.createElement('option');
+          option.value = p.slug;
+          option.textContent = p.name;
+          select.appendChild(option);
+        });
+        if (!products.length) { select.innerHTML = '<option value="">No experiences available</option>'; return; }
+        if (products.some(p => p.slug === preselectedProduct)) select.value = preselectedProduct;
+        updatePrice();
+      } catch (error) {
+        select.innerHTML = '<option value="">Unable to load experiences</option>';
+        console.error(error);
+      }
     }
-
+    function updatePrice() {
+      const product = prices[document.getElementById('package').value];
+      const count = Number(document.getElementById('num_people').value);
+      document.getElementById('total-price').textContent = product ? (Number(product.price_krw) + (count - 1) * Number(product.extra_krw)).toLocaleString() : '—';
+      const note = document.getElementById('participant-price-note');
+      if (product) note.textContent = 'The base price includes 1 participant. Additional participants: KRW ' + Number(product.extra_krw).toLocaleString() + ' per person. All participants will record one song together.';
+      const dateInput = document.getElementById('booking_date');
+      if (product && dateInput) {
+        const earliest = product.start_date && product.start_date > formatBookingDate(minDate) ? product.start_date : formatBookingDate(minDate);
+        const latest = product.end_date && product.end_date < formatBookingDate(maxDate) ? product.end_date : formatBookingDate(maxDate);
+        dateInput.min = earliest; dateInput.max = latest;
+        if (dateInput.value && (dateInput.value < earliest || dateInput.value > latest)) { dateInput.value = ''; document.getElementById('booking_time').innerHTML = '<option value="">Select a date first</option>'; }
+      }
+    }
     document.getElementById('package').addEventListener('change', updatePrice);
     document.getElementById('num_people').addEventListener('change', updatePrice);
+    loadBookingProducts();
 
     // Messenger dropdown logic
     const messengerPlaceholders = {
@@ -1076,7 +1099,7 @@ export const adminPage = () => `
     <div class="max-w-7xl mx-auto">
       <!-- Tab Navigation -->
       <div class="bg-white border-b border-gray-200 mb-8">
-        <div class="flex space-x-8 px-8">
+        <div class="flex space-x-8 px-8 overflow-x-auto">
           <button onclick="showTab('dashboard')" id="tab-dashboard" class="py-4 text-sm uppercase tracking-wider border-b-2 border-black">
             Dashboard
           </button>
@@ -1089,10 +1112,32 @@ export const adminPage = () => `
           <button onclick="showTab('gallery')" id="tab-gallery" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
             Gallery
           </button>
+          <button onclick="showTab('products'); loadBookingProductAdmin()" id="tab-products" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">Booking Products</button>
           <button onclick="showTab('promos')" id="tab-promos" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
             Promo Codes
           </button>
 
+        </div>
+      </div>
+
+      <div id="content-products" class="tab-content hidden">
+        <div class="bg-white p-6 md:p-8 border border-gray-200 mb-6">
+          <h2 class="text-3xl mb-2">Booking Products</h2>
+          <p class="text-sm text-gray-500 mb-5">Manage booking visibility, order and limited-time event products. Core product prices remain fixed.</p>
+          <div id="booking-product-admin-list" class="space-y-3 mb-8">Loading...</div>
+          <h3 class="text-2xl mb-2">Add Event Product</h3>
+          <p class="text-xs text-gray-500 mb-4">Enter KRW prices only. USD prices are converted automatically at the current exchange rate when a customer books.</p>
+          <form id="event-product-form" class="grid md:grid-cols-2 gap-3">
+            <input name="slug" required pattern="[a-z0-9-]{3,50}" placeholder="ID (e.g. christmas-special)" class="p-3 border">
+            <input name="name" required placeholder="Display name" class="p-3 border">
+            <input name="price_krw" type="number" min="0" required placeholder="Base price (KRW)" class="p-3 border">
+            <input name="extra_krw" type="number" min="0" required placeholder="Extra participant (KRW)" class="p-3 border">
+            <label class="text-sm">First experience date<input name="start_date" type="date" class="block p-3 border w-full"></label>
+            <label class="text-sm">Last experience date<input name="end_date" type="date" class="block p-3 border w-full"></label>
+            <label class="flex items-center gap-2 text-sm"><input name="is_visible" type="checkbox" checked> Visible in booking</label>
+            <button class="bg-black text-white p-3" type="submit">CREATE EVENT PRODUCT</button>
+          </form>
+          <p id="booking-product-admin-status" class="text-sm mt-4"></p>
         </div>
       </div>
 
@@ -1458,6 +1503,60 @@ export const adminPage = () => `
   </style>
 
   <script>
+    function productAdminHeaders() { return { 'X-Admin-Token': sessionStorage.getItem('admin_token') || '' }; }
+    async function loadBookingProductAdmin() {
+      const container = document.getElementById('booking-product-admin-list');
+      try {
+        const result = await axios.get('/api/admin/booking-products', { headers: productAdminHeaders() });
+        container.replaceChildren();
+        result.data.forEach(p => {
+          const row = document.createElement('div');
+          row.className = 'border p-4 flex flex-wrap gap-3 items-center';
+          const name = document.createElement('span');
+          name.className = 'font-medium flex-1 min-w-40'; name.textContent = p.name;
+          const order = document.createElement('input');
+          order.type = 'number'; order.value = p.sort_order; order.className = 'border p-2 w-16'; order.title = 'Display order';
+          const visible = document.createElement('input');
+          visible.type = 'checkbox'; visible.checked = Number(p.is_visible) === 1;
+          const label = document.createElement('label'); label.className = 'text-sm flex items-center gap-2'; label.append(visible, 'Visible');
+          const save = document.createElement('button'); save.textContent = 'Save'; save.className = 'bg-black text-white px-4 py-2 text-sm';
+          save.onclick = async () => {
+            try {
+              await axios.patch('/api/admin/booking-products/' + encodeURIComponent(p.slug), { is_visible: visible.checked, sort_order: Number(order.value) }, { headers: productAdminHeaders() });
+              document.getElementById('booking-product-admin-status').textContent = 'Saved ' + p.name;
+              await loadBookingProductAdmin();
+            } catch(e) { alert(e.response?.data?.error || 'Save failed'); }
+          };
+          row.append(name, label, order, save);
+          if (!p.is_core) {
+            const edit = document.createElement('button'); edit.className = 'border px-3 py-2 text-sm'; edit.textContent = 'Edit price / dates';
+            edit.onclick = async () => {
+              const next = { ...p };
+              for (const key of ['name','price_krw','extra_krw','start_date','end_date']) {
+                const value = prompt(key, next[key] ?? '');
+                if (value === null) return;
+                next[key] = value;
+              }
+              try { await axios.patch('/api/admin/booking-products/' + encodeURIComponent(p.slug), next, { headers: productAdminHeaders() }); await loadBookingProductAdmin(); }
+              catch(e) { alert(e.response?.data?.error || 'Update failed'); }
+            };
+            row.append(edit);
+          }
+          container.append(row);
+        });
+      } catch(e) { container.textContent = e.response?.data?.error || 'Unable to load products'; }
+    }
+    document.getElementById('event-product-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      data.is_visible = e.target.elements.is_visible.checked;
+      try {
+        await axios.post('/api/admin/booking-products', data, { headers: productAdminHeaders() });
+        e.target.reset(); await loadBookingProductAdmin();
+        document.getElementById('booking-product-admin-status').textContent = 'Event product created.';
+      } catch(error) { document.getElementById('booking-product-admin-status').textContent = error.response?.data?.error || 'Unable to create product'; }
+    });
+
     function showTab(tab) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('[id^="tab-"]').forEach(el => {
