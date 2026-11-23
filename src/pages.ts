@@ -1561,6 +1561,22 @@ export const adminPage = () => `
               catch(e) { alert(e.response?.data?.error || 'Update failed'); }
             };
             row.append(edit);
+            const remove = document.createElement('button');
+            remove.type = 'button'; remove.textContent = 'Delete';
+            remove.className = 'border border-red-300 text-red-700 px-3 py-2 text-sm hover:bg-red-50';
+            remove.onclick = async () => {
+              if (!confirm('Delete "' + p.name + '" permanently? This cannot be undone.')) return;
+              remove.disabled = true;
+              try {
+                await axios.delete('/api/admin/booking-products/' + encodeURIComponent(p.slug), { headers: productAdminHeaders() });
+                document.getElementById('booking-product-admin-status').textContent = 'Deleted ' + p.name;
+                await loadBookingProductAdmin();
+              } catch (e) {
+                alert(e.response?.data?.error || 'Delete failed');
+                remove.disabled = false;
+              }
+            };
+            row.append(remove);
           }
           container.append(row);
         });

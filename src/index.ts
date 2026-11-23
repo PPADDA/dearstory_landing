@@ -978,6 +978,21 @@ app.patch('/api/admin/booking-products/:slug', async c => {
 })
 
 
+// Delete unused event booking products only. Preserve core packages and all booking history.
+app.delete('/api/admin/booking-products/:slug', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const slug = c.req.param('slug')
+  if (CORE_PRODUCTS.some(p => p.slug === slug)) return c.json({ error: 'Core products cannot be deleted' }, 403)
+  const product = await c.env.DB.prepare('SELECT slug FROM booking_products WHERE slug = ?').bind(slug).first()
+  if (!product) return c.json({ error: 'Product not found' }, 404)
+  const booking = await c.env.DB.prepare('SELECT id FROM bookings WHERE package_type = ? LIMIT 1').bind(slug).first()
+  if (booking) return c.json({ error: 'This product has booking history. Hide it using Visible instead.' }, 409)
+  const event = await c.env.DB.prepare('SELECT slug FROM events WHERE product_slug = ? LIMIT 1').bind(slug).first()
+  if (event) return c.json({ error: 'This product is linked to an event page. Unlink or remove the event page first.' }, 409)
+  await c.env.DB.prepare('DELETE FROM booking_products WHERE slug = ?').bind(slug).run()
+  return c.json({ success: true })
+})
+
 // Event editorial content is separate from booking product visibility.
 const eventDateKST = () => new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Seoul'})
 const eventRow = (r:any) => ({...r, ended: !!r.end_date && r.end_date < eventDateKST(), bookable: Number(r.is_published)===1 && Number(r.is_visible)===1 && (!r.end_date || r.end_date >= eventDateKST())})
