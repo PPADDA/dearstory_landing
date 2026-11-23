@@ -1113,6 +1113,7 @@ export const adminPage = () => `
             Gallery
           </button>
           <button onclick="showTab('products'); loadBookingProductAdmin()" id="tab-products" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">Booking Products</button>
+          <button onclick="showTab('events'); loadEventsAdmin()" id="tab-events" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">Events</button>
           <button onclick="showTab('promos')" id="tab-promos" class="py-4 text-sm uppercase tracking-wider border-b-2 border-transparent hover:border-gray-300">
             Promo Codes
           </button>
@@ -1138,6 +1139,25 @@ export const adminPage = () => `
             <button class="bg-black text-white p-3" type="submit">CREATE EVENT PRODUCT</button>
           </form>
           <p id="booking-product-admin-status" class="text-sm mt-4"></p>
+        </div>
+      </div>
+
+      <div id="content-events" class="tab-content hidden">
+        <div class="bg-white p-6 md:p-8 border border-gray-200 mb-6">
+          <h2 class="text-3xl mb-2">Events</h2><p class="text-sm text-gray-500 mb-6">Manage public event pages. Create the corresponding event product under Booking Products first. Publishing an event does not automatically enable booking.</p>
+          <div id="events-admin-list" class="space-y-4 mb-8">Loading...</div>
+          <h3 class="text-2xl mb-3">Create Event Page</h3>
+          <form id="events-admin-form" class="grid md:grid-cols-2 gap-3">
+            <input name="slug" required pattern="[a-z0-9-]{3,50}" placeholder="Event URL ID (e.g. christmas-special)" class="p-3 border">
+            <input name="product_slug" required placeholder="Booking product ID" class="p-3 border">
+            <input name="title" required placeholder="Event title" class="p-3 border">
+            <input name="subtitle" placeholder="Short subtitle" class="p-3 border">
+            <textarea name="description" placeholder="Event description" rows="4" class="p-3 border md:col-span-2"></textarea>
+            <textarea name="details" placeholder="Additional details" rows="4" class="p-3 border md:col-span-2"></textarea>
+            <input name="sort_order" type="number" value="10" placeholder="Display order" class="p-3 border">
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_published" checked> Published on website</label>
+            <button type="submit" class="bg-black text-white p-3 md:col-span-2">CREATE EVENT</button>
+          </form><p id="events-admin-status" class="text-sm mt-4"></p>
         </div>
       </div>
 
@@ -1555,6 +1575,46 @@ export const adminPage = () => `
         e.target.reset(); await loadBookingProductAdmin();
         document.getElementById('booking-product-admin-status').textContent = 'Event product created.';
       } catch(error) { document.getElementById('booking-product-admin-status').textContent = error.response?.data?.error || 'Unable to create product'; }
+    });
+
+
+    async function loadEventsAdmin() {
+      const container=document.getElementById('events-admin-list');
+      const headers=productAdminHeaders();
+      try {
+        const response=await axios.get('/api/admin/events',{headers});
+        container.replaceChildren();
+        if(!response.data.length) container.textContent='No event pages yet.';
+        response.data.forEach(e=>{
+          const card=document.createElement('div');card.className='border p-4 space-y-3';
+          const heading=document.createElement('p');heading.className='font-medium';heading.textContent=e.title+' · /events/'+e.slug;
+          const form=document.createElement('form');form.className='grid md:grid-cols-2 gap-3';
+          const fields=[['title','Title'],['subtitle','Subtitle'],['description','Description'],['details','Details'],['sort_order','Display order']];
+          fields.forEach(([key,label])=>{
+            const wrap=document.createElement('label');wrap.className='text-xs';wrap.textContent=label;
+            const field=key==='description'||key==='details'?document.createElement('textarea'):document.createElement('input');
+            field.name=key;field.value=e[key]??'';field.className='block border p-2 w-full mt-1 text-sm';
+            if(key==='sort_order')field.type='number';if(key==='description'||key==='details')wrap.className+=' md:col-span-2';
+            wrap.append(field);form.append(wrap);
+          });
+          const published=document.createElement('label');published.className='text-sm flex gap-2 items-center';
+          const check=document.createElement('input');check.type='checkbox';check.checked=Number(e.is_published)===1;published.append(check,'Published');form.append(published);
+          const save=document.createElement('button');save.type='submit';save.className='bg-black text-white p-3 text-sm';save.textContent='SAVE EVENT';form.append(save);
+          form.onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(form).entries());d.is_published=check.checked;try{await axios.patch('/api/admin/events/'+encodeURIComponent(e.slug),d,{headers:productAdminHeaders()});await loadEventsAdmin()}catch(err){alert(err.response?.data?.error||'Save failed')}};
+          const coverForm=document.createElement('form');coverForm.className='flex flex-wrap gap-3 items-center';
+          const file=document.createElement('input');file.type='file';file.accept='image/jpeg,image/png,image/webp';file.required=true;file.className='text-xs';
+          const upload=document.createElement('button');upload.type='submit';upload.textContent='UPLOAD / REPLACE COVER';upload.className='border px-4 py-2 text-xs';
+          coverForm.append(file,upload);coverForm.onsubmit=async ev=>{ev.preventDefault();const data=new FormData();data.append('image',file.files[0]);try{await axios.post('/api/admin/events/'+encodeURIComponent(e.slug)+'/cover',data,{headers:productAdminHeaders()});await loadEventsAdmin()}catch(err){alert(err.response?.data?.error||'Upload failed')}};
+          const link=document.createElement('a');link.href='/events/'+encodeURIComponent(e.slug);link.target='_blank';link.rel='noopener';link.textContent='View public page →';link.className='text-xs underline';
+          if(e.cover_url){const img=document.createElement('img');img.src=e.cover_url;img.alt='Cover';img.className='w-36 h-24 object-cover';card.append(img)}
+          card.append(heading,form,coverForm,link);container.append(card);
+        });
+      } catch(err){container.textContent=err.response?.data?.error||'Unable to load events'}
+    }
+    document.getElementById('events-admin-form').addEventListener('submit',async ev=>{
+      ev.preventDefault();const form=ev.target,d=Object.fromEntries(new FormData(form).entries());d.is_published=form.elements.is_published.checked;
+      try{await axios.post('/api/admin/events',d,{headers:productAdminHeaders()});form.reset();await loadEventsAdmin();document.getElementById('events-admin-status').textContent='Event created.'}
+      catch(err){document.getElementById('events-admin-status').textContent=err.response?.data?.error||'Create failed'}
     });
 
     function showTab(tab) {
@@ -2867,3 +2927,24 @@ export const premiumDetailPage = () => `
     </div>
   </section>
 `
+
+// ==================== PUBLIC EVENTS ====================
+export const eventsPage = () => `
+<style>
+.ds-events{background:#f1f0ed;color:#191919;min-height:75vh}.ds-events .hero{background:#0b0b0b;color:#fff;text-align:center;padding:48px 20px 45px}.ds-events .hero h1{font:400 clamp(40px,6vw,65px) 'Cormorant Garamond',serif;letter-spacing:.03em}.ds-events .eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#a6a09a}.ds-events .wrap{max-width:1160px;margin:auto;padding:75px 24px 110px}.ds-events .section-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #d4d0ca;padding-bottom:15px;margin-bottom:28px}.ds-events .section-head h2{font:400 32px 'Cormorant Garamond',serif}.ds-events .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}.ds-events .event-card{display:block;background:#fff;color:#181818}.ds-events .cover{aspect-ratio:4/5;background:#dedbd5;overflow:hidden;display:flex;align-items:center;justify-content:center}.ds-events .cover img{width:100%;height:100%;object-fit:cover;transition:transform .5s}.ds-events .event-card:hover img{transform:scale(1.025)}.ds-events .cover-placeholder{font:400 44px 'Cormorant Garamond',serif;text-align:center;letter-spacing:.04em;color:#68645e}.ds-events .info{padding:15px 16px 17px}.ds-events .meta{font-size:10px;letter-spacing:.13em;color:#89847e;text-transform:uppercase}.ds-events .info h3{font:400 18px/1.35 'Cormorant Garamond',serif;margin:0}.ds-events .info p{font-size:12px;line-height:1.8;color:#69645e}.ds-events .bottom{display:flex;justify-content:space-between;align-items:center;margin-top:24px;font-size:12px}.ds-events .arrow{font-size:11px;letter-spacing:.1em}.ds-events .empty{padding:50px 0;color:#888;font-size:13px}.ds-events .archive{margin-top:75px}@media(max-width:700px){.ds-events .wrap{padding:40px 18px 70px}.ds-events .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ds-events .info{padding:12px 10px 16px}.ds-events .info h3{font-size:13px;line-height:1.4;margin:0}}
+</style>
+<main class="ds-events"><section class="hero"><p class="eyebrow">SPECIAL MOMENTS AT DEAR STORY</p><h1>EVENTS</h1></section><div class="wrap"><section><div class="section-head"><h2>Current Events</h2><span class="eyebrow">Limited Experiences</span></div><div class="cards" id="ds-active-events"><p class="empty">Loading events...</p></div></section><section class="archive" id="ds-archive-section" hidden><div class="section-head"><h2>Past Events</h2><span class="eyebrow">Archive</span></div><div class="cards" id="ds-past-events"></div></section></div></main>
+<script>
+(function(){
+const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const card=e=>'<a class="event-card" href="/events/'+encodeURIComponent(e.slug)+'"><div class="cover">'+(e.cover_url?'<img loading="lazy" src="'+esc(e.cover_url)+'" alt="'+esc(e.title)+'">':'<div class="cover-placeholder">Dear Story<br>Special Event</div>')+'</div><div class="info"><h3>'+esc(e.title)+'</h3></div></a>';
+fetch('/api/events').then(r=>{if(!r.ok)throw Error();return r.json()}).then(items=>{const active=items.filter(x=>!x.ended),past=items.filter(x=>x.ended);document.getElementById('ds-active-events').innerHTML=active.length?active.map(card).join(''):'<p class="empty">New experiences coming soon.</p>';if(past.length){document.getElementById('ds-archive-section').hidden=false;document.getElementById('ds-past-events').innerHTML=past.map(card).join('')}}).catch(()=>document.getElementById('ds-active-events').innerHTML='<p class="empty">Unable to load events right now.</p>');
+})();
+</script>`;
+
+export const eventDetailPage = (slug:string) => `
+<style>.ds-detail{background:#f1f0ed;min-height:80vh;padding:70px 22px 110px}.ds-detail .inner{max-width:1060px;margin:auto}.ds-detail .back{font-size:11px;letter-spacing:.13em;text-transform:uppercase}.ds-detail .layout{display:grid;grid-template-columns:1.1fr 1fr;gap:65px;margin-top:32px}.ds-detail .art{aspect-ratio:4/5;background:#dedbd5;display:flex;align-items:center;justify-content:center;font:400 42px 'Cormorant Garamond',serif;color:#777;text-align:center}.ds-detail .art img{width:100%;height:100%;object-fit:cover}.ds-detail .tag{font-size:10px;letter-spacing:.18em;color:#8a857e;text-transform:uppercase}.ds-detail h1{font:400 clamp(40px,5vw,66px)/1.05 'Cormorant Garamond',serif;margin:18px 0}.ds-detail .subtitle{font-size:14px;color:#67615c;line-height:1.8}.ds-detail .price{font-size:27px;margin:35px 0 8px}.ds-detail .meta{font-size:12px;line-height:2.1;color:#777}.ds-detail .description{white-space:pre-line;font-size:13px;line-height:1.95;color:#4f4b46;margin-top:27px}.ds-detail .book{display:block;background:#111;color:white;text-align:center;padding:17px;margin-top:30px;font-size:11px;letter-spacing:.16em}.ds-detail .ended{display:block;border:1px solid #bbb;color:#888;text-align:center;padding:17px;margin-top:30px;font-size:11px;letter-spacing:.16em}@media(max-width:750px){.ds-detail{padding:38px 18px 70px}.ds-detail .layout{grid-template-columns:1fr;gap:30px}.ds-detail .art{aspect-ratio:4/5}.ds-detail h1{font-size:46px}}</style>
+<main class="ds-detail"><div class="inner"><a class="back" href="/events">← All Events</a><div id="ds-event-detail" class="layout"><p>Loading event...</p></div></div></main>
+<script>
+(function(){const slug=${JSON.stringify(slug)};const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));fetch('/api/events/'+encodeURIComponent(slug)).then(r=>{if(!r.ok)throw Error();return r.json()}).then(e=>{const date=e.start_date||e.end_date?(esc(e.start_date||'')+' – '+esc(e.end_date||'')):'Dates to be announced';document.getElementById('ds-event-detail').innerHTML='<div class="art">'+(e.cover_url?'<img src="'+esc(e.cover_url)+'" alt="'+esc(e.title)+'">':'Dear Story<br>Special Event')+'</div><div><span class="tag">'+(e.ended?'PAST EVENT':'SPECIAL EXPERIENCE')+'</span><h1>'+esc(e.title)+'</h1><p class="subtitle">'+esc(e.subtitle)+'</p><p class="price">₩'+Number(e.price_krw).toLocaleString()+'</p><p class="meta">Per group · Up to 4 people<br>Experience dates: '+date+'</p><div class="description">'+esc(e.description)+(e.details?'\n\n'+esc(e.details):'')+'</div>'+(e.bookable?'<a class="book" href="/booking?package='+encodeURIComponent(e.product_slug)+'">BOOK NOW →</a>':'<span class="ended">'+(e.ended?'EVENT ENDED':'BOOKING UNAVAILABLE')+'</span>')+'</div>'}).catch(()=>document.getElementById('ds-event-detail').innerHTML='<p>This event is not available.</p>');})();
+</script>`;

@@ -742,6 +742,7 @@ backdrop-filter: blur(12px);
         <div class="hidden md:flex home-links">
           <a href="/" class="nav-link">Home</a>
           <a href="/experiences" class="nav-link">Experiences</a>
+          <a href="/events" class="nav-link">Events</a>
           <a href="/gallery" class="nav-link">Gallery</a>
           <a href="/booking" class="nav-link">Book</a>
         </div>
@@ -756,6 +757,7 @@ backdrop-filter: blur(12px);
       <div class="px-6 py-6 space-y-4">
         <a href="/" class="block nav-link">Home</a>
         <a href="/experiences" class="block nav-link">Experiences</a>
+        <a href="/events" class="block nav-link">Events</a>
         <a href="/gallery" class="block nav-link">Gallery</a>
         <a href="/booking" class="block nav-link">Book</a>
       </div>
@@ -974,6 +976,68 @@ app.patch('/api/admin/booking-products/:slug', async c => {
     .bind(slug,name,...values,d.is_visible === undefined ? Number(existing.is_visible) : (d.is_visible ? 1 : 0),Number(d.sort_order ?? existing.sort_order),start || null,end || null).run()
   return c.json({ success: true })
 })
+
+
+// Event editorial content is separate from booking product visibility.
+const eventDateKST = () => new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Seoul'})
+const eventRow = (r:any) => ({...r, ended: !!r.end_date && r.end_date < eventDateKST(), bookable: Number(r.is_published)===1 && Number(r.is_visible)===1 && (!r.end_date || r.end_date >= eventDateKST())})
+app.get('/api/events', async c => {
+  const rows = await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug WHERE e.is_published=1 ORDER BY e.sort_order ASC,e.id DESC').all()
+  return c.json((rows.results || []).map(eventRow))
+})
+app.get('/api/events/:slug', async c => {
+  const row = await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug WHERE e.slug=? AND e.is_published=1').bind(c.req.param('slug')).first()
+  return row ? c.json(eventRow(row)) : c.json({error:'Not found'},404)
+})
+app.get('/api/admin/events', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const rows=await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug ORDER BY e.sort_order,e.id DESC').all()
+  return c.json(rows.results || [])
+})
+app.post('/api/admin/events', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const d=await c.req.json() as any
+  const slug=String(d.slug||'').trim().toLowerCase(), title=String(d.title||'').trim(), product=String(d.product_slug||slug)
+  if (!/^[a-z0-9-]{3,50}$/.test(slug) || !title || title.length>150 || String(d.description||'').length>5000 || String(d.details||'').length>10000) return c.json({error:'Invalid event'},400)
+  const exists=await c.env.DB.prepare("SELECT slug FROM booking_products WHERE slug=? AND slug NOT IN ('basic','signature','premium')")
+  if (!exists) return c.json({error:'Create an event product in Booking Products first'},400)
+  try {
+    await c.env.DB.prepare('INSERT INTO events (slug,product_slug,title,subtitle,description,details,cover_url,is_published,sort_order) VALUES (?,?,?,?,?,?,?,?,?)').bind(slug,product,title,String(d.subtitle||''),String(d.description||''),String(d.details||''),String(d.cover_url||''),d.is_published?1:0,Number(d.sort_order||10)).run()
+    return c.json({success:true})
+  } catch {return c.json({error:'Event slug already exists or product is in use'},409)}
+})
+app.patch('/api/admin/events/:slug', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const slug=c.req.param('slug'), d=await c.req.json() as any
+  const old=await c.env.DB.prepare('SELECT * FROM events WHERE slug=?').bind(slug).first() as any
+  if (!old) return c.json({error:'Not found'},404)
+  const title=String(d.title??old.title).trim(), description=String(d.description??old.description), details=String(d.details??old.details)
+  if (!title || title.length>150 || description.length>5000 || details.length>10000) return c.json({error:'Invalid event'},400)
+  await c.env.DB.prepare('UPDATE events SET title=?,subtitle=?,description=?,details=?,is_published=?,sort_order=? WHERE slug=?').bind(title,String(d.subtitle??old.subtitle),description,details,d.is_published===undefined?old.is_published:(d.is_published?1:0),Number(d.sort_order??old.sort_order),slug).run()
+  return c.json({success:true})
+})
+app.post('/api/admin/events/:slug/cover', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const slug=c.req.param('slug'), old=await c.env.DB.prepare('SELECT slug FROM events WHERE slug=?').bind(slug).first()
+  if (!old) return c.json({error:'Not found'},404)
+  const data=await c.req.formData(), file=data.get('image')
+  if (!(file instanceof File) || !['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>5*1024*1024 || file.size===0) return c.json({error:'Use a JPG, PNG or WebP under 5 MB'},400)
+  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
+  const key='events/'+slug+'/'+crypto.randomUUID()+'.'+ext
+  await c.env.GALLERY_BUCKET.put(key,await file.arrayBuffer(),{httpMetadata:{contentType:file.type}})
+  await c.env.DB.prepare('UPDATE events SET cover_url=? WHERE slug=?').bind('/event-cover/'+key,slug).run()
+  return c.json({success:true,url:'/event-cover/'+key})
+})
+app.get('/event-cover/events/:slug/:file', async c => {
+  const slug=c.req.param('slug'), file=c.req.param('file')
+  if (!/^[a-z0-9-]{3,50}$/.test(slug) || !/^[a-f0-9-]{36}\.(jpg|png|webp)$/.test(file)) return c.notFound()
+  const key='events/'+slug+'/'+file
+  const item=await c.env.GALLERY_BUCKET.get(key)
+  if (!item) return c.notFound()
+  return new Response(item.body,{headers:{'Content-Type':item.httpMetadata?.contentType||'image/jpeg','Cache-Control':'public,max-age=3600','X-Content-Type-Options':'nosniff'}})
+})
+app.get('/events', c => c.html(layout('Events - Dear Story',eventsPage())))
+app.get('/events/:slug', c => c.html(layout('Event - Dear Story',eventDetailPage(c.req.param('slug')))))
 
 // Get all bookings (admin)
 app.get('/api/bookings', async (c) => {
@@ -1875,7 +1939,7 @@ app.get('/', (c) => {
 })
 
 // Import page content
-import { experiencesPage, galleryPage, bookingPage, paymentPage, adminPage, basicDetailPage, signatureDetailPage, premiumDetailPage } from './pages'
+import { experiencesPage, galleryPage, bookingPage, paymentPage, adminPage, basicDetailPage, signatureDetailPage, premiumDetailPage, eventsPage, eventDetailPage } from './pages'
 
 // Experiences page
 app.get('/experiences', (c) => {
