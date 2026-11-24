@@ -920,7 +920,7 @@ async function withEventUsdPrices(products: any[]) {
 }
 async function bookingProducts(db: D1Database) {
   const saved = (await db.prepare('SELECT * FROM booking_products ORDER BY sort_order, id').all()).results as any[]
-  return [...CORE_PRODUCTS.map(p => ({ ...p, is_visible: 1, start_date: null, end_date: null, ...saved.find(s => s.slug === p.slug), is_core: 1 })), ...saved.filter(p => !CORE_PRODUCTS.some(c => c.slug === p.slug)).map(p => ({ ...p, is_core: 0 }))]
+  return [...CORE_PRODUCTS.map(p => ({ ...p, is_visible: 1, start_date: null, end_date: null, ...saved.find(s => s.slug === p.slug), is_core: 1, max_participants: 4 })), ...saved.filter(p => !CORE_PRODUCTS.some(c => c.slug === p.slug)).map(p => ({ ...p, is_core: 0 }))]
 }
 function adminProductsAuthorized(c: any) {
   try {
@@ -950,12 +950,14 @@ app.post('/api/admin/booking-products', async c => {
   if (!/^[a-z0-9-]{3,50}$/.test(slug) || !name || name.length > 100 || CORE_PRODUCTS.some(p => p.slug === slug)) return c.json({ error: 'Invalid event product' }, 400)
   const krw = ['price_krw', 'extra_krw'].map(k => Number(d[k]))
   const nums = [...krw, 0, 0]
+  const maxParticipants = Number(d.max_participants ?? 4)
+  if (!Number.isInteger(maxParticipants) || maxParticipants < 1 || maxParticipants > 4) return c.json({ error: 'Invalid maximum participants' }, 400)
   if (nums.some(n => !Number.isFinite(n) || n < 0)) return c.json({ error: 'Invalid prices' }, 400)
   if (d.start_date && d.end_date && d.start_date > d.end_date) return c.json({ error: 'Invalid date range' }, 400)
   // Database USD columns remain for backward compatibility; prices are derived in public API and checkout.
   try {
-    await c.env.DB.prepare('INSERT INTO booking_products (slug,name,price_krw,extra_krw,price_usd,extra_usd,is_visible,sort_order,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)')
-      .bind(slug,name,...nums,d.is_visible ? 1 : 0,Number(d.sort_order || 10),d.start_date || null,d.end_date || null).run()
+    await c.env.DB.prepare('INSERT INTO booking_products (slug,name,price_krw,extra_krw,price_usd,extra_usd,is_visible,sort_order,start_date,end_date,max_participants) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+      .bind(slug,name,...nums,d.is_visible ? 1 : 0,Number(d.sort_order || 10),d.start_date || null,d.end_date || null,maxParticipants).run()
     return c.json({ success: true })
   } catch { return c.json({ error: 'Product slug already exists' }, 409) }
 })
@@ -969,11 +971,13 @@ app.patch('/api/admin/booking-products/:slug', async c => {
   const name = core ? core.name : String(d.name ?? existing.name).trim()
   const values = core ? [core.price_krw,core.extra_krw,core.price_usd,core.extra_usd] : [Number(d.price_krw ?? existing.price_krw), Number(d.extra_krw ?? existing.extra_krw), 0, 0]
   if (!name || name.length > 100 || values.some(n => !Number.isFinite(n) || n < 0)) return c.json({ error: 'Invalid product' }, 400)
+  const maxParticipants = core ? 4 : Number(d.max_participants ?? existing.max_participants ?? 4)
+  if (!Number.isInteger(maxParticipants) || maxParticipants < 1 || maxParticipants > 4) return c.json({ error: 'Invalid maximum participants' }, 400)
   const start = d.start_date ?? existing.start_date ?? null
   const end = d.end_date ?? existing.end_date ?? null
   if (start && end && start > end) return c.json({ error: 'Invalid date range' }, 400)
-  await c.env.DB.prepare('INSERT INTO booking_products (slug,name,price_krw,extra_krw,price_usd,extra_usd,is_visible,sort_order,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(slug) DO UPDATE SET name=excluded.name,price_krw=excluded.price_krw,extra_krw=excluded.extra_krw,price_usd=excluded.price_usd,extra_usd=excluded.extra_usd,is_visible=excluded.is_visible,sort_order=excluded.sort_order,start_date=excluded.start_date,end_date=excluded.end_date')
-    .bind(slug,name,...values,d.is_visible === undefined ? Number(existing.is_visible) : (d.is_visible ? 1 : 0),Number(d.sort_order ?? existing.sort_order),start || null,end || null).run()
+  await c.env.DB.prepare('INSERT INTO booking_products (slug,name,price_krw,extra_krw,price_usd,extra_usd,is_visible,sort_order,start_date,end_date,max_participants) VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(slug) DO UPDATE SET name=excluded.name,price_krw=excluded.price_krw,extra_krw=excluded.extra_krw,price_usd=excluded.price_usd,extra_usd=excluded.extra_usd,is_visible=excluded.is_visible,sort_order=excluded.sort_order,start_date=excluded.start_date,end_date=excluded.end_date,max_participants=excluded.max_participants')
+    .bind(slug,name,...values,d.is_visible === undefined ? Number(existing.is_visible) : (d.is_visible ? 1 : 0),Number(d.sort_order ?? existing.sort_order),start || null,end || null,maxParticipants).run()
   return c.json({ success: true })
 })
 
@@ -997,16 +1001,16 @@ app.delete('/api/admin/booking-products/:slug', async c => {
 const eventDateKST = () => new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Seoul'})
 const eventRow = (r:any) => ({...r, ended: !!r.end_date && r.end_date < eventDateKST(), bookable: Number(r.is_published)===1 && Number(r.is_visible)===1 && (!r.end_date || r.end_date >= eventDateKST())})
 app.get('/api/events', async c => {
-  const rows = await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug WHERE e.is_published=1 ORDER BY e.sort_order ASC,e.id DESC').all()
+  const rows = await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.max_participants,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug WHERE e.is_published=1 ORDER BY e.sort_order ASC,e.id DESC').all()
   return c.json((rows.results || []).map(eventRow))
 })
 app.get('/api/events/:slug', async c => {
-  const row = await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug WHERE e.slug=? AND e.is_published=1').bind(c.req.param('slug')).first()
+  const row = await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.max_participants,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug WHERE e.slug=? AND e.is_published=1').bind(c.req.param('slug')).first()
   return row ? c.json(eventRow(row)) : c.json({error:'Not found'},404)
 })
 app.get('/api/admin/events', async c => {
   if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
-  const rows=await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug ORDER BY e.sort_order,e.id DESC').all()
+  const rows=await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.max_participants,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug ORDER BY e.sort_order,e.id DESC').all()
   return c.json(rows.results || [])
 })
 const normalizeEventSteps = (value:any) => {
@@ -1095,7 +1099,7 @@ app.post('/api/bookings', async (c) => {
   const numPeople = Number(data.num_people)
   const todayKST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
   if (!product || Number(product.is_visible) !== 1 || (product.end_date && product.end_date < todayKST)) return c.json({ error: 'This product is unavailable' }, 400)
-  if (!Number.isInteger(numPeople) || numPeople < 1 || numPeople > 4) return c.json({ error: 'Invalid number of participants' }, 400)
+  if (!Number.isInteger(numPeople) || numPeople < 1 || numPeople > Number(product.max_participants || 4)) return c.json({ error: 'Invalid number of participants' }, 400)
   if (product.start_date && data.booking_date < product.start_date || product.end_date && data.booking_date > product.end_date) return c.json({ error: 'This event is not available on the selected date' }, 400)
   const totalPrice = Number(product.price_krw) + Number(product.extra_krw) * (numPeople - 1)
   let totalPriceUSD: number
