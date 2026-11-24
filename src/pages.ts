@@ -215,6 +215,17 @@ export const galleryPage = () => `
     .gallery-progress { -webkit-appearance: none; appearance: none; height: 2px; background: linear-gradient(to right, #111 0%, #111 var(--progress, 0%), #d1d5db var(--progress, 0%), #d1d5db 100%); cursor: pointer; }
     .gallery-progress::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 9999px; background: #111; cursor: grab; }
     .gallery-progress::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 9999px; background: #111; cursor: grab; }
+    @media (max-width: 767px) {
+      #gallery-container { display:flex; flex-direction:column; gap:0; }
+      #gallery-container > article { display:grid; grid-template-columns:68px minmax(0,1fr); grid-template-rows:auto auto; column-gap:14px; row-gap:5px; align-items:center; padding:12px 0; border-bottom:1px solid #e5e7eb; }
+      #gallery-container > article > div:first-child { grid-row:1 / 3; width:68px; height:68px; margin:0; }
+      #gallery-container > article > h3 { grid-column:2; margin:0; font-size:18px; line-height:1.2; align-self:end; overflow-wrap:anywhere; }
+      #gallery-container > article > div:last-child { grid-column:2; min-width:0; gap:6px; align-self:start; }
+      #gallery-container .gallery-progress { min-width:0; width:100%; }
+      #gallery-container button[id^="gallery-play-"] { width:100%; height:100%; border-radius:0; background:rgba(0,0,0,.24); color:white; box-shadow:none; backdrop-filter:none; transform:none; }
+      #gallery-container button[id^="gallery-play-"] span { font-size:20px; text-shadow:0 1px 4px #000; }
+      section:has(#gallery-container) { padding-top:18px; padding-bottom:80px; }
+    }
   </style>
 
   <script>
