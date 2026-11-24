@@ -1123,21 +1123,29 @@ export const adminPage = () => `
 
       <div id="content-products" class="tab-content hidden">
         <div class="bg-white p-6 md:p-8 border border-gray-200 mb-6">
-          <h2 class="text-3xl mb-2">Booking Products</h2>
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-2"><h2 class="text-3xl">Booking Products</h2><button type="button" onclick="openBookingProductEditor()" class="bg-black text-white px-5 py-3 text-xs">+ CREATE PRODUCT</button></div>
           <p class="text-sm text-gray-500 mb-5">Manage booking visibility, order and limited-time event products. Core product prices remain fixed.</p>
-          <div id="booking-product-admin-list" class="space-y-3 mb-8">Loading...</div>
-          <h3 class="text-2xl mb-2">Add Event Product</h3>
-          <p class="text-xs text-gray-500 mb-4">Enter KRW prices only. USD prices are converted automatically at the current exchange rate when a customer books.</p>
-          <form id="event-product-form" class="grid md:grid-cols-2 gap-3">
-            <input name="slug" required pattern="[a-z0-9-]{3,50}" placeholder="ID (e.g. christmas-special)" class="p-3 border">
-            <input name="name" required placeholder="Display name" class="p-3 border">
-            <input name="price_krw" type="number" min="0" required placeholder="Base price (KRW)" class="p-3 border">
-            <input name="extra_krw" type="number" min="0" required placeholder="Extra participant (KRW)" class="p-3 border">
-            <label class="text-sm">First experience date<input name="start_date" type="date" class="block p-3 border w-full"></label>
-            <label class="text-sm">Last experience date<input name="end_date" type="date" class="block p-3 border w-full"></label>
-            <label class="flex items-center gap-2 text-sm"><input name="is_visible" type="checkbox" checked> Visible in booking</label>
-            <button class="bg-black text-white p-3" type="submit">CREATE EVENT PRODUCT</button>
-          </form>
+          <div id="booking-product-admin-list" class="space-y-3">Loading...</div>
+          <dialog id="booking-product-dialog" aria-labelledby="booking-product-title" class="p-0 border border-gray-200 bg-white text-black" style="width:min(680px,calc(100% - 32px));max-height:90vh;margin:auto;overflow:auto;">
+            <style>#booking-product-dialog::backdrop{background:rgba(0,0,0,.55)}</style>
+            <div class="p-6 md:p-8">
+              <div class="flex justify-between items-center mb-4"><h3 id="booking-product-title" class="text-3xl">Create Event Product</h3><button type="button" onclick="closeBookingProductEditor()" aria-label="Close" class="text-2xl px-2">×</button></div>
+              <form id="event-product-form" class="grid md:grid-cols-2 gap-4">
+                <label class="text-sm">Product ID *<input name="slug" required pattern="[a-z0-9-]{3,50}" placeholder="christmas-special" class="block w-full p-3 border mt-2 disabled:bg-gray-100"></label>
+                <label class="text-sm">Display name *<input name="name" required maxlength="100" class="block w-full p-3 border mt-2"></label>
+                <label class="text-sm">Base price (KRW) *<input name="price_krw" type="number" min="0" required class="block w-full p-3 border mt-2"></label>
+                <label class="text-sm">Extra participant (KRW) *<input name="extra_krw" type="number" min="0" required class="block w-full p-3 border mt-2"></label>
+                <label class="text-sm">First experience date<input name="start_date" type="date" class="block p-3 border w-full mt-2"></label>
+                <label class="text-sm">Last experience date<input name="end_date" type="date" class="block p-3 border w-full mt-2"></label>
+                <label class="text-sm">Display order<input name="sort_order" type="number" step="1" required value="10" class="block w-full p-3 border mt-2"></label>
+                <label class="flex items-center gap-2 text-sm"><input name="is_visible" type="checkbox" checked> Visible in booking</label>
+                <p class="md:col-span-2 text-xs text-gray-500">Enter KRW prices only. USD prices are converted automatically at the current exchange rate when a customer books.</p>
+                <p id="booking-product-editor-status" role="status" class="md:col-span-2 text-sm text-red-700"></p>
+                <button type="button" onclick="closeBookingProductEditor()" class="border p-3">CANCEL</button>
+                <button id="booking-product-submit" class="bg-black text-white p-3 disabled:opacity-50" type="submit">CREATE PRODUCT</button>
+              </form>
+            </div>
+          </dialog>
           <p id="booking-product-admin-status" class="text-sm mt-4"></p>
         </div>
       </div>
@@ -1539,17 +1547,8 @@ export const adminPage = () => `
           };
           row.append(name, label, order, save);
           if (!p.is_core) {
-            const edit = document.createElement('button'); edit.className = 'border px-3 py-2 text-sm'; edit.textContent = 'Edit price / dates';
-            edit.onclick = async () => {
-              const next = { ...p };
-              for (const key of ['name','price_krw','extra_krw','start_date','end_date']) {
-                const value = prompt(key, next[key] ?? '');
-                if (value === null) return;
-                next[key] = value;
-              }
-              try { await axios.patch('/api/admin/booking-products/' + encodeURIComponent(p.slug), next, { headers: productAdminHeaders() }); await loadBookingProductAdmin(); }
-              catch(e) { alert(e.response?.data?.error || 'Update failed'); }
-            };
+            const edit = document.createElement('button'); edit.className = 'border px-3 py-2 text-sm'; edit.textContent = 'Edit';
+            edit.onclick = () => openBookingProductEditor(p);
             row.append(edit);
             const remove = document.createElement('button');
             remove.type = 'button'; remove.textContent = 'Delete';
@@ -1572,17 +1571,48 @@ export const adminPage = () => `
         });
       } catch(e) { container.textContent = e.response?.data?.error || 'Unable to load products'; }
     }
+    let editingBookingProductSlug = null;
+    let bookingProductSaving = false;
+    function openBookingProductEditor(product) {
+      const form = document.getElementById('event-product-form');
+      form.reset();
+      editingBookingProductSlug = product ? product.slug : null;
+      form.elements.slug.disabled = !!product;
+      if (product) {
+        for (const key of ['slug','name','price_krw','extra_krw','start_date','end_date','sort_order']) form.elements[key].value = product[key] ?? '';
+        form.elements.is_visible.checked = Number(product.is_visible) === 1;
+      }
+      document.getElementById('booking-product-title').textContent = product ? 'Edit Event Product' : 'Create Event Product';
+      document.getElementById('booking-product-submit').textContent = product ? 'SAVE CHANGES' : 'CREATE PRODUCT';
+      document.getElementById('booking-product-editor-status').textContent = '';
+      document.getElementById('booking-product-dialog').showModal();
+    }
+    function closeBookingProductEditor() {
+      if (!bookingProductSaving) document.getElementById('booking-product-dialog').close();
+    }
+    document.getElementById('booking-product-dialog').addEventListener('cancel', e => { if (bookingProductSaving) e.preventDefault(); });
     document.getElementById('event-product-form').addEventListener('submit', async e => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
-      data.is_visible = e.target.elements.is_visible.checked;
+      if (bookingProductSaving) return;
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.is_visible = form.elements.is_visible.checked;
+      data.sort_order = Number(data.sort_order);
+      const status = document.getElementById('booking-product-editor-status');
+      const button = document.getElementById('booking-product-submit');
+      status.textContent = '';
+      if (data.start_date && data.end_date && data.start_date > data.end_date) { status.textContent = 'Last experience date must be on or after the first date.'; return; }
+      const slug = editingBookingProductSlug;
+      bookingProductSaving = true; button.disabled = true;
       try {
-        await axios.post('/api/admin/booking-products', data, { headers: productAdminHeaders() });
-        e.target.reset(); await loadBookingProductAdmin();
-        document.getElementById('booking-product-admin-status').textContent = 'Event product created.';
-      } catch(error) { document.getElementById('booking-product-admin-status').textContent = error.response?.data?.error || 'Unable to create product'; }
+        if (slug) await axios.patch('/api/admin/booking-products/' + encodeURIComponent(slug), data, { headers: productAdminHeaders() });
+        else await axios.post('/api/admin/booking-products', data, { headers: productAdminHeaders() });
+        document.getElementById('booking-product-dialog').close();
+        await loadBookingProductAdmin();
+        document.getElementById('booking-product-admin-status').textContent = slug ? 'Event product updated.' : 'Event product created.';
+      } catch(error) { status.textContent = error.response?.data?.error || 'Unable to save product'; }
+      finally { bookingProductSaving = false; button.disabled = false; }
     });
-
 
     let editingEventSlug = null;
     function closeEventEditor() {
