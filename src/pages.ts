@@ -526,7 +526,7 @@ export const bookingPage = (packageParam?: string) => `
       const selectedTime = params.get('time');
       const dateInput = document.getElementById('booking_date');
       const timeInput = document.getElementById('booking_time');
-      if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || selectedDate < dateInput.min || selectedDate > dateInput.max) return;
+      if (!selectedDate || !/^\\d{4}-\\d{2}-\\d{2}$/.test(selectedDate) || selectedDate < dateInput.min || selectedDate > dateInput.max) return;
       dateInput.value = selectedDate;
       if (!selectedTime) { dateInput.dispatchEvent(new Event('change')); return; }
       try {
@@ -1144,20 +1144,10 @@ export const adminPage = () => `
 
       <div id="content-events" class="tab-content hidden">
         <div class="bg-white p-6 md:p-8 border border-gray-200 mb-6">
-          <h2 class="text-3xl mb-2">Events</h2><p class="text-sm text-gray-500 mb-6">Manage public event pages. Create the corresponding event product under Booking Products first. Publishing an event does not automatically enable booking.</p>
-          <div id="events-admin-list" class="space-y-4 mb-8">Loading...</div>
-          <h3 class="text-2xl mb-3">Create Event Page</h3>
-          <form id="events-admin-form" class="grid md:grid-cols-2 gap-3">
-            <input name="slug" required pattern="[a-z0-9-]{3,50}" placeholder="Event URL ID (e.g. christmas-special)" class="p-3 border">
-            <input name="product_slug" required placeholder="Booking product ID" class="p-3 border">
-            <input name="title" required placeholder="Event title" class="p-3 border">
-            <input name="subtitle" placeholder="Short subtitle" class="p-3 border">
-            <textarea name="description" placeholder="Event description" rows="4" class="p-3 border md:col-span-2"></textarea>
-            <textarea name="details" placeholder="Additional details" rows="4" class="p-3 border md:col-span-2"></textarea>
-            <input name="sort_order" type="number" value="10" placeholder="Display order" class="p-3 border">
-            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_published" checked> Published on website</label>
-            <button type="submit" class="bg-black text-white p-3 md:col-span-2">CREATE EVENT</button>
-          </form><p id="events-admin-status" class="text-sm mt-4"></p>
+          <div id="events-list-panel"><div class="flex justify-between items-center gap-3 mb-6"><h2 class="text-3xl">Events</h2><button type="button" onclick="openEventEditor()" class="bg-black text-white px-5 py-3 text-xs">+ CREATE EVENT</button></div>
+          <div id="events-admin-list" class="space-y-3">Loading...</div></div>
+          <div id="events-editor-panel" class="hidden"><button type="button" onclick="closeEventEditor()" class="text-sm underline mb-5">← Back to events</button><h2 id="events-editor-title" class="text-3xl mb-3">Create Event</h2><p class="text-xs text-gray-500 mb-5">Create the corresponding event product in Booking Products first.</p>
+<form id="events-admin-form" class="space-y-5"><section class="border border-gray-200 p-5 md:p-7"><h3 class="text-xl mb-1">01. Basic Information</h3><p class="text-xs text-gray-500 mb-5">Title and linked booking product.</p><div class="grid md:grid-cols-2 gap-4"><label class="block text-sm"><span class="block mb-2 font-medium">Event title *</span><input name="title" required class="w-full p-3 border border-gray-300 text-sm" placeholder="Christmas Song Special"></label><label class="block text-sm"><span class="block mb-2 font-medium">Event URL ID *</span><input name="slug" required pattern="[a-z0-9-]{3,50}" class="w-full p-3 border border-gray-300 text-sm" placeholder="christmas-special"></label><div class="md:col-span-2"><label class="block text-sm">Booking product *<select name="product_slug" required class="block w-full p-3 border mt-2"><option value="">Select event booking product</option></select></label><div id="event-product-summary" class="bg-gray-50 p-3 text-sm text-gray-600 mt-2"></div></div></div></section><section class="border border-gray-200 p-5 md:p-7"><h3 class="text-xl mb-1">02. Card News</h3><p class="text-xs text-gray-500 mb-5">Upload up to 8 images (4:5 recommended). The first image is the cover.</p><div class="grid md:grid-cols-2 gap-4"><div class="md:col-span-2"><div id="event-slide-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4"></div><label class="block text-sm">Add / replace images<input id="events-cover-input" type="file" multiple accept="image/jpeg,image/png,image/webp" class="block border p-3 w-full mt-2"></label><p class="text-xs text-gray-500 mt-2">Drag selected images to reorder, or use the arrow buttons. Selecting new images replaces the saved set when you save.</p></div></div></section><section class="border border-gray-200 p-5 md:p-7"><h3 class="text-xl mb-1">03. Pricing</h3><p class="text-xs text-gray-500 mb-5">Event price comes from Booking Products; original price is for display only.</p><div class="grid md:grid-cols-2 gap-4"><label class="block text-sm"><span class="block mb-2 font-medium">Original price (KRW)</span><input name="original_price" type="number" min="0" step="1" class="w-full p-3 border border-gray-300 text-sm" placeholder="600000"></label><div class="bg-gray-50 p-4"><p class="text-xs text-gray-500">Event price · linked product</p><p id="event-price-preview" class="text-2xl mt-1">—</p><p id="event-discount-preview" class="text-sm mt-1"></p></div><div class="md:col-span-2"><label class="block text-sm"><span class="block mb-2 font-medium">Savings note</span><input name="savings_note"  class="w-full p-3 border border-gray-300 text-sm" placeholder="Optional promotional message"></label></div></div></section><section class="border border-gray-200 p-5 md:p-7"><h3 class="text-xl mb-1">04. Event Content</h3><p class="text-xs text-gray-500 mb-5">Text displayed on the public event detail page.</p><div class="grid md:grid-cols-2 gap-4"><label class="block text-sm"><span class="block mb-2 font-medium">Eyebrow</span><input name="eyebrow"  class="w-full p-3 border border-gray-300 text-sm" placeholder="SPECIAL EXPERIENCE"></label><label class="block text-sm"><span class="block mb-2 font-medium">Duration label</span><input name="duration_label"  class="w-full p-3 border border-gray-300 text-sm" placeholder="150 minutes"></label><div class="md:col-span-2"><label class="block text-sm"><span class="block mb-2 font-medium">Short subtitle</span><input name="subtitle"  class="w-full p-3 border border-gray-300 text-sm" placeholder=""></label></div><div class="md:col-span-2"><label class="block text-sm"><span class="block mb-2 font-medium">About This Event</span><textarea name="description" rows="4" class="w-full p-3 border border-gray-300 text-sm" placeholder=""></textarea></label></div><div class="md:col-span-2"><h4 class="font-medium mb-2">Your Experience</h4><p class="text-xs text-gray-500 mb-3">Add up to 10 steps. Choose an icon, title and description.</p><div id="event-steps-editor" class="space-y-3"></div><button type="button" id="event-step-add" class="border px-4 py-2 mt-3 text-sm">+ ADD STEP</button></div><div class="md:col-span-2"><label class="block text-sm"><span class="block mb-2 font-medium">What's Included</span><textarea name="included" rows="4" class="w-full p-3 border border-gray-300 text-sm" placeholder=""></textarea></label></div><div class="md:col-span-2"><label class="block text-sm"><span class="block mb-2 font-medium">Before You Book</span><textarea name="before_book" rows="4" class="w-full p-3 border border-gray-300 text-sm" placeholder=""></textarea></label></div><div class="md:col-span-2"><label class="block text-sm"><span class="block mb-2 font-medium">Additional details (fallback for Included)</span><textarea name="details" rows="4" class="w-full p-3 border border-gray-300 text-sm" placeholder=""></textarea></label></div></div></section><section class="border border-gray-200 p-5 md:p-7"><h3 class="text-xl mb-1">05. Publishing Settings</h3><p class="text-xs text-gray-500 mb-5">Control visibility and display order.</p><div class="grid md:grid-cols-2 gap-4"><label class="block text-sm"><span class="block mb-2 font-medium">Display order</span><input name="sort_order" type="number" value="10" class="w-full p-3 border border-gray-300 text-sm" placeholder=""></label><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_published" checked> Published on website</label></div></section><div class="grid grid-cols-2 gap-3"><button id="events-save-button" type="submit" class="bg-black text-white p-3">SAVE EVENT</button><button type="button" onclick="closeEventEditor()" class="border p-3">CANCEL</button></div></form></div><p id="events-admin-status" class="text-sm mt-4" role="status"></p>
         </div>
       </div>
 
@@ -1594,43 +1584,118 @@ export const adminPage = () => `
     });
 
 
-    async function loadEventsAdmin() {
-      const container=document.getElementById('events-admin-list');
-      const headers=productAdminHeaders();
+    let editingEventSlug = null;
+    function closeEventEditor() {
+      document.getElementById('events-editor-panel').classList.add('hidden');
+      document.getElementById('events-list-panel').classList.remove('hidden');
+      document.getElementById('events-admin-status').textContent='';
+    }
+    let eventProductOptions = [];
+    let selectedEventFiles = [], savedEventSlides = [], eventPreviewUrls = [];
+    function renderEventSlides() {
+      eventPreviewUrls.forEach(url=>URL.revokeObjectURL(url)); eventPreviewUrls=[];
+      const root=document.getElementById('event-slide-preview'); root.replaceChildren();
+      const items=selectedEventFiles.length ? selectedEventFiles.map(file=>{const url=URL.createObjectURL(file);eventPreviewUrls.push(url);return url}) : savedEventSlides;
+      if(!items.length){root.textContent='No images selected.';return;}
+      items.forEach((url,i)=>{
+        const card=document.createElement('div');card.className='border p-2';
+        const img=document.createElement('img');img.src=url;img.alt='Page '+(i+1);img.style.cssText='width:100%;aspect-ratio:4/5;object-fit:cover';
+        const label=document.createElement('p');label.className='text-xs mt-2';label.textContent=(i===0?'COVER':'PAGE '+(i+1));card.append(img,label);
+        if(selectedEventFiles.length){
+          const move=j=>{if(j<0||j>=selectedEventFiles.length)return;const file=selectedEventFiles.splice(i,1)[0];selectedEventFiles.splice(j,0,file);renderEventSlides()};
+          card.draggable=true;card.ondragstart=e=>e.dataTransfer.setData('text/plain',String(i));card.ondragover=e=>e.preventDefault();card.ondrop=e=>{e.preventDefault();const from=Number(e.dataTransfer.getData('text/plain'));if(Number.isInteger(from)&&from>=0&&from<selectedEventFiles.length){const file=selectedEventFiles.splice(from,1)[0];selectedEventFiles.splice(i,0,file);renderEventSlides()}};
+          [-1,1].forEach(step=>{const btn=document.createElement('button');btn.type='button';btn.textContent=step<0?'←':'→';btn.className='border px-3 py-1 mt-2 mr-1';btn.disabled=i+step<0||i+step>=items.length;btn.onclick=()=>move(i+step);card.append(btn)});
+        }root.append(card);
+      });
+    }
+    document.getElementById('events-cover-input').addEventListener('change',e=>{selectedEventFiles=Array.from(e.target.files);renderEventSlides()});
+    document.querySelector('#events-admin-form [name="original_price"]').addEventListener('input',updateEventProductSummary);
+    function updateEventProductSummary() {
+      const form = document.getElementById('events-admin-form');
+      const p = eventProductOptions.find(p => p.slug === form.elements.product_slug.value);
+      const original=Number(form.elements.original_price.value), price=p?Number(p.price_krw):0;
+      document.getElementById('event-price-preview').textContent=p?'₩'+price.toLocaleString():'—';
+      document.getElementById('event-discount-preview').textContent=p&&original>price?Math.round((1-price/original)*100)+'% OFF · Save ₩'+(original-price).toLocaleString():'';
+      document.getElementById('event-product-summary').textContent = p ? '₩' + Number(p.price_krw).toLocaleString() + ' · Extra participant: ₩' + Number(p.extra_krw).toLocaleString() + ' · 1–4 people · ' + (p.start_date || 'No start limit') + ' – ' + (p.end_date || 'No end limit') + (Number(p.is_visible) === 1 ? '' : ' · Hidden in booking') : 'Select a product created in Booking Products.';
+    }
+    document.querySelector('#events-admin-form [name="product_slug"]').addEventListener('change', updateEventProductSummary);
+    const eventStepIcons = ["comments", "music", "microphone", "headphones", "sliders-h", "compact-disc", "camera", "gift", "pen", "heart", "star", "calendar", "check", "globe", "mobile-alt", "guitar", "play", "users", "file-alt", "magic"];
+    const eventStepEditor = document.getElementById('event-steps-editor');
+    const eventStepAdd = document.getElementById('event-step-add');
+    function readEventSteps(){return Array.from(eventStepEditor.children).map(row=>({icon:row.dataset.icon,title:row.querySelector('input').value.trim(),description:row.querySelector('textarea').value.trim()}));}
+    function renderEventSteps(steps){
+      eventStepEditor.replaceChildren();
+      steps.slice(0,10).forEach((step,j)=>{
+        const row=document.createElement('div');row.className='border p-3 space-y-2';row.dataset.icon=eventStepIcons.includes(step.icon)?step.icon:'music';
+        const head=document.createElement('div');head.className='flex gap-2 items-center';head.append('Step '+(j+1));
+        function action(label,fn,disabled=false){const b=document.createElement('button');b.type='button';b.className='border px-2 py-1 text-xs';b.textContent=label;b.disabled=disabled;b.onclick=fn;head.append(b);}
+        action('↑',()=>{const a=readEventSteps();[a[j-1],a[j]]=[a[j],a[j-1]];renderEventSteps(a)},j===0);
+        action('↓',()=>{const a=readEventSteps();[a[j+1],a[j]]=[a[j],a[j+1]];renderEventSteps(a)},j===steps.length-1);
+        action('Remove',()=>{const a=readEventSteps();a.splice(j,1);renderEventSteps(a)});row.append(head);
+        const palette=document.createElement('div');palette.className='flex flex-wrap gap-1';
+        eventStepIcons.forEach(icon=>{const b=document.createElement('button');b.type='button';b.title=icon;b.setAttribute('aria-label',icon);b.innerHTML='<i class="fas fa-'+icon+'"></i>';b.className='border w-9 h-9 '+(icon===row.dataset.icon?'bg-black text-white':'');b.onclick=()=>{row.dataset.icon=icon;Array.from(palette.children).forEach(x=>{x.classList.toggle('bg-black',x===b);x.classList.toggle('text-white',x===b);x.setAttribute('aria-pressed',String(x===b))})};b.setAttribute('aria-pressed',String(icon===row.dataset.icon));palette.append(b)});row.append(palette);
+        const title=document.createElement('input');title.placeholder='Step title';title.setAttribute('aria-label','Step title');title.maxLength=150;title.className='border p-3 w-full';title.value=step.title||'';row.append(title);
+        const desc=document.createElement('textarea');desc.placeholder='Step description';desc.setAttribute('aria-label','Step description');desc.maxLength=1000;desc.rows=2;desc.className='border p-3 w-full';desc.value=step.description||'';row.append(desc);eventStepEditor.append(row);
+      });eventStepAdd.disabled=steps.length>=10;
+    }
+    eventStepAdd.onclick=()=>{const a=readEventSteps();if(a.length<10){a.push({icon:'music',title:'',description:''});renderEventSteps(a)}};
+    async function openEventEditor(event) {
+      const form=document.getElementById('events-admin-form');
+      form.reset(); let steps=[];try{steps=JSON.parse(event?.experience_steps||'[]')}catch{};renderEventSteps(Array.isArray(steps)?steps:[]); editingEventSlug=event ? event.slug : null;
+      const select = form.elements.product_slug;
+      select.replaceChildren(new Option('Select event booking product', ''));
       try {
-        const response=await axios.get('/api/admin/events',{headers});
+        const [products, events] = await Promise.all([axios.get('/api/admin/booking-products', {headers:productAdminHeaders()}), axios.get('/api/admin/events', {headers:productAdminHeaders()})]);
+        eventProductOptions = products.data.filter(p => !['basic','signature','premium'].includes(p.slug) && !events.data.some(e => e.product_slug === p.slug && e.slug !== event?.slug));
+        eventProductOptions.forEach(p => select.add(new Option(p.name, p.slug)));
+      } catch(err) { alert('Unable to load booking products. Please retry.'); return; }
+      for(const key of ['slug','product_slug','title','subtitle','description','details','sort_order','eyebrow','original_price','savings_note','duration_label','included','before_book']) {
+        if(event) form.elements[key].value=event[key]??'';
+      }
+      form.elements.slug.readOnly=!!event; form.elements.product_slug.disabled=!!event; updateEventProductSummary();
+      form.elements.is_published.checked=event ? Number(event.is_published)===1 : true;
+      selectedEventFiles=[];savedEventSlides=[];
+      try{savedEventSlides=JSON.parse(event?.slide_urls||'[]')}catch{}
+      if(!Array.isArray(savedEventSlides)||!savedEventSlides.length)savedEventSlides=event?.cover_url?[event.cover_url]:[];
+      renderEventSlides();
+      document.getElementById('events-editor-title').textContent=event?'Edit Event':'Create Event';
+      document.getElementById('events-admin-status').textContent='';
+      document.getElementById('events-list-panel').classList.add('hidden');
+      document.getElementById('events-editor-panel').classList.remove('hidden');
+    }
+    async function loadEventsAdmin() {
+      closeEventEditor();
+      const container=document.getElementById('events-admin-list');
+      container.textContent='Loading...';
+      try {
+        const response=await axios.get('/api/admin/events',{headers:productAdminHeaders()});
         container.replaceChildren();
         if(!response.data.length) container.textContent='No event pages yet.';
         response.data.forEach(e=>{
-          const card=document.createElement('div');card.className='border p-4 space-y-3';
-          const heading=document.createElement('p');heading.className='font-medium';heading.textContent=e.title+' · /events/'+e.slug;
-          const form=document.createElement('form');form.className='grid md:grid-cols-2 gap-3';
-          const fields=[['title','Title'],['subtitle','Subtitle'],['description','Description'],['details','Details'],['sort_order','Display order']];
-          fields.forEach(([key,label])=>{
-            const wrap=document.createElement('label');wrap.className='text-xs';wrap.textContent=label;
-            const field=key==='description'||key==='details'?document.createElement('textarea'):document.createElement('input');
-            field.name=key;field.value=e[key]??'';field.className='block border p-2 w-full mt-1 text-sm';
-            if(key==='sort_order')field.type='number';if(key==='description'||key==='details')wrap.className+=' md:col-span-2';
-            wrap.append(field);form.append(wrap);
-          });
-          const published=document.createElement('label');published.className='text-sm flex gap-2 items-center';
-          const check=document.createElement('input');check.type='checkbox';check.checked=Number(e.is_published)===1;published.append(check,'Published');form.append(published);
-          const save=document.createElement('button');save.type='submit';save.className='bg-black text-white p-3 text-sm';save.textContent='SAVE EVENT';form.append(save);
-          form.onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(form).entries());d.is_published=check.checked;try{await axios.patch('/api/admin/events/'+encodeURIComponent(e.slug),d,{headers:productAdminHeaders()});await loadEventsAdmin()}catch(err){alert(err.response?.data?.error||'Save failed')}};
-          const coverForm=document.createElement('form');coverForm.className='flex flex-wrap gap-3 items-center';
-          const file=document.createElement('input');file.type='file';file.accept='image/jpeg,image/png,image/webp';file.required=true;file.className='text-xs';
-          const upload=document.createElement('button');upload.type='submit';upload.textContent='UPLOAD / REPLACE COVER';upload.className='border px-4 py-2 text-xs';
-          coverForm.append(file,upload);coverForm.onsubmit=async ev=>{ev.preventDefault();const data=new FormData();data.append('image',file.files[0]);try{await axios.post('/api/admin/events/'+encodeURIComponent(e.slug)+'/cover',data,{headers:productAdminHeaders()});await loadEventsAdmin()}catch(err){alert(err.response?.data?.error||'Upload failed')}};
-          const link=document.createElement('a');link.href='/events/'+encodeURIComponent(e.slug);link.target='_blank';link.rel='noopener';link.textContent='View public page →';link.className='text-xs underline';
-          if(e.cover_url){const img=document.createElement('img');img.src=e.cover_url;img.alt='Cover';img.className='w-36 h-24 object-cover';card.append(img)}
-          card.append(heading,form,coverForm,link);container.append(card);
+          const card=document.createElement('div');card.className='border p-4 flex flex-wrap items-center gap-4';
+          if(e.cover_url){const img=document.createElement('img');img.src=e.cover_url;img.alt='Cover';img.className='w-16 h-20 object-cover';card.append(img)}
+          const info=document.createElement('div');info.className='flex-1 min-w-0';
+          const title=document.createElement('p');title.className='font-medium';title.textContent=e.title;
+          const meta=document.createElement('p');meta.className='text-xs text-gray-500 mt-1';meta.textContent=(Number(e.is_published)===1?'Published':'Hidden')+' · ₩'+Number(e.price_krw).toLocaleString()+(e.end_date?' · Until '+e.end_date:'');
+          const link=document.createElement('a');link.href='/events/'+encodeURIComponent(e.slug);link.target='_blank';link.rel='noopener';link.textContent='View public page';link.className='text-xs underline';
+          info.append(title,meta,link);card.append(info);
+          const edit=document.createElement('button');edit.textContent='EDIT';edit.className='border px-4 py-2 text-xs';edit.onclick=()=>openEventEditor(e);
+          const del=document.createElement('button');del.textContent='DELETE';del.className='border px-4 py-2 text-xs text-red-600';del.onclick=async()=>{if(!confirm('Delete this event page? Booking products and reservations will remain unchanged.'))return;del.disabled=true;try{await axios.delete('/api/admin/events/'+encodeURIComponent(e.slug),{headers:productAdminHeaders()});await loadEventsAdmin()}catch(err){alert(err.response?.data?.error||'Delete failed');del.disabled=false}};
+          card.append(edit,del);container.append(card);
         });
       } catch(err){container.textContent=err.response?.data?.error||'Unable to load events'}
     }
     document.getElementById('events-admin-form').addEventListener('submit',async ev=>{
-      ev.preventDefault();const form=ev.target,d=Object.fromEntries(new FormData(form).entries());d.is_published=form.elements.is_published.checked;
-      try{await axios.post('/api/admin/events',d,{headers:productAdminHeaders()});form.reset();await loadEventsAdmin();document.getElementById('events-admin-status').textContent='Event created.'}
-      catch(err){document.getElementById('events-admin-status').textContent=err.response?.data?.error||'Create failed'}
+      ev.preventDefault();const form=ev.target,d=Object.fromEntries(new FormData(form).entries());d.is_published=form.elements.is_published.checked;d.product_slug=form.elements.product_slug.value;d.experience_steps=readEventSteps().filter(s=>s.title||s.description);if(d.experience_steps.some(s=>!s.title)){alert('Please enter a title for each step.');return;}
+      const status=document.getElementById('events-admin-status'), button=document.getElementById('events-save-button'), files=selectedEventFiles.slice();
+      if(files.length>8 || files.some(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024||!file.size)){status.textContent='Use up to 8 JPG, PNG or WebP images, each under 5 MB';return;}
+      button.disabled=true;status.textContent='Saving...';
+      try {
+        if(editingEventSlug) await axios.patch('/api/admin/events/'+encodeURIComponent(editingEventSlug),d,{headers:productAdminHeaders()});
+        else {await axios.post('/api/admin/events',d,{headers:productAdminHeaders()});editingEventSlug=d.slug.trim().toLowerCase();form.elements.slug.readOnly=true;form.elements.product_slug.disabled=true;}
+        if(files.length){const data=new FormData();files.forEach(file=>data.append('images',file));await axios.post('/api/admin/events/'+encodeURIComponent(editingEventSlug)+'/slides',data,{headers:productAdminHeaders()});}
+        await loadEventsAdmin();status.textContent='Event saved.';
+      }catch(err){status.textContent=err.response?.data?.error||'Save failed. Please retry.'}finally{button.disabled=false;}
     });
 
     function showTab(tab) {
@@ -2959,8 +3024,10 @@ fetch('/api/events').then(r=>{if(!r.ok)throw Error();return r.json()}).then(item
 </script>`;
 
 export const eventDetailPage = (slug:string) => `
-<style>.ds-detail{background:#f1f0ed;min-height:80vh;padding:70px 22px 110px}.ds-detail .inner{max-width:1060px;margin:auto}.ds-detail .back{font-size:11px;letter-spacing:.13em;text-transform:uppercase}.ds-detail .layout{display:grid;grid-template-columns:1.1fr 1fr;gap:65px;margin-top:32px}.ds-detail .art{aspect-ratio:4/5;background:#dedbd5;display:flex;align-items:center;justify-content:center;font:400 42px 'Cormorant Garamond',serif;color:#777;text-align:center}.ds-detail .art img{width:100%;height:100%;object-fit:cover}.ds-detail .tag{font-size:10px;letter-spacing:.18em;color:#8a857e;text-transform:uppercase}.ds-detail h1{font:400 clamp(40px,5vw,66px)/1.05 'Cormorant Garamond',serif;margin:18px 0}.ds-detail .subtitle{font-size:14px;color:#67615c;line-height:1.8}.ds-detail .price{font-size:27px;margin:35px 0 8px}.ds-detail .meta{font-size:12px;line-height:2.1;color:#777}.ds-detail .description{white-space:pre-line;font-size:13px;line-height:1.95;color:#4f4b46;margin-top:27px}.ds-detail .book{display:block;background:#111;color:white;text-align:center;padding:17px;margin-top:30px;font-size:11px;letter-spacing:.16em}.ds-detail .ended{display:block;border:1px solid #bbb;color:#888;text-align:center;padding:17px;margin-top:30px;font-size:11px;letter-spacing:.16em}@media(max-width:750px){.ds-detail{padding:38px 18px 70px}.ds-detail .layout{grid-template-columns:1fr;gap:30px}.ds-detail .art{aspect-ratio:4/5}.ds-detail h1{font-size:46px}}</style>
-<main class="ds-detail"><div class="inner"><a class="back" href="/events">← All Events</a><div id="ds-event-detail" class="layout"><p>Loading event...</p></div></div></main>
+<style>
+.ds-ed{background:#f1f0ed;color:#191919}.ds-ed .wrap{max-width:1160px;margin:auto;padding:30px 24px 40px}.ds-ed .layout{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px}.ds-ed .art{aspect-ratio:4/5;background:#dedbd5;display:grid;place-items:center;overflow:hidden}.ds-ed .art img{width:100%;height:100%;object-fit:cover}.ds-ed .thumbs{display:flex;gap:6px;overflow:auto}.ds-ed .thumbs button{flex:0 0 23%;aspect-ratio:4/5;overflow:hidden}.ds-ed .thumbs img{width:100%;height:100%;object-fit:cover}.ds-ed .controls{display:flex;justify-content:center;align-items:center;gap:12px;padding:16px}.ds-ed .controls button{padding:4px}.ds-ed h1{font-size:clamp(25px,3vw,38px);font-weight:600;line-height:1.25;margin:14px 0}.ds-ed .muted{color:#666}.ds-ed .price{display:flex;align-items:center;flex-wrap:wrap;gap:12px;font-size:28px;font-weight:600}.ds-ed .price del{font-size:18px;font-weight:400;color:#777}.ds-ed .discount{color:#a00;font-size:15px}.ds-ed .rule{border-top:1px solid #d4d0ca;margin:24px 0;padding-top:24px}.ds-ed .facts p{margin:14px 0}.ds-ed .facts i{width:25px}.ds-ed .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ds-ed input,.ds-ed select{width:100%;min-width:0;background:white;border:1px solid #ddd;padding:14px;margin-top:8px}.ds-ed .book{width:100%;background:#222;color:white;padding:16px;margin-top:12px}.ds-ed .book:disabled{opacity:.45}.ds-ed .section{padding:45px 24px;background:white;text-align:center;border-top:1px solid #eee}.ds-ed .section h2{font:400 clamp(30px,4vw,48px) 'Cormorant Garamond',serif;margin:12px 0 25px}.ds-ed .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1100px;margin:auto}.ds-ed .steps i{display:grid;place-items:center;border:1px solid #ddd;border-radius:50%;width:60px;height:60px;margin:12px auto}.ds-ed .step-description{font-size:13px;color:#666;line-height:1.6;margin-top:8px;white-space:pre-line}.ds-ed .included-list{max-width:760px;margin:auto;text-align:left;display:grid;gap:12px}.ds-ed .included-list li{display:flex;gap:12px;align-items:baseline}.ds-ed .included-list i{color:#B44747;flex-shrink:0}.ds-ed .copy{white-space:pre-line;max-width:760px;margin:auto;line-height:1.8;color:#555}@media(max-width:767px){.ds-ed .layout{grid-template-columns:1fr;gap:25px}.ds-ed .wrap{padding:20px 18px 30px}.ds-ed .steps{grid-template-columns:repeat(2,1fr)}.ds-ed .price{font-size:25px}}
+</style>
+<main class="ds-ed"><div class="wrap"><a href="/events" class="text-xs">← ALL EVENTS</a><div id="ds-event-detail" class="layout">Loading event...</div></div><div id="ds-event-sections"></div></main>
 <script>
-(function(){const slug=${JSON.stringify(slug)};const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));fetch('/api/events/'+encodeURIComponent(slug)).then(r=>{if(!r.ok)throw Error();return r.json()}).then(e=>{const date=e.start_date||e.end_date?(esc(e.start_date||'')+' – '+esc(e.end_date||'')):'Dates to be announced';document.getElementById('ds-event-detail').innerHTML='<div class="art">'+(e.cover_url?'<img src="'+esc(e.cover_url)+'" alt="'+esc(e.title)+'">':'Dear Story<br>Special Event')+'</div><div><span class="tag">'+(e.ended?'PAST EVENT':'SPECIAL EXPERIENCE')+'</span><h1>'+esc(e.title)+'</h1><p class="subtitle">'+esc(e.subtitle)+'</p><p class="price">₩'+Number(e.price_krw).toLocaleString()+'</p><p class="meta">Per group · Up to 4 people<br>Experience dates: '+date+'</p><div class="description">'+esc(e.description)+(e.details?'\n\n'+esc(e.details):'')+'</div>'+(e.bookable?'<a class="book" href="/booking?package='+encodeURIComponent(e.product_slug)+'">BOOK NOW →</a>':'<span class="ended">'+(e.ended?'EVENT ENDED':'BOOKING UNAVAILABLE')+'</span>')+'</div>'}).catch(()=>document.getElementById('ds-event-detail').innerHTML='<p>This event is not available.</p>');})();
+(async function(){const slug=${JSON.stringify(slug).replace(/</g,'\\u003c')};const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));const root=document.getElementById('ds-event-detail');try{const r=await fetch('/api/events/'+encodeURIComponent(slug));if(!r.ok)throw Error();const e=await r.json();let images=[];try{images=JSON.parse(e.slide_urls||'[]')}catch{}if(!Array.isArray(images)||!images.length)images=e.cover_url?[e.cover_url]:[];const money=n=>'₩'+Number(n).toLocaleString();const original=Number(e.original_price),price=Number(e.price_krw);const discount=original>price?Math.round((1-price/original)*100):0;root.innerHTML='<div><div class="art" id="event-art">Dear Story · Special Event</div><div class="controls" id="event-controls"></div><div class="thumbs" id="event-thumbs"></div></div><div><p class="muted">'+esc(e.eyebrow||'SPECIAL EXPERIENCE')+'</p><h1>'+esc(e.title)+'</h1><p class="muted">'+esc(e.subtitle)+'</p><div class="rule"><div class="price">'+(discount?'<del>'+money(original)+'</del>':'')+money(price)+(discount?'<span class="discount">'+discount+'% OFF</span>':'')+'</div><p class="muted mt-3">'+esc(e.savings_note)+'</p><div class="facts"><p><i class="fas fa-users"></i> Up to 4 people</p>'+(e.duration_label?'<p><i class="far fa-clock"></i> '+esc(e.duration_label)+'</p>':'')+(e.end_date?'<p><i class="far fa-calendar"></i> Until '+esc(new Date(e.end_date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}))+'</p>':'')+'</div></div><div class="rule">'+(e.bookable?'<form id="event-book"><div class="fields"><label>DATE<input type="date" id="event-date" required></label><label>TIME<select id="event-time" required disabled><option value="">Select time</option></select></label></div><button class="book" type="submit" disabled>CONTINUE TO BOOKING →</button></form>':'<p>BOOKING UNAVAILABLE</p>')+'</div></div>';let active=0;const art=document.getElementById('event-art'), controls=document.getElementById('event-controls'), thumbs=document.getElementById('event-thumbs');function show(n){active=(n+images.length)%images.length;art.innerHTML='<img src="'+esc(images[active])+'" alt="'+esc(e.title)+'">';controls.querySelectorAll('[data-slide]').forEach((b,j)=>b.textContent=j===active?'●':'○');}if(images.length){if(images.length>1){const btn=(label,fn,parent)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;parent.append(b);return b};btn('‹',()=>show(active-1),controls);images.forEach((url,j)=>{btn('○',()=>show(j),controls).dataset.slide=j;const b=btn('',()=>show(j),thumbs);b.innerHTML='<img src="'+esc(url)+'" alt="Slide '+(j+1)+'">'});btn('›',()=>show(active+1),controls)}show(0)}const form=document.getElementById('event-book');if(form){const d=document.getElementById('event-date'),t=document.getElementById('event-time'),b=form.querySelector('button');const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));const fmt=x=>[x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-');const min=fmt(new Date(now.getFullYear(),now.getMonth(),now.getDate()+3)),max=fmt(new Date(now.getFullYear()+1,now.getMonth(),now.getDate()));d.min=e.start_date>min?e.start_date:min;d.max=e.end_date&&e.end_date<max?e.end_date:max;d.onchange=async()=>{const date=d.value;b.disabled=true;t.disabled=true;t.replaceChildren(new Option('Loading...',''));if(!date||!d.checkValidity())return;try{const res=await fetch('/api/available-times?date='+encodeURIComponent(date));if(!res.ok)throw Error();const data=await res.json();if(d.value!==date)return;t.replaceChildren(new Option(data.available?.length?'Select time':'No available times',''));(data.available||[]).forEach(v=>t.add(new Option(v,v)));t.disabled=false}catch{if(d.value===date)t.replaceChildren(new Option('Unable to load times',''))}};t.onchange=()=>b.disabled=!t.value;form.onsubmit=ev=>{ev.preventDefault();if(d.checkValidity()&&t.value)location.href='/booking?'+new URLSearchParams({package:e.product_slug,date:d.value,time:t.value})}}const section=(title,body)=>body?'<section class="section"><h2>'+title+'</h2><div class="copy">'+esc(body)+'</div></section>':'';let steps=[];try{steps=JSON.parse(e.experience_steps||'[]')}catch{};steps=Array.isArray(steps)?steps.filter(s=>s&&s.title).slice(0,10):[];const icons=["comments", "music", "microphone", "headphones", "sliders-h", "compact-disc", "camera", "gift", "pen", "heart", "star", "calendar", "check", "globe", "mobile-alt", "guitar", "play", "users", "file-alt", "magic"];const included=String(e.included||e.details||'').split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);document.getElementById('ds-event-sections').innerHTML=(steps.length?'<section class="section"><p class="muted text-xs">THE PROCESS</p><h2>Your Experience</h2><div class="steps">'+steps.map((s,j)=>'<div><span>'+String(j+1).padStart(2,'0')+'</span><i class="fas fa-'+(icons.includes(s.icon)?s.icon:'music')+'"></i><strong>'+esc(s.title)+'</strong><p class="step-description">'+esc(s.description)+'</p></div>').join('')+'</div></section>':'')+section('About This Event',e.description)+(included.length?'<section class="section"><h2>What’s Included</h2><ul class="included-list">'+included.map(s=>'<li><i class="fas fa-check" aria-hidden="true"></i><span>'+esc(s)+'</span></li>').join('')+'</ul></section>':'')+section('Before You Book',e.before_book)+'<section class="section"><a class="underline" href="/cancellation-policy">Booking &amp; Usage Policy</a></section>';}catch{root.textContent='This event is not available.'}})();
 </script>`;

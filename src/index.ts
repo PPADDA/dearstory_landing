@@ -1009,15 +1009,22 @@ app.get('/api/admin/events', async c => {
   const rows=await c.env.DB.prepare('SELECT e.*,p.name AS product_name,p.price_krw,p.extra_krw,p.is_visible,p.start_date,p.end_date FROM events e JOIN booking_products p ON p.slug=e.product_slug ORDER BY e.sort_order,e.id DESC').all()
   return c.json(rows.results || [])
 })
+const normalizeEventSteps = (value:any) => {
+  if (!Array.isArray(value) || value.length > 10) return null
+  const icons = ["comments", "music", "microphone", "headphones", "sliders-h", "compact-disc", "camera", "gift", "pen", "heart", "star", "calendar", "check", "globe", "mobile-alt", "guitar", "play", "users", "file-alt", "magic"]
+  if(value.some(s=>!s || typeof s.title!=='string' || !s.title.trim() || s.title.length>150 || typeof s.description!=='string' || s.description.length>1000 || !icons.includes(s.icon))) return null
+  return JSON.stringify(value.map(s=>({icon:s.icon,title:s.title.trim(),description:s.description.trim()})))
+}
 app.post('/api/admin/events', async c => {
   if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
   const d=await c.req.json() as any
+  const steps=normalizeEventSteps(d.experience_steps??[]);if(steps===null)return c.json({error:'Invalid experience steps'},400)
   const slug=String(d.slug||'').trim().toLowerCase(), title=String(d.title||'').trim(), product=String(d.product_slug||slug)
   if (!/^[a-z0-9-]{3,50}$/.test(slug) || !title || title.length>150 || String(d.description||'').length>5000 || String(d.details||'').length>10000) return c.json({error:'Invalid event'},400)
-  const exists=await c.env.DB.prepare("SELECT slug FROM booking_products WHERE slug=? AND slug NOT IN ('basic','signature','premium')")
+  const exists=await c.env.DB.prepare("SELECT slug FROM booking_products WHERE slug=? AND slug NOT IN ('basic','signature','premium')").bind(product).first()
   if (!exists) return c.json({error:'Create an event product in Booking Products first'},400)
   try {
-    await c.env.DB.prepare('INSERT INTO events (slug,product_slug,title,subtitle,description,details,cover_url,is_published,sort_order) VALUES (?,?,?,?,?,?,?,?,?)').bind(slug,product,title,String(d.subtitle||''),String(d.description||''),String(d.details||''),String(d.cover_url||''),d.is_published?1:0,Number(d.sort_order||10)).run()
+    await c.env.DB.prepare('INSERT INTO events (slug,product_slug,title,subtitle,description,details,cover_url,is_published,sort_order,eyebrow,original_price,savings_note,duration_label,included,before_book,experience_steps) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(slug,product,title,String(d.subtitle||''),String(d.description||''),String(d.details||''),String(d.cover_url||''),d.is_published?1:0,Number(d.sort_order||10),String(d.eyebrow||''),String(d.original_price||''),String(d.savings_note||''),String(d.duration_label||''),String(d.included||''),String(d.before_book||''),steps).run()
     return c.json({success:true})
   } catch {return c.json({error:'Event slug already exists or product is in use'},409)}
 })
@@ -1026,9 +1033,16 @@ app.patch('/api/admin/events/:slug', async c => {
   const slug=c.req.param('slug'), d=await c.req.json() as any
   const old=await c.env.DB.prepare('SELECT * FROM events WHERE slug=?').bind(slug).first() as any
   if (!old) return c.json({error:'Not found'},404)
+  const steps=d.experience_steps===undefined?old.experience_steps:normalizeEventSteps(d.experience_steps);if(steps===null)return c.json({error:'Invalid experience steps'},400)
   const title=String(d.title??old.title).trim(), description=String(d.description??old.description), details=String(d.details??old.details)
   if (!title || title.length>150 || description.length>5000 || details.length>10000) return c.json({error:'Invalid event'},400)
-  await c.env.DB.prepare('UPDATE events SET title=?,subtitle=?,description=?,details=?,is_published=?,sort_order=? WHERE slug=?').bind(title,String(d.subtitle??old.subtitle),description,details,d.is_published===undefined?old.is_published:(d.is_published?1:0),Number(d.sort_order??old.sort_order),slug).run()
+  await c.env.DB.prepare('UPDATE events SET title=?,subtitle=?,description=?,details=?,is_published=?,sort_order=?,eyebrow=?,original_price=?,savings_note=?,duration_label=?,included=?,before_book=?,experience_steps=? WHERE slug=?').bind(title,String(d.subtitle??old.subtitle),description,details,d.is_published===undefined?old.is_published:(d.is_published?1:0),Number(d.sort_order??old.sort_order),String(d.eyebrow??old.eyebrow??''),String(d.original_price??old.original_price??''),String(d.savings_note??old.savings_note??''),String(d.duration_label??old.duration_label??''),String(d.included??old.included??''),String(d.before_book??old.before_book??''),steps,slug).run()
+  return c.json({success:true})
+})
+app.delete('/api/admin/events/:slug', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const result=await c.env.DB.prepare('DELETE FROM events WHERE slug=?').bind(c.req.param('slug')).run()
+  if (!result.meta.changes) return c.json({error:'Not found'},404)
   return c.json({success:true})
 })
 app.post('/api/admin/events/:slug/cover', async c => {
@@ -1042,6 +1056,15 @@ app.post('/api/admin/events/:slug/cover', async c => {
   await c.env.GALLERY_BUCKET.put(key,await file.arrayBuffer(),{httpMetadata:{contentType:file.type}})
   await c.env.DB.prepare('UPDATE events SET cover_url=? WHERE slug=?').bind('/event-cover/'+key,slug).run()
   return c.json({success:true,url:'/event-cover/'+key})
+})
+app.post('/api/admin/events/:slug/slides', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const slug=c.req.param('slug'); if (!await c.env.DB.prepare('SELECT slug FROM events WHERE slug=?').bind(slug).first()) return c.json({error:'Not found'},404)
+  const files=(await c.req.formData()).getAll('images');
+  if (!files.length || files.length>8 || files.some(f=>!(f instanceof File)||!['image/jpeg','image/png','image/webp'].includes(f.type)||!f.size||f.size>5*1024*1024)) return c.json({error:'Select 1–8 images, each under 5 MB'},400)
+  const urls:string[]=[];
+  for(const f of files as File[]){const ext=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';const key='events/'+slug+'/'+crypto.randomUUID()+'.'+ext;await c.env.GALLERY_BUCKET.put(key,await f.arrayBuffer(),{httpMetadata:{contentType:f.type}});urls.push('/event-cover/'+key)}
+  await c.env.DB.prepare('UPDATE events SET cover_url=?,slide_urls=? WHERE slug=?').bind(urls[0],JSON.stringify(urls),slug).run();return c.json({success:true})
 })
 app.get('/event-cover/events/:slug/:file', async c => {
   const slug=c.req.param('slug'), file=c.req.param('file')
