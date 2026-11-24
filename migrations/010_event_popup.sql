@@ -1,0 +1,1 @@
+ALTER TABLE events ADD COLUMN show_popup INTEGER NOT NULL DEFAULT 0 CHECK (show_popup IN (0,1));

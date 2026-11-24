@@ -824,6 +824,14 @@ backdrop-filter: blur(12px);
       updateNav();
     }
   </script>
+${isHome ? `<dialog id="ds-event-popup" aria-label="Special event" style="padding:0;border:0;margin:auto;width:min(360px,calc(100vw - 40px),calc((100dvh - 100px)*0.8));max-height:calc(100dvh - 24px);overflow:auto;background:white;color:black;">
+<style>#ds-event-popup::backdrop{background:rgba(0,0,0,.65)}#ds-event-popup a{display:block;text-decoration:none}#ds-event-popup img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;background:#fff}#ds-event-popup .popup-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;font-size:11px}#ds-event-popup button{cursor:pointer}</style>
+<a id="ds-popup-link"><img id="ds-popup-image" alt=""><span style="display:block;background:#111;color:white;text-align:center;padding:13px;font-size:12px;letter-spacing:.12em">VIEW EVENT →</span></a>
+<div class="popup-footer"><button type="button" id="ds-popup-hide">Don't show again today</button><button type="button" id="ds-popup-close">Close ×</button></div>
+</dialog>
+<script>
+(async function(){try{const r=await fetch('/api/events');if(!r.ok)return;const items=await r.json();const day=new Date(Date.now()+9*3600000).toISOString().slice(0,10);const e=items.find(x=>x.popup_image_url&&Number(x.show_popup)===1&&x.popup_start_date<=day&&x.popup_end_date>=day);if(!e)return;const key='ds-popup-hidden-'+e.slug;try{if(localStorage.getItem(key)===day)return}catch{}const d=document.getElementById('ds-event-popup'),img=document.getElementById('ds-popup-image');document.getElementById('ds-popup-link').href='/events/'+encodeURIComponent(e.slug);img.alt=e.title;document.getElementById('ds-popup-close').onclick=()=>d.close();document.getElementById('ds-popup-hide').onclick=()=>{try{localStorage.setItem(key,day)}catch{}d.close()};d.addEventListener('click',ev=>{if(ev.target===d){const b=d.getBoundingClientRect();if(ev.clientX<b.left||ev.clientX>b.right||ev.clientY<b.top||ev.clientY>b.bottom)d.close()}});img.onload=()=>{if(!d.open)d.showModal()};img.src=e.popup_image_url;if(img.complete&&img.naturalWidth&&!d.open)d.showModal()}catch(err){console.error("Homepage popup",err)}})();
+</script>` : ''}
 </body>
 </html>
 `
@@ -1028,7 +1036,7 @@ app.post('/api/admin/events', async c => {
   const exists=await c.env.DB.prepare("SELECT slug FROM booking_products WHERE slug=? AND slug NOT IN ('basic','signature','premium')").bind(product).first()
   if (!exists) return c.json({error:'Create an event product in Booking Products first'},400)
   try {
-    await c.env.DB.prepare('INSERT INTO events (slug,product_slug,title,subtitle,description,details,cover_url,is_published,sort_order,eyebrow,original_price,savings_note,duration_label,included,before_book,experience_steps) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(slug,product,title,String(d.subtitle||''),String(d.description||''),String(d.details||''),String(d.cover_url||''),d.is_published?1:0,Number(d.sort_order||10),String(d.eyebrow||''),String(d.original_price||''),String(d.savings_note||''),String(d.duration_label||''),String(d.included||''),String(d.before_book||''),steps).run()
+    await c.env.DB.prepare('INSERT INTO events (slug,product_slug,title,subtitle,description,details,cover_url,is_published,sort_order,eyebrow,original_price,savings_note,duration_label,included,before_book,experience_steps,show_popup,popup_start_date,popup_end_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(slug,product,title,String(d.subtitle||''),String(d.description||''),String(d.details||''),String(d.cover_url||''),d.is_published?1:0,Number(d.sort_order||10),String(d.eyebrow||''),String(d.original_price||''),String(d.savings_note||''),String(d.duration_label||''),String(d.included||''),String(d.before_book||''),steps,d.show_popup?1:0,d.popup_start_date||null,d.popup_end_date||null).run()
     return c.json({success:true})
   } catch {return c.json({error:'Event slug already exists or product is in use'},409)}
 })
@@ -1040,7 +1048,7 @@ app.patch('/api/admin/events/:slug', async c => {
   const steps=d.experience_steps===undefined?old.experience_steps:normalizeEventSteps(d.experience_steps);if(steps===null)return c.json({error:'Invalid experience steps'},400)
   const title=String(d.title??old.title).trim(), description=String(d.description??old.description), details=String(d.details??old.details)
   if (!title || title.length>150 || description.length>5000 || details.length>10000) return c.json({error:'Invalid event'},400)
-  await c.env.DB.prepare('UPDATE events SET title=?,subtitle=?,description=?,details=?,is_published=?,sort_order=?,eyebrow=?,original_price=?,savings_note=?,duration_label=?,included=?,before_book=?,experience_steps=? WHERE slug=?').bind(title,String(d.subtitle??old.subtitle),description,details,d.is_published===undefined?old.is_published:(d.is_published?1:0),Number(d.sort_order??old.sort_order),String(d.eyebrow??old.eyebrow??''),String(d.original_price??old.original_price??''),String(d.savings_note??old.savings_note??''),String(d.duration_label??old.duration_label??''),String(d.included??old.included??''),String(d.before_book??old.before_book??''),steps,slug).run()
+  await c.env.DB.prepare('UPDATE events SET title=?,subtitle=?,description=?,details=?,is_published=?,sort_order=?,eyebrow=?,original_price=?,savings_note=?,duration_label=?,included=?,before_book=?,experience_steps=?,show_popup=?,popup_start_date=?,popup_end_date=? WHERE slug=?').bind(title,String(d.subtitle??old.subtitle),description,details,d.is_published===undefined?old.is_published:(d.is_published?1:0),Number(d.sort_order??old.sort_order),String(d.eyebrow??old.eyebrow??''),String(d.original_price??old.original_price??''),String(d.savings_note??old.savings_note??''),String(d.duration_label??old.duration_label??''),String(d.included??old.included??''),String(d.before_book??old.before_book??''),steps,d.show_popup===undefined?old.show_popup:(d.show_popup?1:0),d.popup_start_date===undefined?old.popup_start_date:d.popup_start_date||null,d.popup_end_date===undefined?old.popup_end_date:d.popup_end_date||null,slug).run()
   return c.json({success:true})
 })
 app.delete('/api/admin/events/:slug', async c => {
@@ -1059,6 +1067,18 @@ app.post('/api/admin/events/:slug/cover', async c => {
   const key='events/'+slug+'/'+crypto.randomUUID()+'.'+ext
   await c.env.GALLERY_BUCKET.put(key,await file.arrayBuffer(),{httpMetadata:{contentType:file.type}})
   await c.env.DB.prepare('UPDATE events SET cover_url=? WHERE slug=?').bind('/event-cover/'+key,slug).run()
+  return c.json({success:true,url:'/event-cover/'+key})
+})
+app.post('/api/admin/events/:slug/popup-image', async c => {
+  if (!adminProductsAuthorized(c)) return c.json({error:'Unauthorized'},401)
+  const slug=c.req.param('slug'), old=await c.env.DB.prepare('SELECT slug FROM events WHERE slug=?').bind(slug).first()
+  if (!old) return c.json({error:'Not found'},404)
+  const data=await c.req.formData(), file=data.get('image')
+  if (!(file instanceof File) || !['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>5*1024*1024 || file.size===0) return c.json({error:'Use a JPG, PNG or WebP under 5 MB'},400)
+  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
+  const key='events/'+slug+'/'+crypto.randomUUID()+'.'+ext
+  await c.env.GALLERY_BUCKET.put(key,await file.arrayBuffer(),{httpMetadata:{contentType:file.type}})
+  await c.env.DB.prepare('UPDATE events SET popup_image_url=? WHERE slug=?').bind('/event-cover/'+key,slug).run()
   return c.json({success:true,url:'/event-cover/'+key})
 })
 app.post('/api/admin/events/:slug/slides', async c => {
